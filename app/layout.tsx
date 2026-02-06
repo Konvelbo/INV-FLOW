@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+import Navbare from "@/src/components/Navbare";
+import { AppSidebar } from "@/src/components/app-sidebare";
+import { SidebarProvider } from "@/src/components/ui/sidebar";
+import { InvoiceProvider } from "@/src/context/InvoiceContext";
+import toast, { Toaster } from "react-hot-toast";
+import CanvasProvider from "@/src/context/canvasContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +30,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html suppressHydrationWarning lang="en" className="h-screen">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={cn(
+          geistSans.variable,
+          geistMono.variable,
+          "antialiased",
+          "w-full h-full",
+        )}
       >
-        {children}
+        <Toaster />
+        <Navbare />
+
+        <CanvasProvider>
+          <InvoiceProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <main
+                id="scroll_main"
+                className="w-full h-screen overflow-y-scroll"
+              >
+                {children}
+              </main>
+            </SidebarProvider>
+          </InvoiceProvider>
+        </CanvasProvider>
       </body>
     </html>
   );
