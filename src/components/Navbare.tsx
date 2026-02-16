@@ -11,9 +11,9 @@ export default function Navbare() {
         <div className="flex items-center gap-2">
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <a className="text-primary hover:text-primary/90" href="#">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <Logo />
-            </a>
+            </div>
           </div>
         </div>
         {/* Right side */}

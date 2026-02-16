@@ -99,7 +99,7 @@ export function invoiceTemplate(data: {
 
       <div class="client-info">
         <p>Client : ${data.clientName}</p>
-        <p>Objet : ${data.object}</p>
+        <pre>Objet : ${data.object}</pre>
       </div>
     </div>
     `
@@ -394,6 +394,10 @@ export function invoiceTemplate(data: {
     text-align: center;
     border-top: 1px solid #000;
     padding-top: 6px;
+  }
+
+  p {
+    width: 100%;
   }
 
   /* page-break helper */

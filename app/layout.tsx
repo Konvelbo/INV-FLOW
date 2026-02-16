@@ -40,21 +40,7 @@ export default function RootLayout({
         )}
       >
         <Toaster />
-        <Navbare />
-
-        <CanvasProvider>
-          <InvoiceProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <main
-                id="scroll_main"
-                className="w-full h-screen overflow-y-scroll"
-              >
-                {children}
-              </main>
-            </SidebarProvider>
-          </InvoiceProvider>
-        </CanvasProvider>
+        {children}
       </body>
     </html>
   );

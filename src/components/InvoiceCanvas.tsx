@@ -50,7 +50,7 @@ export default function InvoiceCanvas({
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("fr-FR", {
       style: "currency",
-      currency: "EUR",
+      currency: "XOF",
       minimumFractionDigits: 2,
     }).format(value);
 
@@ -171,30 +171,6 @@ export default function InvoiceCanvas({
 
   return (
     <div className="canvas-viewer p-4 flex flex-col items-center w-full">
-      <div className="fixed left-90 top-20 z-1">
-        <div className="zoom-control mb-3 relative">
-          <button className="zoom-main p-2 rounded" aria-label="Zoom options">
-            Zoom {Math.round(scale * 100)}%
-          </button>
-          <div className="zoom-popover absolute -top-12 left-22 transform -translate-x-1/2 opacity-0 scale-75 pointer-events-none transition-all duration-150">
-            <button
-              onClick={increaseScale}
-              className="zoom-btn mr-2 p-2 text-black"
-              aria-label="Agrandir"
-            >
-              +
-            </button>
-            <button
-              onClick={decreaseScale}
-              className="zoom-btn p-2 text-black"
-              aria-label="Réduire"
-            >
-              −
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div
         className="canvas-wrapper overflow-hidden"
         style={{
@@ -257,7 +233,7 @@ export default function InvoiceCanvas({
                   value={object}
                   onValueChange={setObject}
                   placeholder="Object"
-                  className=" w-150 pl-2 bg-black"
+                  className=" w-150 pl-2"
                 />
               </h1>
             </div>
@@ -282,7 +258,7 @@ export default function InvoiceCanvas({
                         updateItem(item.id, "designation", val)
                       }
                       placeholder="Designation"
-                      // className="border-none outline-none w-90"
+                      className="border-none outline-none w-full bg-blac"
                     />
                     <CookingPot
                       id="Delete"
@@ -325,14 +301,18 @@ export default function InvoiceCanvas({
                 </tr>
               ))}
               <tr>
-                <td>
+                <td className="relative">
                   <OptimizedInput
                     value={newItem.designation}
                     onValueChange={(val) =>
                       setNewItem({ ...newItem, designation: val })
                     }
                     placeholder="Designation"
-                    // className="border-none outline-none w-90"
+                    className="border-none outline-none w-full"
+                  />
+                  <ArrowDown
+                    onClick={addItem}
+                    className="uploade text-black absolute -left-7 bottom-1 size-6"
                   />
                 </td>
                 <td>
@@ -378,23 +358,21 @@ export default function InvoiceCanvas({
                 <td>
                   <h2>{formatCurrency(newItem.totalPrice)}</h2>
                 </td>
-                <ArrowDown
-                  onClick={addItem}
-                  className="uploade text-black absolute -left-7 bottom-1 size-6"
-                />
               </tr>
             </tbody>
           </table>
 
           <table className="totals">
-            <tr>
-              <td>TOTAL MATERIEL</td>
-              <td>{totalmaterial}</td>
-            </tr>
-            <tr>
-              <td>TOTAL HT</td>
-              <td>{formatCurrency(totalGeneral)}</td>
-            </tr>
+            <tbody>
+              <tr>
+                <td>TOTAL MATERIEL</td>
+                <td>{totalmaterial}</td>
+              </tr>
+              <tr>
+                <td>TOTAL HT</td>
+                <td>{formatCurrency(totalGeneral)}</td>
+              </tr>
+            </tbody>
           </table>
 
           <div className="signature">

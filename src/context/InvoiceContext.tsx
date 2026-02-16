@@ -60,10 +60,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [totalMaterial, setTotalMaterial] = useState<number>(0);
   const [totalHT, setTotalHT] = useState<number>(0);
   const [managerName, setManagerName] = useState<string>("");
-  const [amountWords, setAmoutWorlds] = useState<string>("");
+  const [amountWords, setAmoutWorlds] = useState<string>("dsfdfsfsdf");
   const [itemsArr, setItemsArr] = useState<InvoiceItemWithId[]>([]);
-  console.log(itemsArr);
-  console.log(totalPrice);
 
   return (
     <InvoiceContext.Provider

@@ -3,11 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html,
-body {
-    overflow: hidden;
-}
-
 #scroll_main {
     scrollbar-width: none;
 }
@@ -59,13 +54,13 @@ body {
     page-break-before: always;
 }
 
-h1,
+/*h1,
 h2,
 h3,
 p {
     margin: 0;
     padding: 0;
-}
+}*/
 
 .ref {
     text-decoration: underline;
@@ -241,15 +236,32 @@ td {
      TOTALS
   ========================== */
 .totals {
-    width: 40%;
+    width: 45%;
     margin-left: auto;
     margin-top: 10px;
     background-color: #eee;
+    /* Force le respect des largeurs définies ci-dessous */
+    table-layout: fixed;
+    border-collapse: collapse;
 }
 
 .totals td {
-    font-weight: bold;
-    padding: 5px;
+    font-weight: bold; /* Ajout de la taille de police */
+    padding: 8px; /* Un peu plus d'espace pour la lisibilité */
+    border: 1px solid #ccc; /* Optionnel : pour bien voir les colonnes pendant le test */
+}
+
+/* On cible spécifiquement la 1ère colonne */
+.totals tr td:nth-child(1) {
+    width: 30% !important;
+}
+
+/* On cible spécifiquement la 2ème colonne (les valeurs) */
+.totals tr td:nth-child(2) {
+    font-size: 15px; /* Ajout de la taille de police */
+    width: 50% !important;
+    text-align: right;
+    word-break: break-all; /* Empêche le texte de déborder si la valeur est trop longue */
 }
 
 .signature {
@@ -270,6 +282,7 @@ td {
     border: none;
     cursor: pointer;
     box-shadow: none;
+    font-size: 13px;
 }
 .zoom-popover {
     display: flex;
@@ -532,11 +545,11 @@ td {
     }
 }
 
-button {
+.canvas-viewer button {
     transition: all 0.4s ease;
 }
 
-button:hover {
+.canvas-viewer button:hover {
     background-color: var(--secondary);
     color: var(--secondary-foreground);
 }
@@ -565,4 +578,160 @@ button:hover {
 
 #logo_site:hover {
     scale: 1.06;
+}
+
+/*page d acceuil*/
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+.animate-slide-in-left {
+    animation: slideInLeft 1s ease-out forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+.animate-slide-in-right {
+    animation: slideInRight 1s ease-out forwards;
+}
+
+/* Adding delays for animations (example) */
+.delay-100 {
+    animation-delay: 0.1s;
+}
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+#signup {
+    background-color: rgba(0, 0, 0, 0.4); /* Fond blanc très transparent */
+    backdrop-filter: blur(15px) saturate(180%); /* Flou + boost de saturation */
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    overflow: hidden;
+}
+
+#signup_card {
+    position: relative;
+    background-color: #000; /* Plus de transparence */
+    border: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* Le dégradé qui tourne */
+#signup_card::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    left: -50%;
+    top: -50%;
+    width: 200%;
+    height: 200%;
+    background-color: #000;
+    background-repeat: no-repeat;
+    background-size:
+        50% 50%,
+        50% 50%;
+    background-position:
+        0 0,
+        100% 0,
+        100% 100%,
+        0 100%;
+    /* Ton dégradé RGB */
+    background-image: conic-gradient(
+        from 0deg,
+        #ff0000,
+        #00ff00,
+        #00ffff,
+        #0000ff,
+        #ff00ff,
+        #ff0000
+    );
+    animation: rotate 4s linear infinite;
+}
+
+/* Le rectangle noir interne qui crée l'effet de bordure fine */
+#signup_card::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 3px; /* Épaisseur de ta bordure */
+    top: 3px;
+    width: calc(100% - 6px);
+    height: calc(100% - 6px);
+    background: #0a0a0a; /* La couleur de fond de ta carte opaque */
+    border-radius: 12px; /* Ajuste selon le radius de ta Card */
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Optionnel : Ajoute un box-shadow qui réagit à la couleur pour plus de réalisme */
+#signup_card {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+#signup_btn:hover {
+    background-color: none;
+}
+
+#landing_page_conBtn {
+    background-color: transparent;
+    color: #fff !important;
+}
+
+#landing_page_conBtn:hover {
+    background-color: transparent !important;
+}
+
+#landing_page button {
+    transition: all 0.4s ease;
+}
+
+#landing_page button:hover {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
 }

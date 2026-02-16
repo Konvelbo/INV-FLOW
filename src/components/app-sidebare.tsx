@@ -19,7 +19,7 @@ import { useInvoice } from "@/src/context/InvoiceContext";
 const items = [
   {
     title: "Dashbard",
-    url: "#",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
