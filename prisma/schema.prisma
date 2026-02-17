@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -26,6 +27,9 @@ model Invoice {
 
   clientName    String
   object        String
+  clientAddress String?
+  clientContact String?
+  clientPOBox   String?
   managerName   String
 
 
@@ -41,6 +45,7 @@ model Invoice {
 
   @@index([userId])
 
+  isScaled      Boolean @default(false)
   createdAt     DateTime @default(now())
 
   items         InvoiceItem[]

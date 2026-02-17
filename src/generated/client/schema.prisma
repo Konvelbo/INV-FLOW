@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  email    String    @unique
+  name     String
+  password String
+  invoices Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  reference String @unique
+  city      String
+
+  clientName    String
+  object        String
+  clientAddress String?
+  clientContact String?
+  clientPOBox   String?
+  managerName   String
+
+  totalHT       Float
+  totalMaterial Float
+  amountWords   String?
+
+  pdfUrl      String?
+  pdfPublicId String? // Cloudinary
+
+  userId String @db.ObjectId
+  author User   @relation(fields: [userId], references: [id])
+
+  isScaled  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  items InvoiceItem[]
+
+  @@index([userId])
+}
+
+model InvoiceItem {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  designation String
+  unit        String @default("U")
+  quantity    Float
+  unitPrice   Float
+  totalPrice  Float
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+}

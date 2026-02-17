@@ -12,6 +12,9 @@ export type InvoiceProps = {
   reference: string;
   city: string;
   clientName: string;
+  clientAddress?: string;
+  clientContact?: string;
+  clientPOBox?: string;
   object: string;
   items: InvoiceItem[];
   totalHT: number;
@@ -34,6 +37,9 @@ export function invoiceTemplate(data: {
   reference: string;
   city: string;
   clientName: string;
+  clientAddress?: string;
+  clientContact?: string;
+  clientPOBox?: string;
   object: string;
   items: InvoiceItem[];
   totalHT: number;
@@ -99,7 +105,10 @@ export function invoiceTemplate(data: {
 
       <div class="client-info">
         <p>Client : ${data.clientName}</p>
-        <pre>Objet : ${data.object}</pre>
+        ${data.clientAddress ? `<p>Adresse : ${data.clientAddress}</p>` : ""}
+        ${data.clientContact ? `<p>Contact : ${data.clientContact}</p>` : ""}
+        ${data.clientPOBox ? `<p>BP : ${data.clientPOBox}</p>` : ""}
+        <p>Objet : ${data.object}</p>
       </div>
     </div>
     `

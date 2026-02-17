@@ -6,6 +6,7 @@ import { UUIDTypes, v4 as uuidv4 } from "uuid";
 import { ArrowDown, CookingPot } from "lucide-react";
 import { Button } from "./ui/button";
 import OptimizedInput from "./OptimizedInput";
+import OptimizedTextarea from "./OptimizedTextarea";
 
 export type itemsProps = {
   id: UUIDTypes;
@@ -28,6 +29,12 @@ export default function InvoiceCanvas({
     setCity,
     clientName,
     setClientName,
+    clientAddress,
+    setClientAddress,
+    clientContact,
+    setClientContact,
+    clientPOBox,
+    setClientPOBox,
     object,
     setObject,
     managerName,
@@ -85,9 +92,16 @@ export default function InvoiceCanvas({
 
   // Synchroniser le total global dans le contexte (totalHT / totalMaterial)
   useEffect(() => {
-    if (typeof setTotalHT === "function") setTotalHT(totalGeneral);
-    if (typeof setTotalMaterial === "function")
-      setTotalMaterial(totalMaterialGeneral);
+    if (typeof setTotalHT === "function") {
+      setTotalHT((prev: number) =>
+        prev !== totalGeneral ? totalGeneral : prev,
+      );
+    }
+    if (typeof setTotalMaterial === "function") {
+      setTotalMaterial((prev: number) =>
+        prev !== totalMaterialGeneral ? totalMaterialGeneral : prev,
+      );
+    }
   }, [totalGeneral, totalMaterialGeneral, setTotalHT, setTotalMaterial]);
   type updateItemProps = (
     id: string | number,
@@ -184,7 +198,7 @@ export default function InvoiceCanvas({
           className={`bg-white w-[794px] text-black relative ${scale < 0.8 ? "scale-small" : ""}`}
         >
           <div className="flex justify-between items-centerrelative w-full mb-2">
-            <div className="">
+            <div>
               <h1 className="mb-3">
                 PROFORMA :{" "}
                 {
@@ -208,7 +222,7 @@ export default function InvoiceCanvas({
               le {new Date().toLocaleDateString("fr-FR")}
             </h2>
           </div>
-          <div className="border h-35 w-full">
+          <div className="border h-35 w-full min-h-70">
             <div className="flex justify-between">
               <div className="border-b h-15 p-5 w-full">
                 <h2>Adress de facture</h2>
@@ -217,23 +231,53 @@ export default function InvoiceCanvas({
                 <h2>Adress de livraison:</h2>
               </div>
             </div>
-            <div className="px-5 mt-2">
-              <h1>
+            <div className="px-5 mt-2 space-y-2">
+              <div className="flex flex-col gap-2"></div>
+              <div className="flex justify-between items-center gap-2 text-sm w-full">
+                <div>
+                  Address:
+                  <OptimizedInput
+                    value={clientAddress}
+                    onValueChange={setClientAddress}
+                    placeholder="Address (Optional)"
+                    className="w-full pl-2 border-b"
+                  />
+                </div>
+                <div>
+                  Contact:
+                  <OptimizedInput
+                    value={clientContact}
+                    onValueChange={setClientContact}
+                    placeholder="Contact (Optional)"
+                    className="w-full pl-2 border-b"
+                  />
+                </div>
+                <div>
+                  PO Box:
+                  <OptimizedInput
+                    value={clientPOBox}
+                    onValueChange={setClientPOBox}
+                    placeholder="BP (Optional)"
+                    className="w-full pl-2 border-b"
+                  />
+                </div>
+              </div>
+              <h1 className="w-1/2">
                 Client:
                 <OptimizedInput
                   value={clientName}
                   onValueChange={setClientName}
-                  placeholder="ClientName"
-                  className="w-90 pl-2"
+                  placeholder="Client Name"
+                  className="w-full pl-2 border-b"
                 />
               </h1>
-              <h1>
+              <h1 className="w-1/2">
                 Object:
                 <OptimizedInput
                   value={object}
                   onValueChange={setObject}
                   placeholder="Object"
-                  className=" w-150 pl-2"
+                  className="w-full pl-2 border-b"
                 />
               </h1>
             </div>
