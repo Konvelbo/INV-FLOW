@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useMemo,
+  useCallback,
+} from "react";
 
 export type InvoiceItemProps = {
   designation: string;
@@ -47,6 +54,14 @@ export interface InvoiceContextType {
   setManagerName: (value: string) => void;
   itemsArr: InvoiceItemWithId[];
   setItemsArr: (value: InvoiceItemWithId[]) => void;
+  currency: string;
+  setCurrency: (value: string) => void;
+  style: string;
+  setStyle: (value: string) => void;
+  setInvoiceData: (
+    data: Partial<InvoiceContextType> & { items?: InvoiceItemWithId[] },
+  ) => void;
+  clearInvoiceData: () => void;
 }
 
 const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
@@ -67,6 +82,20 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [managerName, setManagerName] = useState<string>("");
   const [amountWords, setAmountWords] = useState<string>("");
   const [itemsArr, setItemsArr] = useState<InvoiceItemWithId[]>([]);
+  const [currency, setCurrencyState] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("invoice_currency") || "XOF";
+    }
+    return "XOF";
+  });
+  const [style, setStyle] = useState<string>("default");
+
+  const setCurrency = useCallback((val: string) => {
+    setCurrencyState(val);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("invoice_currency", val);
+    }
+  }, []);
 
   // Derived values from itemsArr
   const totalHT = itemsArr.reduce(
@@ -79,19 +108,37 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   );
 
   // setInvoiceData no longer needs to set totalHT or totalMaterial
-  const setInvoiceData = (data: any) => {
-    setReference(data.reference || "");
-    setCity(data.city || "");
-    setClientName(data.clientName || "");
-    setClientAddress(data.clientAddress || "");
-    setClientContact(data.clientContact || "");
-    setClientPOBox(data.clientPOBox || "");
-    setObject(data.object || "");
-    setManagerName(data.managerName || "");
-    // totalHT and totalMaterial are derived
-    setAmountWords(data.amountWords || "");
-    setItemsArr(data.items || []);
-  };
+  const setInvoiceData = useCallback(
+    (data: Partial<InvoiceContextType> & { items?: InvoiceItemWithId[] }) => {
+      setReference(data.reference || "");
+      setCity(data.city || "");
+      setClientName(data.clientName || "");
+      setClientAddress(data.clientAddress || "");
+      setClientContact(data.clientContact || "");
+      setClientPOBox(data.clientPOBox || "");
+      setObject(data.object || "");
+      setManagerName(data.managerName || "");
+      // totalHT and totalMaterial are derived
+      setAmountWords(data.amountWords || "");
+      setItemsArr(data.items || []);
+      setStyle(data.style || "default");
+    },
+    [],
+  );
+
+  const clearInvoiceData = useCallback(() => {
+    setReference("");
+    setCity("");
+    setClientName("");
+    setClientAddress("");
+    setClientContact("");
+    setClientPOBox("");
+    setObject("");
+    setManagerName("");
+    setAmountWords("");
+    setItemsArr([]);
+    setStyle("default");
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -124,13 +171,17 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       totalMaterial,
       // Removed setTotalMaterial
       totalHT,
-      // Removed setTotalHT
       amountWords,
       setAmountWords,
       managerName,
       setManagerName,
       itemsArr,
       setItemsArr,
+      currency,
+      setCurrency,
+      style,
+      setStyle,
+      clearInvoiceData,
     }),
     [
       reference,
@@ -150,12 +201,12 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       amountWords,
       managerName,
       itemsArr,
-      // setInvoiceData is constant if defined outside or wrapped, but here it depends on setters which are stable.
-      // However, we redfine it every render? No it's defined in function body.
-      // Better to keep it as dependency or useCallback it.
-      // Since we removed useCallback in previous steps (or I thought I did?), let's check.
-      // I will just leave it in dependency array as it's recreated every render so it correctly breaks memo if not stable,
-      // but setters are stable.
+      currency,
+      style,
+      setCurrency,
+      setStyle,
+      setInvoiceData,
+      clearInvoiceData,
     ],
   );
 

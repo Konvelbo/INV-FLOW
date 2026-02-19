@@ -1,7 +1,12 @@
 "use client";
 
-import { FileText, History, LayoutDashboard, Target } from "lucide-react";
-
+import {
+  Brain,
+  FileText,
+  History,
+  LayoutDashboard,
+  Target,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +23,7 @@ import { useInvoice } from "@/src/context/InvoiceContext";
 // Menu items.
 const items = [
   {
-    title: "Dashbard",
+    title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
   },
@@ -33,41 +38,14 @@ const items = [
     icon: History,
   },
   {
-    title: "Product Insight",
-    url: "#",
-    icon: Target,
+    title: "Assistant IA",
+    url: "/ai-advisor",
+    icon: Brain,
   },
 ];
 
 export function AppSidebar() {
-  const {
-    city,
-    setCity,
-    clientName,
-    setClientName,
-    object,
-    setObject,
-    designation,
-    setDesignation,
-    unit,
-    setUnit,
-    quantity,
-    setQuantity,
-    unitPrice,
-    setUnitPrice,
-    totalPrice,
-    setTotalPrice,
-    totalMaterial,
-    setTotalMaterial,
-    totalHT,
-    setTotalHT,
-    managerName,
-    setManagerName,
-    amountWords,
-    setAmoutWorlds,
-    itemsArr,
-    setItemsArr,
-  } = useInvoice();
+  const { clearInvoiceData } = useInvoice();
   return (
     <Sidebar>
       <SidebarContent>
@@ -82,6 +60,7 @@ export function AppSidebar() {
                     <Link
                       onClick={() => {
                         if (item.title === "Invoice") {
+                          clearInvoiceData();
                         }
                       }}
                       href={item.url}

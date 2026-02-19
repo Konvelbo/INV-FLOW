@@ -16,14 +16,14 @@ export async function POST(req: Request) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { message: validation.error.errors[0].message },
+        { message: validation.error.issues[0].message },
         { status: 400 },
       );
     }
 
     const { email, password } = validation.data;
 
-    const isExistUserEmail = await prisma.User.findUnique({
+    const isExistUserEmail = await prisma.user.findUnique({
       where: { email: email },
     });
 
@@ -47,6 +47,8 @@ export async function POST(req: Request) {
       const user = {
         token,
         name: isExistUserEmail.name,
+        email: isExistUserEmail.email,
+        avatar: isExistUserEmail.avatar,
       };
       return NextResponse.json(
         { user, message: "Connexion réussie" },

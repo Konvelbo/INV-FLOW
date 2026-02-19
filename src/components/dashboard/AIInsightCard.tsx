@@ -66,17 +66,17 @@ export function AIInsightCard({ stats }: { stats?: any }) {
     dynamicInsights.length > 0 ? dynamicInsights : mockInsights;
 
   return (
-    <div className="group relative p-6 rounded-2xl bg-slate-900/40 border border-indigo-500/20 overflow-hidden backdrop-blur-md">
+    <div className="group relative p-6 rounded-2xl bg-card border border-border/50 overflow-hidden backdrop-blur-xl shadow-2xl transition-all duration-500 hover:bg-card/80">
       {/* Decorative Light Glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-600/20 transition-colors duration-700" />
+      <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-secondary/20 transition-colors duration-700" />
 
-      <div className="flex items-center gap-3 mb-6 relative z-10">
-        <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white shadow-[0_0_15px_-5px_rgba(99,102,241,0.5)]">
-          <Brain className="w-5 h-5" />
+      <div className="flex items-center gap-4 mb-8 relative z-10">
+        <div className="p-3 rounded-xl bg-linear-to-br from-secondary to-indigo-700 text-white shadow-lg shadow-secondary/20 group-hover:scale-110 transition-transform duration-300">
+          <Brain className="w-6 h-6" />
         </div>
-        <h3 className="text-lg font-bold text-white tracking-tight">
+        <h3 className="text-lg font-bold text-foreground font-sans tracking-tight">
           Analyses Business{" "}
-          <span className="text-indigo-400 italic font-medium">IA</span>
+          <span className="text-secondary italic font-semibold">IA</span>
         </h3>
       </div>
 
@@ -84,31 +84,31 @@ export function AIInsightCard({ stats }: { stats?: any }) {
         {displayInsights.map((insight) => (
           <div
             key={insight.id}
-            className="p-4 rounded-xl bg-slate-950/40 border border-white/5 hover:border-indigo-500/30 transition-all duration-300 group/item"
+            className="p-5 rounded-2xl bg-slate-950/30 border border-white/5 hover:border-secondary/30 transition-all duration-300 group/item"
           >
             <div className="flex items-start gap-4">
               <div className="mt-1 shrink-0">
                 {insight.type === "opportunity" && (
-                  <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <TrendingUp className="w-4 h-4" />
                   </div>
                 )}
                 {insight.type === "warning" && (
-                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
                     <AlertCircle className="w-4 h-4" />
                   </div>
                 )}
                 {insight.type === "tip" && (
-                  <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
                     <Lightbulb className="w-4 h-4" />
                   </div>
                 )}
               </div>
-              <div>
-                <h4 className="text-slate-100 font-bold text-sm mb-1 group-hover/item:text-indigo-300 transition-colors">
+              <div className="space-y-1">
+                <h4 className="text-slate-100 font-bold text-sm group-hover/item:text-secondary transition-colors font-sans">
                   {insight.title}
                 </h4>
-                <p className="text-slate-400 text-xs leading-relaxed">
+                <p className="text-muted-foreground text-[11px] leading-relaxed font-sans">
                   {insight.description}
                 </p>
               </div>

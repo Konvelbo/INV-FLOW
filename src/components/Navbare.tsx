@@ -11,7 +11,7 @@ export default function Navbare() {
         <div className="flex items-center gap-2">
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/20">
               <Logo />
             </div>
           </div>
@@ -20,11 +20,11 @@ export default function Navbare() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {/* Info menu */}
-            {/* <InfoMenu /> */}
+            {/*<InfoMenu />*/}
             {/* Notification */}
-            <NotificationMenu />
+            {/*<NotificationMenu />*/}
           </div>
-          {/* User menu */}
+          {/*User menu */}
           <UserMenu />
         </div>
       </div>

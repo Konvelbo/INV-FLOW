@@ -68,31 +68,30 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        "group relative p-5 rounded-2xl bg-slate-900/40 border backdrop-blur-md transition-all duration-500",
-        v.border,
-        v.bg,
+        "xl:min-w-85 group relative p-6 rounded-2xl bg-card border border-border/50 backdrop-blur-xl transition-all duration-500",
         v.hover,
         v.glow,
+        "hover:-translate-y-1 hover:bg-card/80",
         className,
       )}
     >
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-6">
         <div
           className={cn(
-            "p-2.5 rounded-xl transition-colors duration-300",
+            "p-3 rounded-xl transition-all duration-300 group-hover:scale-110",
             v.iconBg,
             v.iconColor,
           )}
         >
-          <Icon className="w-5 h-5" />
+          <Icon className="w-6 h-6" />
         </div>
         {trend && (
           <div
             className={cn(
-              "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-tight rounded-full border",
+              "px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border backdrop-blur-sm",
               trendUp
                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                : "bg-red-500/10 text-red-500 border-red-500/20",
+                : "bg-red-500/10 text-red-400 border-red-500/20",
             )}
           >
             {trend}
@@ -100,11 +99,11 @@ export function StatsCard({
         )}
       </div>
 
-      <div className="space-y-1">
-        <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+      <div className="space-y-2">
+        <h3 className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.2em]">
           {title}
         </h3>
-        <div className="text-xl font-black text-white tracking-tight">
+        <div className="text-2xl font-bold text-foreground tracking-tight font-mono">
           {value}
         </div>
       </div>
@@ -112,7 +111,7 @@ export function StatsCard({
       {/* Subtle bottom gradient sweep */}
       <div
         className={cn(
-          "absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-linear-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500",
+          "absolute bottom-0 left-0 right-0 h-[2px] bg-linear-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-500 rounded-full mx-6",
           v.iconColor,
         )}
       />

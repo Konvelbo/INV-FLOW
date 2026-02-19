@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/src/components/ui/badge";
+import { useInvoice } from "@/src/context/InvoiceContext";
 import {
   Card,
   CardContent,
@@ -50,7 +51,7 @@ const cashflowData = [
 const chartConfig = {
   value: {
     label: "Revenu",
-    color: "var(--color-blue-500)",
+    color: "var(--primary)",
   },
 } satisfies ChartConfig;
 
@@ -65,47 +66,63 @@ interface TooltipProps {
   label?: string;
 }
 
-const CustomTooltip = ({ active, payload }: TooltipProps) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  currency,
+}: TooltipProps & { currency: string }) => {
   if (active && payload && payload.length) {
     return (
-      <>
-        <div className="rounded-xl bg-slate-900 border border-slate-800 text-white p-3 shadow-2xl backdrop-blur-md">
-          <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">
-            Total HT:
-          </div>
-          <div className="text-sm font-bold text-emerald-400">
-            {payload[0].value.toLocaleString()} FCFA
-          </div>
+      <div className="rounded-xl bg-card border border-border/50 text-foreground p-3 shadow-2xl backdrop-blur-md">
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1 font-sans">
+          Total HT
         </div>
-      </>
+        <div className="text-sm font-bold text-primary font-mono tracking-tight">
+          {payload[0].value.toLocaleString()} {currency}
+        </div>
+      </div>
     );
   }
   return null;
 };
 
 // Period configuration
+const currentYear = new Date().getFullYear();
+const prevYear = currentYear - 1;
+
 const PERIODS = {
   "6m": {
     key: "6m",
-    label: "6 months",
-    dateRange: "Jul 01 - Dec 31, 2024",
+    label: "6 mois",
+    dateRange: `Jan 01 - Juin 30, ${currentYear}`,
   },
   "12m": {
     key: "12m",
-    label: "12 months",
-    dateRange: "Jan 01 - Dec 31, 2024",
+    label: "12 mois",
+    dateRange: `Jan 01 - Déc 31, ${currentYear}`,
   },
   "2y": {
     key: "2y",
-    label: "2 years",
-    dateRange: "Jan 01, 2023 - Dec 31, 2024",
+    label: "2 ans",
+    dateRange: `Jan 01, ${prevYear} - Déc 31, ${currentYear}`,
   },
 } as const;
 
 type PeriodKey = keyof typeof PERIODS;
 
 export default function LineChart2({ externalData }: { externalData?: any[] }) {
+  const [mounted, setMounted] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodKey>("12m");
+  const { currency } = useInvoice();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const currentYearStr = new Date().getFullYear();
+  const prevYearStr = currentYearStr - 1;
 
   // Filter data based on selected period
   const getFilteredData = () => {
@@ -125,11 +142,11 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
       case "2y":
         // Simulate 2 years data by duplicating and modifying the current year
         const previousYear = baseData.map((item) => ({
-          month: `${item.month} '23`,
+          month: `${item.month} '${String(prevYearStr).slice(-2)}`,
           value: Math.round(item.value * 0.85), // 15% lower for previous year
         }));
         const currentYear = baseData.map((item) => ({
-          month: `${item.month} '24`,
+          month: `${item.month} '${String(currentYearStr).slice(-2)}`,
           value: item.value,
         }));
         return [...previousYear, ...currentYear];
@@ -151,11 +168,13 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
     previousValue > 0 ? ((lastValue - previousValue) / previousValue) * 100 : 0;
 
   return (
-    <div className="flex items-center justify-center p-6 lg:p-8">
-      <Card className="w-full bg-slate-900/40 border-slate-800 backdrop-blur-md">
+    <div className="flex items-center justify-center ">
+      <Card className="w-full bg-card border-border/50 backdrop-blur-xl shadow-2xl">
         <CardHeader className="border-0 min-h-auto pt-6 pb-4">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
+          <CardTitle className="text-lg font-bold flex items-center gap-3 text-foreground font-sans tracking-tight">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <TrendingUp className="w-5 h-5" />
+            </div>
             Performance Financière
           </CardTitle>
           <CardToolbar>
@@ -178,15 +197,21 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
         <CardContent className="px-0">
           {/* Stats Section */}
           <div className="px-5 mb-8">
-            <div className="text-xs font-medium text-muted-foreground tracking-wide mb-2">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">
               {currentPeriod.dateRange}
             </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="text-3xl font-bold">
-                {totalCash.toLocaleString()} FCFA
+            <div className="flex items-center gap-4">
+              <div className="text-4xl font-black text-foreground font-mono tracking-tighter">
+                {totalCash.toLocaleString()}
+                <span className="text-sm ml-1 text-muted-foreground font-medium uppercase">
+                  {currency}
+                </span>
               </div>
-              <Badge variant="success" appearance="light">
-                <TrendingUp className="size-3" />
+              <Badge
+                variant="success"
+                className="bg-primary/10 text-primary border-primary/20 font-bold font-mono"
+              >
+                <TrendingUp className="size-3 mr-1" />
                 {Math.abs(percentageChange).toFixed(2)}%
               </Badge>
             </div>
@@ -272,7 +297,7 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
                 />
 
                 <ChartTooltip
-                  content={<CustomTooltip />}
+                  content={<CustomTooltip currency={currency} />}
                   cursor={{
                     stroke: chartConfig.value.color,
                     strokeWidth: 1,

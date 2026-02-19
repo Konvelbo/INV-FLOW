@@ -119,6 +119,7 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   password: 'password',
+  avatar: 'avatar',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -140,6 +141,7 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   pdfPublicId: 'pdfPublicId',
   userId: 'userId',
   isScaled: 'isScaled',
+  style: 'style',
   createdAt: 'createdAt'
 };
 

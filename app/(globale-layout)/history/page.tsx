@@ -17,6 +17,7 @@ import {
   Package,
   User,
 } from "lucide-react";
+import { useInvoice } from "@/src/context/InvoiceContext";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -24,9 +25,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Badge } from "@/src/components/ui/badge";
 import { itemsProps } from "@/src/components/InvoiceCanvas";
 import { InvoiceProps } from "@/lib/invoice-pdf";
+import { cn } from "@/lib/utils";
 
 export default function HistoryPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -36,6 +37,7 @@ export default function HistoryPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const router = useRouter();
+  const { currency } = useInvoice();
 
   useEffect(() => {
     fetchInvoices();
@@ -105,30 +107,45 @@ export default function HistoryPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-slate-950 text-white">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+      <div className="flex justify-center items-center h-screen bg-background text-foreground">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8 animate-fade-in-up">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-              <FileText className="w-8 h-8 text-blue-500" />
-              Historique des Factures
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-10 lg:p-12 relative overflow-hidden font-sans pb-20">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-up">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-1.5 w-10 bg-primary rounded-full" />
+              <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em]">
+                Archives Financières
+              </span>
+            </div>
+            <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent font-sans">
+              Historique
             </h1>
-            <p className="text-slate-400 mt-2">
-              Gérez et visualisez vos factures créées.
+            <p className="text-muted-foreground text-lg max-w-xl font-sans">
+              Gérez et visualisez l&apos;intégralité de vos flux de facturation
+              archivés.
             </p>
           </div>
           <Button
-            onClick={() => router.push("/invoice")}
-            className="bg-blue-600 hover:bg-blue-500 text-white"
+            onClick={() => {
+              clearInvoiceData();
+              router.push("/invoice");
+            }}
+            className="px-8 py-4 text-xs font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em] h-auto"
           >
-            Créer une Nouvelle Facture
+            Nouvelle Facture
           </Button>
         </div>
 
@@ -139,44 +156,46 @@ export default function HistoryPage() {
         )}
 
         {/* Filters Section */}
-        <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 backdrop-blur-md space-y-4 md:space-y-0 md:flex md:items-center md:gap-4 animate-fade-in-up delay-75">
+        <div className="bg-card p-8 rounded-[2rem] border border-border/50 backdrop-blur-xl shadow-2xl space-y-6 md:space-y-0 md:flex md:items-center md:gap-6 animate-fade-in-up delay-75">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Rechercher par référence (Proforma)..."
+              placeholder="Rechercher par référence..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-slate-600"
+              className="w-full bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50 font-sans"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500/50 transition-colors text-slate-400"
+                className="bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-muted-foreground font-sans cursor-pointer"
               />
             </div>
-            <span className="text-slate-600">à</span>
+            <span className="text-muted-foreground/50 font-black text-[10px] uppercase">
+              to
+            </span>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500/50 transition-colors text-slate-400"
+                className="bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-muted-foreground font-sans cursor-pointer"
               />
             </div>
           </div>
@@ -190,17 +209,17 @@ export default function HistoryPage() {
                 setStartDate("");
                 setEndDate("");
               }}
-              className="text-slate-500 hover:text-white"
+              className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
             >
               Réinitialiser
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {invoices
             .filter((invoice) => {
-              const matchesSearch = invoice.reference
+              const matchesSearch = (invoice.reference || "")
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase());
 
@@ -219,89 +238,117 @@ export default function HistoryPage() {
             .map((invoice) => (
               <Card
                 key={invoice.id}
-                className={`bg-slate-900/50 border-slate-800 backdrop-blur-sm transition-all duration-300 group ${
-                  invoice.isScaled
-                    ? "border-emerald-500/30"
-                    : "hover:border-blue-500/50"
-                }`}
+                onClick={() => router.push(`/invoice?id=${invoice.id}`)}
+                className={cn(
+                  "group relative p-1 rounded-[2rem] bg-card border border-border/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:bg-card/80 shadow-2xl overflow-hidden cursor-pointer",
+                  invoice.isScaled && "border-primary/40 shadow-primary/5",
+                )}
               >
-                <CardHeader className="pb-3 pt-3">
-                  <div className="flex justify-between items-start space-x-20">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg font-mono text-blue-200">
+                {/* Decorative glow for scaled items */}
+                {invoice.isScaled && (
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-2xl rounded-full -mr-16 -mt-16" />
+                )}
+
+                <CardHeader className="pb-4 pt-6 px-6">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] px-2 py-0.5 bg-primary/10 rounded-full">
+                          PROFORMA
+                        </span>
+                      </div>
+                      <CardTitle className="text-xl font-bold font-mono text-foreground tracking-tighter">
                         {invoice.reference}
                       </CardTitle>
-                      <p className="text-xs text-slate-500 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-2">
+                        <Calendar className="w-3 h-3 text-primary" />
                         {new Date(invoice.createdAt).toLocaleDateString(
                           "fr-FR",
                           {
-                            dateStyle: "long",
+                            dateStyle: "medium",
                           },
                         )}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge
-                        variant="outline"
-                        className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                      >
-                        Proforma
-                      </Badge>
+
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleScale(invoice.id, invoice.isScaled);
+                      }}
+                      className={cn(
+                        "cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm border",
+                        invoice.isScaled
+                          ? "bg-primary/20 text-primary border-primary/30"
+                          : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted/50",
+                      )}
+                    >
                       <div
-                        onClick={() =>
-                          handleToggleScale(invoice.id, invoice.isScaled)
-                        }
-                        className={`cursor-pointer flex items-center gap-2 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                        className={cn(
+                          "w-2 h-2 rounded-full",
                           invoice.isScaled
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                            : "bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700"
-                        }`}
-                      >
-                        <div
-                          className={`w-3 h-3 rounded-full border ${
-                            invoice.isScaled
-                              ? "bg-emerald-400 border-emerald-400"
-                              : "border-slate-500"
-                          }`}
-                        />
-                        {invoice.isScaled ? "Scalé" : "Non Scalé"}
-                      </div>
+                            ? "bg-primary animate-pulse"
+                            : "bg-muted-foreground/30",
+                        )}
+                      />
+                      {invoice.isScaled ? "Scalé" : "Standard"}
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-slate-300">
-                      <User className="w-4 h-4 text-slate-500" />
-                      <span className="font-medium">{invoice.clientName}</span>
+
+                <CardContent className="space-y-6 px-6 pb-6">
+                  <div className="space-y-4 p-4 rounded-2xl bg-background/40 border border-white/5">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <User className="w-4 h-4" />
+                        <span className="font-medium font-sans">Client</span>
+                      </div>
+                      <span className="font-bold text-foreground font-sans truncate max-w-[150px]">
+                        {invoice.clientName}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300">
-                      <Package className="w-4 h-4 text-slate-500" />
-                      <span>{invoice.totalMaterial || 0} Matériel vendu</span>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <Package className="w-4 h-4" />
+                        <span className="font-medium font-sans">Volume</span>
+                      </div>
+                      <span className="font-bold text-foreground font-mono">
+                        {invoice.totalMaterial || 0} mat.
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300">
-                      <DollarSign className="w-4 h-4 text-emerald-500" />
-                      <span className="font-bold text-emerald-400 text-lg">
-                        {invoice.totalHT.toLocaleString()} FCFA
+
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <DollarSign className="w-4 h-4 text-primary" />
+                        <span className="font-black text-[10px] uppercase tracking-widest">
+                          Total
+                        </span>
+                      </div>
+                      <span className="text-xl font-black text-primary font-mono tracking-tighter">
+                        {invoice.totalHT.toLocaleString()}{" "}
+                        <span className="text-[10px] ml-0.5">{currency}</span>
                       </span>
                     </div>
                   </div>
 
-                  <div className="pt-4 flex gap-3">
+                  <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      className="flex-1 bg-slate-800 border-slate-700 hover:bg-slate-700 hover:text-white"
+                      className="flex-1 h-12 rounded-xl bg-background/50 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all font-bold text-xs uppercase tracking-widest group/btn"
                       onClick={() => router.push(`/invoice?id=${invoice.id}`)}
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Voir
+                      <Eye className="w-4 h-4 mr-2 transition-transform group-hover/btn:scale-110" />
+                      Détails
                     </Button>
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20"
-                      onClick={() => handleDelete(invoice.id)}
+                      className="h-12 w-12 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground border border-destructive/20 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(invoice.id);
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -311,15 +358,22 @@ export default function HistoryPage() {
             ))}
 
           {invoices.length === 0 && !loading && (
-            <div className="col-span-full py-20 text-center text-slate-500 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed">
-              <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No invoices found.</p>
+            <div className="col-span-full py-32 text-center bg-card rounded-[2.5rem] border border-border/30 border-dashed backdrop-blur-xl animate-fade-in-up">
+              <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
+                <Package className="w-12 h-12 text-primary opacity-50" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3 font-sans">
+                Aucun enregistrement
+              </h3>
+              <p className="text-muted-foreground mb-10 max-w-sm mx-auto font-sans">
+                Votre archive est vide. Commencez par générer votre première
+                architecture de facturation.
+              </p>
               <Button
-                variant="link"
                 onClick={() => router.push("/invoice")}
-                className="text-blue-400"
+                className="px-10 py-5 text-sm font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest h-auto"
               >
-                Create your first invoice
+                Initialiser un Flux
               </Button>
             </div>
           )}

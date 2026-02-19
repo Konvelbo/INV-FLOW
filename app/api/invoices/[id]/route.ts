@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { revalidatePath } from "next/cache";
 
 export async function GET(
   req: Request,
@@ -19,45 +20,27 @@ export async function GET(
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-      if (!decoded || !decoded.id) {
-        throw new Error("Invalid token");
-      }
       userId = decoded.id;
     } catch (err) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    // Use raw query to bypass Prisma Client desync for isScaled field
-    const rawResult = await (prisma as any).$runCommandRaw({
-      find: "Invoice",
-      filter: {
-        _id: { $oid: params.id },
-        userId: { $oid: userId },
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: params.id,
+        userId: userId,
+      },
+      include: {
+        items: true,
       },
     });
 
-    const rawInvoice = rawResult.cursor.firstBatch[0];
-
-    if (!rawInvoice) {
+    if (!invoice) {
       return NextResponse.json(
         { message: "Invoice not found" },
         { status: 404 },
       );
     }
-
-    // Manually fetch items since $runCommandRaw doesn't do "include"
-    const items = await prisma.invoiceItem.findMany({
-      where: { invoiceId: params.id },
-    });
-
-    const invoice = {
-      ...rawInvoice,
-      id: rawInvoice._id.$oid,
-      createdAt: rawInvoice.createdAt.$date
-        ? new Date(rawInvoice.createdAt.$date)
-        : new Date(rawInvoice.createdAt),
-      items,
-    };
 
     return NextResponse.json(invoice, { status: 200 });
   } catch (error) {
@@ -124,6 +107,7 @@ export async function DELETE(
       },
     });
 
+    revalidatePath("/dashboard");
     return NextResponse.json(
       { message: "Invoice deleted successfully" },
       { status: 200 },
@@ -209,6 +193,7 @@ export async function PUT(
       },
     });
 
+    revalidatePath("/dashboard");
     return NextResponse.json(updatedInvoice, { status: 200 });
   } catch (error) {
     console.error("Error updating invoice:", error);
@@ -241,36 +226,18 @@ export async function PATCH(
 
     const { isScaled } = await req.json();
 
-    // Verify ownership first because update where MUST be unique
-    const existing = await prisma.invoice.findFirst({
+    const updated = await prisma.invoice.update({
       where: {
         id: params.id,
         userId: userId,
       },
+      data: {
+        isScaled: isScaled,
+      },
     });
 
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Not found or unauthorized" },
-        { status: 404 },
-      );
-    }
-
-    // Forcing raw update for MongoDB to bypass Prisma Client validation desync on Windows
-    await (prisma as any).$runCommandRaw({
-      update: "Invoice",
-      updates: [
-        {
-          q: { _id: { $oid: params.id } },
-          u: { $set: { isScaled: isScaled } },
-        },
-      ],
-    });
-
-    return NextResponse.json(
-      { message: "Updated successfully" },
-      { status: 200 },
-    );
+    revalidatePath("/dashboard");
+    return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error("Error toggling isScaled:", error);
     return NextResponse.json(

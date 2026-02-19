@@ -16,14 +16,14 @@ export async function POST(req: Request) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { message: validation.error.errors[0].message },
+        { message: validation.error.issues[0].message },
         { status: 400 },
       );
     }
 
     const { name, email, password } = validation.data;
 
-    const isExistUserEmail = await prisma.User.findUnique({
+    const isExistUserEmail = await prisma.user.findUnique({
       where: { email: email },
     });
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.User.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     const { password: newPassword, ...rest } = user;
 
-    const token = createToken(user._id);
+    const token = createToken(user.id);
 
     return NextResponse.json(
       { user: rest, message: "Utilisateur créé avec succès !", token },

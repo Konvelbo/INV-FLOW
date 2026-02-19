@@ -1069,6 +1069,7 @@ export namespace Prisma {
     email: string | null
     name: string | null
     password: string | null
+    avatar: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1078,6 +1079,7 @@ export namespace Prisma {
     email: string | null
     name: string | null
     password: string | null
+    avatar: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1087,6 +1089,7 @@ export namespace Prisma {
     email: number
     name: number
     password: number
+    avatar: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -1098,6 +1101,7 @@ export namespace Prisma {
     email?: true
     name?: true
     password?: true
+    avatar?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1107,6 +1111,7 @@ export namespace Prisma {
     email?: true
     name?: true
     password?: true
+    avatar?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1116,6 +1121,7 @@ export namespace Prisma {
     email?: true
     name?: true
     password?: true
+    avatar?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1198,6 +1204,7 @@ export namespace Prisma {
     email: string
     name: string
     password: string
+    avatar: string | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -1224,6 +1231,7 @@ export namespace Prisma {
     email?: boolean
     name?: boolean
     password?: boolean
+    avatar?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     invoices?: boolean | User$invoicesArgs<ExtArgs>
@@ -1237,11 +1245,12 @@ export namespace Prisma {
     email?: boolean
     name?: boolean
     password?: boolean
+    avatar?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "avatar" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     invoices?: boolean | User$invoicesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1257,6 +1266,7 @@ export namespace Prisma {
       email: string
       name: string
       password: string
+      avatar: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -1656,6 +1666,7 @@ export namespace Prisma {
     readonly email: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
+    readonly avatar: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -2109,6 +2120,7 @@ export namespace Prisma {
     pdfPublicId: string | null
     userId: string | null
     isScaled: boolean | null
+    style: string | null
     createdAt: Date | null
   }
 
@@ -2129,6 +2141,7 @@ export namespace Prisma {
     pdfPublicId: string | null
     userId: string | null
     isScaled: boolean | null
+    style: string | null
     createdAt: Date | null
   }
 
@@ -2149,6 +2162,7 @@ export namespace Prisma {
     pdfPublicId: number
     userId: number
     isScaled: number
+    style: number
     createdAt: number
     _all: number
   }
@@ -2181,6 +2195,7 @@ export namespace Prisma {
     pdfPublicId?: true
     userId?: true
     isScaled?: true
+    style?: true
     createdAt?: true
   }
 
@@ -2201,6 +2216,7 @@ export namespace Prisma {
     pdfPublicId?: true
     userId?: true
     isScaled?: true
+    style?: true
     createdAt?: true
   }
 
@@ -2221,6 +2237,7 @@ export namespace Prisma {
     pdfPublicId?: true
     userId?: true
     isScaled?: true
+    style?: true
     createdAt?: true
     _all?: true
   }
@@ -2328,6 +2345,7 @@ export namespace Prisma {
     pdfPublicId: string | null
     userId: string
     isScaled: boolean
+    style: string
     createdAt: Date
     _count: InvoiceCountAggregateOutputType | null
     _avg: InvoiceAvgAggregateOutputType | null
@@ -2367,6 +2385,7 @@ export namespace Prisma {
     pdfPublicId?: boolean
     userId?: boolean
     isScaled?: boolean
+    style?: boolean
     createdAt?: boolean
     author?: boolean | UserDefaultArgs<ExtArgs>
     items?: boolean | Invoice$itemsArgs<ExtArgs>
@@ -2392,10 +2411,11 @@ export namespace Prisma {
     pdfPublicId?: boolean
     userId?: boolean
     isScaled?: boolean
+    style?: boolean
     createdAt?: boolean
   }
 
-  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "totalHT" | "totalMaterial" | "amountWords" | "pdfUrl" | "pdfPublicId" | "userId" | "isScaled" | "createdAt", ExtArgs["result"]["invoice"]>
+  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "totalHT" | "totalMaterial" | "amountWords" | "pdfUrl" | "pdfPublicId" | "userId" | "isScaled" | "style" | "createdAt", ExtArgs["result"]["invoice"]>
   export type InvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     author?: boolean | UserDefaultArgs<ExtArgs>
     items?: boolean | Invoice$itemsArgs<ExtArgs>
@@ -2425,6 +2445,7 @@ export namespace Prisma {
       pdfPublicId: string | null
       userId: string
       isScaled: boolean
+      style: string
       createdAt: Date
     }, ExtArgs["result"]["invoice"]>
     composites: {}
@@ -2836,6 +2857,7 @@ export namespace Prisma {
     readonly pdfPublicId: FieldRef<"Invoice", 'String'>
     readonly userId: FieldRef<"Invoice", 'String'>
     readonly isScaled: FieldRef<"Invoice", 'Boolean'>
+    readonly style: FieldRef<"Invoice", 'String'>
     readonly createdAt: FieldRef<"Invoice", 'DateTime'>
   }
     
@@ -4301,6 +4323,7 @@ export namespace Prisma {
     email: 'email',
     name: 'name',
     password: 'password',
+    avatar: 'avatar',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -4325,6 +4348,7 @@ export namespace Prisma {
     pdfPublicId: 'pdfPublicId',
     userId: 'userId',
     isScaled: 'isScaled',
+    style: 'style',
     createdAt: 'createdAt'
   };
 
@@ -4439,6 +4463,7 @@ export namespace Prisma {
     email?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
+    avatar?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     invoices?: InvoiceListRelationFilter
@@ -4449,6 +4474,7 @@ export namespace Prisma {
     email?: SortOrder
     name?: SortOrder
     password?: SortOrder
+    avatar?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     invoices?: InvoiceOrderByRelationAggregateInput
@@ -4462,6 +4488,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
+    avatar?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     invoices?: InvoiceListRelationFilter
@@ -4472,6 +4499,7 @@ export namespace Prisma {
     email?: SortOrder
     name?: SortOrder
     password?: SortOrder
+    avatar?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -4487,6 +4515,7 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"User"> | string
     name?: StringWithAggregatesFilter<"User"> | string
     password?: StringWithAggregatesFilter<"User"> | string
+    avatar?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -4511,6 +4540,7 @@ export namespace Prisma {
     pdfPublicId?: StringNullableFilter<"Invoice"> | string | null
     userId?: StringFilter<"Invoice"> | string
     isScaled?: BoolFilter<"Invoice"> | boolean
+    style?: StringFilter<"Invoice"> | string
     createdAt?: DateTimeFilter<"Invoice"> | Date | string
     author?: XOR<UserScalarRelationFilter, UserWhereInput>
     items?: InvoiceItemListRelationFilter
@@ -4533,6 +4563,7 @@ export namespace Prisma {
     pdfPublicId?: SortOrder
     userId?: SortOrder
     isScaled?: SortOrder
+    style?: SortOrder
     createdAt?: SortOrder
     author?: UserOrderByWithRelationInput
     items?: InvoiceItemOrderByRelationAggregateInput
@@ -4558,6 +4589,7 @@ export namespace Prisma {
     pdfPublicId?: StringNullableFilter<"Invoice"> | string | null
     userId?: StringFilter<"Invoice"> | string
     isScaled?: BoolFilter<"Invoice"> | boolean
+    style?: StringFilter<"Invoice"> | string
     createdAt?: DateTimeFilter<"Invoice"> | Date | string
     author?: XOR<UserScalarRelationFilter, UserWhereInput>
     items?: InvoiceItemListRelationFilter
@@ -4580,6 +4612,7 @@ export namespace Prisma {
     pdfPublicId?: SortOrder
     userId?: SortOrder
     isScaled?: SortOrder
+    style?: SortOrder
     createdAt?: SortOrder
     _count?: InvoiceCountOrderByAggregateInput
     _avg?: InvoiceAvgOrderByAggregateInput
@@ -4608,6 +4641,7 @@ export namespace Prisma {
     pdfPublicId?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     userId?: StringWithAggregatesFilter<"Invoice"> | string
     isScaled?: BoolWithAggregatesFilter<"Invoice"> | boolean
+    style?: StringWithAggregatesFilter<"Invoice"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Invoice"> | Date | string
   }
 
@@ -4683,6 +4717,7 @@ export namespace Prisma {
     email: string
     name: string
     password: string
+    avatar?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -4693,6 +4728,7 @@ export namespace Prisma {
     email: string
     name: string
     password: string
+    avatar?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -4702,6 +4738,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -4711,6 +4748,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -4721,6 +4759,7 @@ export namespace Prisma {
     email: string
     name: string
     password: string
+    avatar?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -4729,6 +4768,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -4737,6 +4777,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -4757,6 +4798,7 @@ export namespace Prisma {
     pdfUrl?: string | null
     pdfPublicId?: string | null
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
     author: UserCreateNestedOneWithoutInvoicesInput
     items?: InvoiceItemCreateNestedManyWithoutInvoiceInput
@@ -4779,6 +4821,7 @@ export namespace Prisma {
     pdfPublicId?: string | null
     userId: string
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
     items?: InvoiceItemUncheckedCreateNestedManyWithoutInvoiceInput
   }
@@ -4798,6 +4841,7 @@ export namespace Prisma {
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     author?: UserUpdateOneRequiredWithoutInvoicesNestedInput
     items?: InvoiceItemUpdateManyWithoutInvoiceNestedInput
@@ -4819,6 +4863,7 @@ export namespace Prisma {
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput
   }
@@ -4840,6 +4885,7 @@ export namespace Prisma {
     pdfPublicId?: string | null
     userId: string
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
   }
 
@@ -4858,6 +4904,7 @@ export namespace Prisma {
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4877,6 +4924,7 @@ export namespace Prisma {
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4960,6 +5008,22 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+    isSet?: boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -4986,6 +5050,7 @@ export namespace Prisma {
     email?: SortOrder
     name?: SortOrder
     password?: SortOrder
+    avatar?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -4995,6 +5060,7 @@ export namespace Prisma {
     email?: SortOrder
     name?: SortOrder
     password?: SortOrder
+    avatar?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5004,6 +5070,7 @@ export namespace Prisma {
     email?: SortOrder
     name?: SortOrder
     password?: SortOrder
+    avatar?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5026,6 +5093,25 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -5038,22 +5124,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-    isSet?: boolean
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -5104,6 +5174,7 @@ export namespace Prisma {
     pdfPublicId?: SortOrder
     userId?: SortOrder
     isScaled?: SortOrder
+    style?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5129,6 +5200,7 @@ export namespace Prisma {
     pdfPublicId?: SortOrder
     userId?: SortOrder
     isScaled?: SortOrder
+    style?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5149,31 +5221,13 @@ export namespace Prisma {
     pdfPublicId?: SortOrder
     userId?: SortOrder
     isScaled?: SortOrder
+    style?: SortOrder
     createdAt?: SortOrder
   }
 
   export type InvoiceSumOrderByAggregateInput = {
     totalHT?: SortOrder
     totalMaterial?: SortOrder
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -5265,6 +5319,11 @@ export namespace Prisma {
     set?: string
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+    unset?: boolean
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -5315,11 +5374,6 @@ export namespace Prisma {
     connectOrCreate?: InvoiceItemCreateOrConnectWithoutInvoiceInput | InvoiceItemCreateOrConnectWithoutInvoiceInput[]
     createMany?: InvoiceItemCreateManyInvoiceInputEnvelope
     connect?: InvoiceItemWhereUniqueInput | InvoiceItemWhereUniqueInput[]
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
-    unset?: boolean
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -5398,6 +5452,21 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+    isSet?: boolean
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -5437,51 +5506,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-    isSet?: boolean
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -5510,6 +5534,36 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
+  }
+
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -5552,6 +5606,7 @@ export namespace Prisma {
     pdfUrl?: string | null
     pdfPublicId?: string | null
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
     items?: InvoiceItemCreateNestedManyWithoutInvoiceInput
   }
@@ -5572,6 +5627,7 @@ export namespace Prisma {
     pdfUrl?: string | null
     pdfPublicId?: string | null
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
     items?: InvoiceItemUncheckedCreateNestedManyWithoutInvoiceInput
   }
@@ -5621,6 +5677,7 @@ export namespace Prisma {
     pdfPublicId?: StringNullableFilter<"Invoice"> | string | null
     userId?: StringFilter<"Invoice"> | string
     isScaled?: BoolFilter<"Invoice"> | boolean
+    style?: StringFilter<"Invoice"> | string
     createdAt?: DateTimeFilter<"Invoice"> | Date | string
   }
 
@@ -5629,6 +5686,7 @@ export namespace Prisma {
     email: string
     name: string
     password: string
+    avatar?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5638,6 +5696,7 @@ export namespace Prisma {
     email: string
     name: string
     password: string
+    avatar?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5689,6 +5748,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5697,6 +5757,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5746,6 +5807,7 @@ export namespace Prisma {
     pdfUrl?: string | null
     pdfPublicId?: string | null
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
     author: UserCreateNestedOneWithoutInvoicesInput
   }
@@ -5767,6 +5829,7 @@ export namespace Prisma {
     pdfPublicId?: string | null
     userId: string
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
   }
 
@@ -5801,6 +5864,7 @@ export namespace Prisma {
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     author?: UserUpdateOneRequiredWithoutInvoicesNestedInput
   }
@@ -5821,6 +5885,7 @@ export namespace Prisma {
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5840,6 +5905,7 @@ export namespace Prisma {
     pdfUrl?: string | null
     pdfPublicId?: string | null
     isScaled?: boolean
+    style?: string
     createdAt?: Date | string
   }
 
@@ -5858,6 +5924,7 @@ export namespace Prisma {
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: InvoiceItemUpdateManyWithoutInvoiceNestedInput
   }
@@ -5877,6 +5944,7 @@ export namespace Prisma {
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput
   }
@@ -5896,6 +5964,7 @@ export namespace Prisma {
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     pdfPublicId?: NullableStringFieldUpdateOperationsInput | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    style?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

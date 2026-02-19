@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: Request) {
   try {
@@ -23,25 +24,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    // Use raw query to ensure we get isScaled even if Prisma Client is out of sync
-    const rawResult = await (prisma as any).$runCommandRaw({
-      find: "Invoice",
-      filter: { userId: { $oid: userId } },
-      sort: { createdAt: -1 },
+    // Use standard Prisma Client findMany
+    const invoices = await prisma.invoice.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: "desc" },
     });
 
-    const invoices = rawResult.cursor.firstBatch;
-
-    // Convert MongoDB objects to match expected Prisma format if necessary
-    const formattedInvoices = (invoices as any[]).map((inv) => ({
-      ...inv,
-      id: inv._id.$oid,
-      createdAt: inv.createdAt.$date
-        ? new Date(inv.createdAt.$date)
-        : new Date(inv.createdAt),
-    }));
-
-    return NextResponse.json(formattedInvoices, { status: 200 });
+    return NextResponse.json(invoices, { status: 200 });
   } catch (error) {
     console.error("Error fetching invoices:", error);
     return NextResponse.json(
@@ -108,6 +97,7 @@ export async function POST(req: Request) {
       },
     });
 
+    revalidatePath("/dashboard");
     return NextResponse.json(createdInvoice, { status: 201 });
   } catch (error) {
     console.error("Error creating invoice:", error);

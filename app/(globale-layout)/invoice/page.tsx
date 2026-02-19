@@ -7,11 +7,11 @@ import { useInvoice } from "@/src/context/InvoiceContext";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
-import { Download, Loader2, FileText, CheckCircle, Save } from "lucide-react";
+import { Download, Loader2, FileText, Save } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function Invoice() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const divRef = useRef(null);
 
   const {
@@ -28,6 +28,8 @@ function Invoice() {
     managerName,
     itemsArr,
     setInvoiceData,
+    currency,
+    style,
   } = useInvoice();
 
   const searchParams = useSearchParams();
@@ -61,11 +63,10 @@ function Invoice() {
     if (invoiceId) {
       fetchInvoiceData(invoiceId);
     }
-  }, [invoiceId]);
+  }, [invoiceId, setInvoiceData]);
 
   const handleGeneratePDF = async () => {
     setLoading(true);
-    setError(null);
 
     try {
       const data = {
@@ -83,6 +84,8 @@ function Invoice() {
         totalMaterial: totalMaterial || 0,
         amountWords: amountWords || "",
         items: itemsArr || [],
+        currencyCode: currency,
+        style: style || "default",
       };
 
       // Validate required fields
@@ -143,7 +146,7 @@ function Invoice() {
             const text = await err.response.data.text();
             const json = JSON.parse(text);
             errorMessage = json.message || "Server error occurred.";
-          } catch (e) {
+          } catch {
             errorMessage = "Server error occurred (Blob).";
           }
         } else {
@@ -156,7 +159,6 @@ function Invoice() {
         errorMessage = (err as Error).message;
       }
 
-      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -165,7 +167,6 @@ function Invoice() {
 
   const handleSave = async () => {
     setLoading(true);
-    setError(null);
 
     try {
       const data = {
@@ -181,6 +182,8 @@ function Invoice() {
         totalMaterial: totalMaterial || 0,
         amountWords: amountWords || "",
         items: itemsArr || [],
+        currencyCode: currency,
+        style: style || "default",
       };
 
       // Validate required fields
@@ -232,7 +235,6 @@ function Invoice() {
       } else {
         errorMessage = (err as Error).message;
       }
-      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -240,93 +242,98 @@ function Invoice() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30 selection:text-blue-200 relative overflow-hidden flex flex-col items-center py-10">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center py-10 pb-32">
       {/* Background Gradients */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/10 blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/10 blur-[150px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[150px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[150px]" />
       </div>
 
       {/* Header / Title */}
-      <div className="relative z-10 w-full max-w-7xl px-6 mb-8 flex justify-between items-center animate-fade-in-up">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 shadow-lg">
-            <FileText className="w-6 h-6 text-blue-400" />
+      <div className="relative z-10 w-full max-w-7xl px-6 mb-12 flex justify-between items-center animate-fade-in-up">
+        <div className="flex items-center gap-6">
+          <div className="p-4 bg-card backdrop-blur-xl rounded-2xl border border-border/50 shadow-2xl">
+            <FileText className="w-8 h-8 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="h-1 w-8 bg-primary rounded-full" />
+              <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em]">
+                Éditeur de Flux
+              </span>
+            </div>
+            <h1 className="text-4xl font-bold text-foreground tracking-tighter font-sans">
               Invoice Editor
             </h1>
-            <p className="text-slate-500 text-sm">
-              Create and customize your proforma invoice
-            </p>
           </div>
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <div className="px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium flex items-center gap-2">
+          <div className="px-5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 shadow-lg shadow-primary/5">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            Auto-saving
+            Architecture Active
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="relative z-10 flex-1 w-full max-w-[1000px] flex justify-center animate-fade-in-up delay-100">
-        <div className="relative group">
-          {/* Glow effect behind canvas */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
+      <div className="relative z-10 flex-1 w-full max-w-[1024px] flex justify-center animate-fade-in-up delay-100 px-6">
+        <div className="relative w-full group">
+          {/* Advanced Glow effect behind canvas */}
+          <div className="absolute -inset-4 bg-linear-to-r from-primary/20 via-emerald-500/10 to-secondary/20 rounded-[2.5rem] blur-3xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
 
-          <div className="relative shadow-2xl shadow-black/50 rounded-lg overflow-hidden">
+          <div className="relative bg-card border border-border/50 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)] rounded-2xl overflow-hidden backdrop-blur-xl">
             <InvoiceCanvas divRef={divRef} />
           </div>
         </div>
       </div>
 
-      {/* Floating Action Bar */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4 animate-slide-in-right">
-        <Button
-          onClick={handleSave}
-          disabled={loading}
-          className={`
-            h-16 w-16 rounded-full shadow-2xl border border-white/10 flex items-center justify-center transition-all duration-300
-            ${
+      {/* Floating Action Bar - Refined */}
+      <div className="fixed bottom-10 right-10 z-50 flex flex-col gap-5 animate-slide-in-right">
+        <div className="group relative">
+          <div className="absolute -inset-2 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <Button
+            onClick={handleSave}
+            disabled={loading}
+            className={cn(
+              "h-20 w-20 rounded-2xl shadow-3xl border border-white/10 flex items-center justify-center transition-all duration-500 relative z-10",
               loading
-                ? "bg-slate-800 cursor-not-allowed"
-                : "bg-emerald-600 hover:bg-emerald-500 hover:scale-110 shadow-emerald-600/30"
-            }
-          `}
-          title="Save Invoice"
-        >
-          {loading ? (
-            <Loader2 className="h-8 w-8 text-white animate-spin" />
-          ) : (
-            <Save className="h-7 w-7 text-white" />
-          )}
-        </Button>
+                ? "bg-muted/30 cursor-not-allowed"
+                : "bg-primary text-primary-foreground hover:bg-primary/90 hover:-translate-y-2 hover:shadow-primary/40",
+            )}
+            title="Enregistrer la Facture"
+          >
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            ) : (
+              <Save className="h-8 w-8" />
+            )}
+          </Button>
+        </div>
 
-        <Button
-          onClick={handleGeneratePDF}
-          disabled={loading}
-          className={`
-            h-16 w-16 rounded-full shadow-2xl border border-white/10 flex items-center justify-center transition-all duration-300
-            ${
+        <div className="group relative">
+          <div className="absolute -inset-2 bg-secondary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <Button
+            onClick={handleGeneratePDF}
+            disabled={loading}
+            className={cn(
+              "h-20 w-20 rounded-2xl shadow-3xl border border-white/10 flex items-center justify-center transition-all duration-500 relative z-10",
               loading
-                ? "bg-slate-800 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-500 hover:scale-110 hover:rotate-3 shadow-blue-600/30"
-            }
-          `}
-          title="Download PDF"
-        >
-          {loading ? (
-            <Loader2 className="h-8 w-8 text-white animate-spin" />
-          ) : (
-            <Download className="h-7 w-7 text-white" />
-          )}
-        </Button>
+                ? "bg-muted/30 cursor-not-allowed"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/90 hover:-translate-y-2 hover:rotate-6 hover:shadow-secondary/40",
+            )}
+            title="Télécharger le PDF"
+          >
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            ) : (
+              <Download className="h-8 w-8" />
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

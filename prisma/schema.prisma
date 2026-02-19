@@ -13,6 +13,7 @@ model User {
   email     String   @unique
   name      String
   password  String
+  avatar    String?
   invoices  Invoice[]
 
   createdAt DateTime @default(now())
@@ -46,6 +47,7 @@ model Invoice {
   @@index([userId])
 
   isScaled      Boolean @default(false)
+  style         String  @default("default")
   createdAt     DateTime @default(now())
 
   items         InvoiceItem[]

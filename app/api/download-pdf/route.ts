@@ -1,11 +1,18 @@
-import puppeteer from "puppeteer";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { invoiceTemplate } from "@/lib/invoice-pdf";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { InvoiceItemProps } from "@/src/context/InvoiceContext";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+// We need to import 'path' and 'os' and 'fs' but we can use a random path in /tmp or similar
+const puppeteer = require("puppeteer");
+const os = require("os");
+const path = require("path");
+const fs = require("fs");
 
 export async function POST(req: Request) {
+  let browser;
+  let uniqueUserDataDir = "";
+
   try {
     const data = await req.json();
 
@@ -21,7 +28,6 @@ export async function POST(req: Request) {
     }
 
     console.log("DATA RECEIVED:", data);
-
     // Verify user authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -47,15 +53,36 @@ export async function POST(req: Request) {
       });
     }
 
-    const html = invoiceTemplate(data);
+    const html = invoiceTemplate({
+      ...data,
+      currencyCode: data.currencyCode,
+    });
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    // Generate a unique temporary directory for this browser instance to avoid locking issues
+    uniqueUserDataDir = path.join(
+      os.tmpdir(),
+      `puppeteer-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+    );
+
+    browser = await puppeteer.launch({
+      headless: "new", // Use new headless mode
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage", // Fix for low memory/container environments
+        "--disable-gpu",
+      ],
+      userDataDir: uniqueUserDataDir,
     });
 
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    // Set a generous timeout for loading content, especially if external fonts are slow
+    // Ensure we don't wait for networkidle0 which can timeout if fonts hang
+    await page.setContent(html, {
+      waitUntil: "load",
+      timeout: 60000,
+    });
 
     const pdf = await page.pdf({
       format: "A4",
@@ -64,79 +91,80 @@ export async function POST(req: Request) {
 
     console.log("✅ PDF Generated. Size:", pdf.length);
 
-    await browser.close();
+    // Return response immediately, handle persistence asynchronously if possible or safely
+    // However, Next.js serverless functions might kill the process if we don't await.
+    // We will await but wrap in try/catch specifically for persistence to not fail the PDF download.
 
-    // Use upsert to avoid Unique constraint failed on reference
-    const createdInvoice = await prisma.invoice.upsert({
-      where: { reference: data.reference },
-      update: {
-        city: data.city,
-        clientName: data.clientName,
-        clientAddress: data.clientAddress,
-        clientContact: data.clientContact,
-        clientPOBox: data.clientPOBox,
-        object: data.object,
-        managerName: data.managerName,
-        totalHT: data.totalHT,
-        totalMaterial: data.totalMaterial,
-        // For updates, we might want to refresh items, but to avoid complexity
-        // with nested updates in upsert, we'll focus on the main record here
-        // or handle items separately if needed.
-        // Given this is a proforma, updates are likely common.
-      },
-      create: {
-        reference: data.reference,
-        city: data.city,
-        clientName: data.clientName,
-        clientAddress: data.clientAddress,
-        clientContact: data.clientContact,
-        clientPOBox: data.clientPOBox,
-        object: data.object,
-        managerName: data.managerName,
-        totalHT: data.totalHT,
-        author: {
-          connect: { id: userId },
+    try {
+      // Use upsert
+      const createdInvoice = await prisma.invoice.upsert({
+        where: { reference: data.reference },
+        update: {
+          city: data.city,
+          clientName: data.clientName,
+          clientAddress: data.clientAddress,
+          clientContact: data.clientContact,
+          clientPOBox: data.clientPOBox,
+          object: data.object,
+          managerName: data.managerName,
+          totalHT: data.totalHT,
+          totalMaterial: data.totalMaterial,
+          style: data.style || "default",
         },
-        totalMaterial: data.totalMaterial,
-        items: {
-          create: data.items.map((item: InvoiceItemProps) => ({
-            designation: item.designation,
-            unit: item.unit,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice,
-          })),
+        create: {
+          reference: data.reference,
+          city: data.city,
+          clientName: data.clientName,
+          clientAddress: data.clientAddress,
+          clientContact: data.clientContact,
+          clientPOBox: data.clientPOBox,
+          object: data.object,
+          managerName: data.managerName,
+          totalHT: data.totalHT,
+          style: data.style || "default",
+          author: {
+            connect: { id: userId },
+          },
+          totalMaterial: data.totalMaterial,
+          items: {
+            create: data.items.map((item: InvoiceItemProps) => ({
+              designation: item.designation,
+              unit: item.unit,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              totalPrice: item.totalPrice,
+            })),
+          },
         },
-      },
-    });
-
-    // If it was an update, we should also update the items to reflect the current state
-    // (A bit simplified here as items change frequently)
-    if (createdInvoice) {
-      // Option: Delete and recreate items if it's an update
-      const existingItems = await prisma.invoiceItem.findMany({
-        where: { invoiceId: createdInvoice.id },
       });
 
       if (
-        existingItems.length > 0 &&
-        createdInvoice.createdAt.getTime() !== new Date().getTime()
+        createdInvoice &&
+        createdInvoice.createdAt.getTime() < Date.now() - 1000
       ) {
-        // rough check for update
-        await prisma.invoiceItem.deleteMany({
-          where: { invoiceId: createdInvoice.id },
-        });
-        await prisma.invoiceItem.createMany({
-          data: data.items.map((item: InvoiceItemProps) => ({
-            designation: item.designation,
-            unit: item.unit,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice,
-            invoiceId: createdInvoice.id,
-          })),
-        });
+        // It was an update (roughly).
+        try {
+          await prisma.$transaction([
+            prisma.invoiceItem.deleteMany({
+              where: { invoiceId: createdInvoice.id },
+            }),
+            prisma.invoiceItem.createMany({
+              data: data.items.map((item: InvoiceItemProps) => ({
+                designation: item.designation,
+                unit: item.unit,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.totalPrice,
+                invoiceId: createdInvoice.id,
+              })),
+            }),
+          ]);
+        } catch (dbErr) {
+          console.error("⚠️ Failed to update invoice items:", dbErr);
+        }
       }
+    } catch (persistErr) {
+      console.error("⚠️ Failed to persist invoice:", persistErr);
     }
 
     return new Response(Buffer.from(pdf), {
@@ -148,6 +176,19 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("❌ PDF GENERATION ERROR:", error);
 
+    // Ensure browser is closed if an error occurs
+    if (browser) {
+      await browser.close();
+    }
+    // Try to clean up temp dir
+    try {
+      if (uniqueUserDataDir && fs.existsSync(uniqueUserDataDir)) {
+        fs.rmSync(uniqueUserDataDir, { recursive: true, force: true });
+      }
+    } catch (cleanupErr) {
+      console.error("⚠️ Failed to cleanup temp dir:", cleanupErr);
+    }
+
     return new Response(
       JSON.stringify({
         message: "PDF generation failed.",
@@ -155,5 +196,17 @@ export async function POST(req: Request) {
       }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+    // Try to clean up temp dir
+    try {
+      if (uniqueUserDataDir && fs.existsSync(uniqueUserDataDir)) {
+        fs.rmSync(uniqueUserDataDir, { recursive: true, force: true });
+      }
+    } catch (cleanupErr) {
+      console.error("⚠️ Failed to cleanup temp dir:", cleanupErr);
+    }
   }
 }
