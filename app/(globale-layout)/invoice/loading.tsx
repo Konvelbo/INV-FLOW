@@ -43,9 +43,9 @@ export default function InvoiceLoading() {
       </div>
 
       {/* Floating Action Button Skeleton */}
-      <div className="fixed bottom-12 left-1/2 -translate-x-1/2">
+      {/*<div className="fixed bottom-12 left-1/2 -translate-x-1/2">
         <Skeleton className="size-20 rounded-[2.5rem] bg-primary/30 shadow-2xl border border-primary/20" />
-      </div>
+      </div>*/}
     </div>
   );
 }

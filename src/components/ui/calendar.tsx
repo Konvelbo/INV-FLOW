@@ -24,13 +24,14 @@ function Calendar({
       "size-9 p-0 text-muted-foreground/80 hover:text-foreground",
     ),
     caption_label: "text-sm font-medium",
-    day: "group size-9 p-0 flex items-center justify-center text-sm",
+    day: "group size-8 w-full h-11 p-0 flex items-center justify-center text-sm",
     day_button:
-      "relative flex size-full items-center justify-center text-center whitespace-nowrap rounded-md text-foreground group-[[data-selected]:not(.range-middle)]:[transition-property:color,background-color,border-radius,box-shadow] group-[[data-selected]:not(.range-middle)]:duration-150 group-data-disabled:pointer-events-none focus-visible:z-10 hover:not-in-data-selected:bg-accent group-data-selected:bg-primary hover:not-in-data-selected:text-foreground group-data-selected:text-primary-foreground group-data-disabled:text-foreground/30 group-data-disabled:line-through group-data-outside:text-foreground/30 group-data-selected:group-data-outside:text-primary-foreground outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] group-[.range-start:not(.range-end)]:rounded-e-none group-[.range-end:not(.range-start)]:rounded-s-none group-[.range-middle]:rounded-none group-[.range-middle]:group-data-selected:bg-accent group-[.range-middle]:group-data-selected:text-foreground",
+      "relative flex size-full w-20 items-center justify-center text-center whitespace-nowrap rounded-md text-foreground group-[[data-selected]:not(.range-middle)]:[transition-property:color,background-color,border-radius,box-shadow] group-[[data-selected]:not(.range-middle)]:duration-150 group-data-disabled:pointer-events-none focus-visible:z-10 hover:not-in-data-selected:bg-accent group-data-selected:bg-primary hover:not-in-data-selected:text-foreground group-data-selected:text-primary-foreground group-data-disabled:text-foreground/30 group-data-disabled:line-through group-data-outside:text-foreground/30 group-data-selected:group-data-outside:text-primary-foreground outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] group-[.range-start:not(.range-end)]:rounded-e-none group-[.range-end:not(.range-start)]:rounded-s-none group-[.range-middle]:rounded-none group-[.range-middle]:group-data-selected:bg-accent group-[.range-middle]:group-data-selected:text-foreground",
     hidden: "invisible",
     month: "w-full",
     month_caption:
       "relative mx-10 mb-1 flex h-9 items-center justify-center z-20",
+    month_grid: "w-full border-collapse space-y-1",
     months: "relative flex flex-col sm:flex-row gap-4",
     nav: "absolute top-0 flex w-full justify-between z-10",
     outside:
@@ -39,7 +40,8 @@ function Calendar({
     range_middle: "range-middle",
     range_start: "range-start",
     today:
-      "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/3 *:after:ml-[3px] *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary [&[data-selected]:not(.range-middle)>*]:after:bg-background [&[data-disabled]>*]:after:bg-foreground/30 *:after:transition-colors",
+      "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-[12px] *:after:ml-[3px] *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary [&[data-selected]:not(.range-middle)>*]:after:bg-background [&[data-disabled]>*]:after:bg-foreground/30 *:after:transition-colors",
+    week: "flex w-full mt-2",
     week_number: "size-9 p-0 text-xs font-medium text-muted-foreground/80",
     weekday: "size-9 p-0 text-xs font-medium text-muted-foreground/80",
   };

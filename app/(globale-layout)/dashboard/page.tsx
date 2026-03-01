@@ -11,9 +11,8 @@ import {
 import LineChart2 from "@/src/components/line-chart-2";
 import { RecentInvoices } from "@/src/components/dashboard/RecentInvoices";
 import { InvoiceCalendar } from "@/src/components/dashboard/InvoiceCalendar";
-import { useEffect, useState } from "react";
-import { useInvoice } from "@/src/context/InvoiceContext";
-import { useProductivity } from "@/hooks/useProductivity";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useInvoiceState } from "@/src/context/InvoiceContext";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
 
@@ -42,6 +41,8 @@ export default function Dashboard() {
     }>;
   } | null>(null);
 
+  const [todos, setTodos] = useState<any[]>([]);
+
   const fetchStats = async (token: string) => {
     try {
       const response = await fetch(`/api/dashboard/stats?t=${Date.now()}`, {
@@ -58,24 +59,6 @@ export default function Dashboard() {
       console.error("Failed to fetch stats", error);
     }
   };
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        setUser(userData);
-        fetchStats(userData.token);
-      } catch {
-        // Handle error silently
-      }
-    }
-  }, []);
-
-  const { currency } = useInvoice();
-
-  // Integrated Planning Data - Backend Sync
-  const [todos, setTodos] = useState([]);
 
   const fetchTodos = async (token: string) => {
     try {
@@ -94,20 +77,60 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (user?.token) {
-      fetchTodos(user.token);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+        // Consolidated fetching
+        fetchStats(userData.token);
+        fetchTodos(userData.token);
+      } catch {
+        // Handle error silently
+      }
     }
-  }, [user]);
+  }, []);
 
-  const { stats: productivityStats } = useProductivity(
-    todos as Array<{ status: string; startTime: string; endTime: string }>,
+  const productivityStats = useMemo(() => {
+    const total = todos.length;
+    const completedTasks = todos.filter((t: any) => t.status === "done");
+    const inProgress = todos.filter(
+      (t: any) => t.status === "in_progress",
+    ).length;
+
+    const productiveMs = completedTasks.reduce((acc: number, t: any) => {
+      if (t.startTime && t.endTime) {
+        return (
+          acc +
+          (new Date(t.endTime).getTime() - new Date(t.startTime).getTime())
+        );
+      }
+      return acc;
+    }, 0);
+
+    const productiveHours =
+      Math.round((productiveMs / (1000 * 60 * 60)) * 10) / 10;
+    const percentage =
+      total > 0 ? Math.round((completedTasks.length / total) * 100) : 0;
+
+    return {
+      total,
+      completed: completedTasks.length,
+      inProgress,
+      percentage,
+      productiveHours,
+    };
+  }, [todos]);
+
+  const { currency } = useInvoiceState();
+  const formatCurrency = useCallback(
+    (value: number) =>
+      new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: currency || "XOF",
+      }).format(value),
+    [currency],
   );
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: currency || "XOF",
-    }).format(value);
 
   if (!stats) {
     return null; // Let loading.tsx handle the skeleton
@@ -117,9 +140,9 @@ export default function Dashboard() {
     <div className="min-h-full bg-background text-foreground p-6 md:p-10 lg:p-12 relative pb-20">
       {/* Background Decorative Elements - Refined Mesh Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px]" />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[140px]" />
+        <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[60px] animate-pulse" />
+        <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[60px]" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[70px]" />
       </div>
 
       <div className="max-w-7xl mx-auto space-y-12 relative z-10">

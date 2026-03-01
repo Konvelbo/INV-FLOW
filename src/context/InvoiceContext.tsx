@@ -21,50 +21,58 @@ export interface InvoiceItemWithId extends InvoiceItemProps {
   id: string;
 }
 
-export interface InvoiceContextType {
-  reference: string;
+export interface InvoiceActionsType {
   setReference: (value: string) => void;
-  city: string;
   setCity: (value: string) => void;
-  clientName: string;
   setClientName: (value: string) => void;
-  clientAddress: string;
   setClientAddress: (value: string) => void;
-  clientContact: string;
   setClientContact: (value: string) => void;
-  clientPOBox: string;
   setClientPOBox: (value: string) => void;
-  object: string;
   setObject: (value: string) => void;
-  designation: string;
   setDesignation: (value: string) => void;
-  unit: string;
   setUnit: (value: string) => void;
-  quantity: number;
   setQuantity: (value: number) => void;
-  unitPrice: number;
   setUnitPrice: (value: number) => void;
-  totalPrice: number;
   setTotalPrice: (value: number) => void;
-  totalMaterial: number;
-  totalHT: number;
-  amountWords: string;
   setAmountWords: (value: string) => void;
-  managerName: string;
   setManagerName: (value: string) => void;
-  itemsArr: InvoiceItemWithId[];
   setItemsArr: (value: InvoiceItemWithId[]) => void;
-  currency: string;
   setCurrency: (value: string) => void;
-  style: string;
   setStyle: (value: string) => void;
   setInvoiceData: (
-    data: Partial<InvoiceContextType> & { items?: InvoiceItemWithId[] },
+    data: Partial<InvoiceStateContextType> & { items?: InvoiceItemWithId[] },
   ) => void;
   clearInvoiceData: () => void;
 }
 
-const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
+export interface InvoiceStateContextType {
+  reference: string;
+  city: string;
+  clientName: string;
+  clientAddress: string;
+  clientContact: string;
+  clientPOBox: string;
+  object: string;
+  designation: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  totalMaterial: number;
+  totalHT: number;
+  amountWords: string;
+  managerName: string;
+  itemsArr: InvoiceItemWithId[];
+  currency: string;
+  style: string;
+}
+
+const InvoiceStateContext = createContext<InvoiceStateContextType | undefined>(
+  undefined,
+);
+const InvoiceActionsContext = createContext<InvoiceActionsType | undefined>(
+  undefined,
+);
 
 export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [reference, setReference] = useState<string>("");
@@ -109,7 +117,9 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
 
   // setInvoiceData no longer needs to set totalHT or totalMaterial
   const setInvoiceData = useCallback(
-    (data: Partial<InvoiceContextType> & { items?: InvoiceItemWithId[] }) => {
+    (
+      data: Partial<InvoiceStateContextType> & { items?: InvoiceItemWithId[] },
+    ) => {
       setReference(data.reference || "");
       setCity(data.city || "");
       setClientName(data.clientName || "");
@@ -140,48 +150,27 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     setStyle("default");
   }, []);
 
-  const value = useMemo(
+  const stateValue = useMemo(
     () => ({
       reference,
-      setReference,
-      setInvoiceData,
-
       city,
-      setCity,
       clientName,
-      setClientName,
       clientAddress,
-      setClientAddress,
       clientContact,
-      setClientContact,
       clientPOBox,
-      setClientPOBox,
       object,
-      setObject,
       designation,
-      setDesignation,
       unit,
-      setUnit,
       quantity,
-      setQuantity,
       unitPrice,
-      setUnitPrice,
       totalPrice,
-      setTotalPrice,
       totalMaterial,
-      // Removed setTotalMaterial
       totalHT,
       amountWords,
-      setAmountWords,
       managerName,
-      setManagerName,
       itemsArr,
-      setItemsArr,
       currency,
-      setCurrency,
       style,
-      setStyle,
-      clearInvoiceData,
     }),
     [
       reference,
@@ -203,22 +192,64 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       itemsArr,
       currency,
       style,
+    ],
+  );
+
+  const actionsValue = useMemo(
+    () => ({
+      setReference,
+      setCity,
+      setClientName,
+      setClientAddress,
+      setClientContact,
+      setClientPOBox,
+      setObject,
+      setDesignation,
+      setUnit,
+      setQuantity,
+      setUnitPrice,
+      setTotalPrice,
+      setAmountWords,
+      setManagerName,
+      setItemsArr,
       setCurrency,
       setStyle,
       setInvoiceData,
       clearInvoiceData,
-    ],
+    }),
+    [setCurrency, setStyle, setInvoiceData, clearInvoiceData],
   );
 
   return (
-    <InvoiceContext.Provider value={value}>{children}</InvoiceContext.Provider>
+    <InvoiceStateContext.Provider value={stateValue}>
+      <InvoiceActionsContext.Provider value={actionsValue}>
+        {children}
+      </InvoiceActionsContext.Provider>
+    </InvoiceStateContext.Provider>
   );
 }
 
 export function useInvoice() {
-  const context = useContext(InvoiceContext);
-  if (!context) {
+  const state = useContext(InvoiceStateContext);
+  const actions = useContext(InvoiceActionsContext);
+  if (!state || !actions) {
     throw new Error("useInvoice must be used within InvoiceProvider");
+  }
+  return { ...state, ...actions };
+}
+
+export function useInvoiceState() {
+  const context = useContext(InvoiceStateContext);
+  if (context === undefined) {
+    throw new Error("useInvoiceState must be used within a InvoiceProvider");
+  }
+  return context;
+}
+
+export function useInvoiceActions() {
+  const context = useContext(InvoiceActionsContext);
+  if (context === undefined) {
+    throw new Error("useInvoiceActions must be used within a InvoiceProvider");
   }
   return context;
 }

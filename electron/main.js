@@ -17,6 +17,7 @@ function createWindow() {
       contextIsolation: true,
     },
   });
+  win.setMenuBarVisibility(false);
 
   if (app.isPackaged) {
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

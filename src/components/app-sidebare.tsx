@@ -20,14 +20,15 @@ import {
   useSidebar,
 } from "./ui/sidebar";
 import Link from "next/link";
-import { useInvoice } from "@/src/context/InvoiceContext";
+import { useInvoiceActions } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import React from "react";
 
-export function AppSidebar() {
-  const { clearInvoiceData } = useInvoice();
+export const AppSidebar = React.memo(function AppSidebar() {
+  const { clearInvoiceData } = useInvoiceActions();
   const { dict } = useLanguage();
   const pathname = usePathname();
   const { state } = useSidebar();
@@ -172,4 +173,4 @@ export function AppSidebar() {
       </SidebarContent>
     </Sidebar>
   );
-}
+});

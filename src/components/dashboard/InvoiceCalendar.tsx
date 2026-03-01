@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useInvoice } from "@/src/context/InvoiceContext";
 import Link from "next/link";
 
 interface Invoice {
@@ -27,6 +28,7 @@ interface Invoice {
 
 export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const { currency } = useInvoice();
 
   // Group invoices by date string (ignoring time)
   const invoicesByDate = invoices.reduce(
@@ -55,7 +57,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
   };
 
   return (
-    <Card className="bg-card border-border/50 backdrop-blur-xl h-150 flex flex-col shadow-2xl overflow-hidden group">
+    <Card className="bg-card border-border/50 backdrop-blur-xl h-180 flex flex-col shadow-2xl overflow-hidden group">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg font-bold flex items-center gap-3 text-foreground font-sans tracking-tight">
           <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
@@ -128,8 +130,8 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                         </div>
                       </div>
                       <div className="text-right flex flex-col items-end gap-1">
-                        <div className="text-sm font-bold text-primary font-mono">
-                          {inv.totalHT.toLocaleString()}
+                        <div className="text-sm font-bold text-primary font-mono whitespace-nowrap">
+                          {inv.totalHT.toLocaleString()} {currency}
                         </div>
                         <Badge
                           variant="outline"

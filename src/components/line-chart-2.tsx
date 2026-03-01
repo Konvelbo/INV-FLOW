@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/src/components/ui/badge";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import {
@@ -119,13 +119,11 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  const currentYearStr = useMemo(() => new Date().getFullYear(), []);
+  const prevYearStr = useMemo(() => currentYearStr - 1, [currentYearStr]);
 
-  const currentYearStr = new Date().getFullYear();
-  const prevYearStr = currentYearStr - 1;
-
-  // Filter data based on selected period
-  const getFilteredData = () => {
+  // Filter data based on selected period - MEMOIZED
+  const filteredData = useMemo(() => {
     const baseData =
       externalData && externalData.length > 0
         ? externalData.map((d) => ({
@@ -140,10 +138,10 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
       case "12m":
         return baseData;
       case "2y":
-        // Simulate 2 years data by duplicating and modifying the current year
+        // Simulate 2 years data
         const previousYear = baseData.map((item) => ({
           month: `${item.month} '${String(prevYearStr).slice(-2)}`,
-          value: Math.round(item.value * 0.85), // 15% lower for previous year
+          value: Math.round(item.value * 0.85),
         }));
         const currentYear = baseData.map((item) => ({
           month: `${item.month} '${String(currentYearStr).slice(-2)}`,
@@ -153,19 +151,27 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
       default:
         return baseData;
     }
-  };
+  }, [externalData, selectedPeriod, prevYearStr, currentYearStr]);
 
-  const filteredData = getFilteredData();
+  // Memoize aggregates
+  const stats = useMemo(() => {
+    const totalCash = filteredData.reduce((sum, item) => sum + item.value, 0);
+    const lastValue = filteredData[filteredData.length - 1]?.value || 0;
+    const previousValue = filteredData[filteredData.length - 2]?.value || 0;
+    const percentageChange =
+      previousValue > 0
+        ? ((lastValue - previousValue) / previousValue) * 100
+        : 0;
+
+    return { totalCash, percentageChange };
+  }, [filteredData]);
+
+  if (!mounted) return null;
 
   // Get current period configuration
   const currentPeriod = PERIODS[selectedPeriod];
 
-  // Calculate total and percentage based on filtered data
-  const totalCash = filteredData.reduce((sum, item) => sum + item.value, 0);
-  const lastValue = filteredData[filteredData.length - 1]?.value || 0;
-  const previousValue = filteredData[filteredData.length - 2]?.value || 0;
-  const percentageChange =
-    previousValue > 0 ? ((lastValue - previousValue) / previousValue) * 100 : 0;
+  const { totalCash, percentageChange } = stats;
 
   return (
     <div className="flex items-center justify-center ">
