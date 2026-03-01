@@ -34,10 +34,11 @@ export default function Dashboard() {
     invoiceCount: number;
     recentInvoices: Array<{
       id: string;
-      customerName: string;
-      totalAmount: number;
-      status: string;
-      date: string;
+      reference: string;
+      clientName: string;
+      totalHT: number;
+      isScaled: boolean;
+      createdAt: string;
     }>;
   } | null>(null);
 

@@ -4,12 +4,10 @@ import { RiCalendarEventLine } from "@remixicon/react";
 import { addDays, format, isToday } from "date-fns";
 import { useMemo } from "react";
 
-import {
-  AgendaDaysToShow,
-  type CalendarEvent,
-  EventItem,
-  getAgendaEventsForDay,
-} from "@/src/components/event-calendar/event-calendar";
+import { AgendaDaysToShow } from "./constants";
+import { type CalendarEvent } from "./types";
+import { EventItem } from "./event-item";
+import { getAgendaEventsForDay } from "./utils";
 
 interface AgendaViewProps {
   currentDate: Date;

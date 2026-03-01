@@ -116,6 +116,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                       )}
                     >
                       <Link
+                        id="sidebare-link"
                         onClick={() => {
                           if (item.id === "Invoice") {
                             clearInvoiceData();

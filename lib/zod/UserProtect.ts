@@ -44,3 +44,9 @@ export const LoginSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof LoginSchema>;
+
+export const AvatarSchema = z.object({
+  image: z.string().min(1, "L'image est requise"),
+});
+
+export type AvatarFormData = z.infer<typeof AvatarSchema>;

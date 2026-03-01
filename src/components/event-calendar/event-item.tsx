@@ -5,11 +5,8 @@ import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { differenceInMinutes, format, getMinutes, isPast } from "date-fns";
 import { useMemo } from "react";
 
-import {
-  type CalendarEvent,
-  getBorderRadiusClasses,
-  getEventColorClasses,
-} from "@/src/components/event-calendar/event-calendar";
+import { type CalendarEvent } from "./types";
+import { getBorderRadiusClasses, getEventColorClasses } from "./utils";
 import { cn } from "@/lib/utils";
 
 // Using date-fns format with custom formatting:

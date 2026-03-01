@@ -1,18 +1,23 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import cloudinary from "@/lib/cloudinary";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { AvatarSchema } from "@/lib/zod/UserProtect";
+import { JwtPayload } from "jsonwebtoken";
+import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { image } = await req.json();
+    const body = await req.json();
+    const result = AvatarSchema.safeParse(body);
 
-    if (!image) {
+    if (!result.success) {
       return NextResponse.json(
-        { message: "Image is required" },
+        { message: result.error.issues[0].message },
         { status: 400 },
       );
     }
+
+    const { image } = result.data;
 
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

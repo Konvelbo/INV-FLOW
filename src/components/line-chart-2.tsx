@@ -32,20 +32,7 @@ import {
 } from "recharts";
 
 // Cashflow data for 12 months
-const cashflowData = [
-  // { month: "JAN", value: 2100 },
-  // { month: "FEB", value: 2300 },
-  // { month: "MAR", value: 1900 },
-  // { month: "APR", value: 4800 },
-  // { month: "MAY", value: 5200 },
-  // { month: "JUN", value: 8900 },
-  // { month: "JUL", value: 6200 },
-  // { month: "AUG", value: 7100 },
-  // { month: "SEP", value: 9400 },
-  // { month: "OCT", value: 10200 },
-  // { month: "NOV", value: 11100 },
-  // { month: "DEC", value: 11800 },
-];
+const cashflowData: Array<{ month: string; value: number }> = [];
 
 // Use custom or Tailwind standard colors: https://tailwindcss.com/docs/colors
 const chartConfig = {

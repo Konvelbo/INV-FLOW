@@ -21,7 +21,7 @@ export default function SignUp({
 }: {
   choice: string;
   setSignUpChoise: (value: string) => void;
-  onVisibility: (value: boolean | Dispatch<SetStateAction<boolean>>) => void;
+  onVisibility: (value: boolean) => void;
 }) {
   const router = useRouter();
   const isLogin = choice === "Connexion";
@@ -33,7 +33,7 @@ export default function SignUp({
     formState: { errors, isSubmitting },
     reset,
   } = useForm<AuthFormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       name: "",
       email: "",

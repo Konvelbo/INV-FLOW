@@ -133,7 +133,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
     // Play notification sound
     try {
-      const audio = new Audio("/dragon-studio-new-notification-3-398649.mp3");
+      const audio = new Audio("/Notification.mp3");
       audio.play().catch(() => {
         // Autoplay might be blocked until user interacts with the page
       });

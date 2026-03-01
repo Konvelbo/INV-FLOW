@@ -70,10 +70,6 @@ const calculateTotals = (items: InvoiceItem[]) => {
   return { totalht, totalmaterial };
 };
 
-interface PdfDictionary {
-  [key: string]: string;
-}
-
 // ==========================================
 // DEFAULT STYLE
 // ==========================================

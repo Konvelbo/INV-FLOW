@@ -21,21 +21,20 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { AgendaView } from "./agenda-view";
+import { CalendarDndProvider } from "./calendar-dnd-context";
+import { type CalendarEvent, type CalendarView } from "./types";
+import { DayView } from "./day-view";
+import { EventDialog } from "./event-dialog";
+import { MonthView } from "./month-view";
+import { WeekView } from "./week-view";
+import { addHoursToDate } from "./utils";
 import {
   AgendaDaysToShow,
-  AgendaView,
-  addHoursToDate,
-  CalendarDndProvider,
-  type CalendarEvent,
-  type CalendarView,
-  DayView,
-  EventDialog,
   EventGap,
   EventHeight,
-  MonthView,
   WeekCellsHeight,
-  WeekView,
-} from "@/src/components/event-calendar/event-calendar";
+} from "./constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/src/components/ui/button";
 import {

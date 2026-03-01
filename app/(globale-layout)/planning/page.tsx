@@ -346,7 +346,7 @@ export default function PlanningPage() {
         <div className="bg-card rounded-3xl border shadow-xl flex flex-col shadow-primary/5">
           <CalendarGrid
             currentMonth={currentMonth}
-            todos={todos as Task[]}
+            todos={todos}
             conflicts={conflicts}
             onDateClick={(date) => openAddModal(date)}
             onTodoClick={(todo) => {

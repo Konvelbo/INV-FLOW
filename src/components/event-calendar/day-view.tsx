@@ -14,16 +14,13 @@ import {
 import type React from "react";
 import { useMemo } from "react";
 
-import {
-  type CalendarEvent,
-  DraggableEvent,
-  DroppableCell,
-  EventItem,
-  isMultiDayEvent,
-  useCurrentTimeIndicator,
-  WeekCellsHeight,
-} from "@/src/components/event-calendar/event-calendar";
-import { EndHour, StartHour } from "@/src/components/event-calendar/constants";
+import { type CalendarEvent } from "./types";
+import { DraggableEvent } from "./draggable-event";
+import { DroppableCell } from "./droppable-cell";
+import { EventItem } from "./event-item";
+import { isMultiDayEvent } from "./utils";
+import { useCurrentTimeIndicator } from "./hooks/use-current-time-indicator";
+import { EndHour, StartHour, WeekCellsHeight } from "./constants";
 import { cn } from "@/lib/utils";
 
 interface DayViewProps {

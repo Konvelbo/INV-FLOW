@@ -88,7 +88,7 @@ export function TaskDialog({
     });
 
     if (!result.success) {
-      const firstError = result.error.errors[0].message;
+      const firstError = result.error.issues[0].message;
       toast.error(firstError);
       return;
     }
