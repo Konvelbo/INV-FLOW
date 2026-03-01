@@ -1,4 +1,10 @@
-const { app, BrowserWindow, session } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  session,
+  ipcMain,
+  Notification,
+} = require("electron");
 const path = require("path");
 
 function createWindow() {
@@ -34,6 +40,25 @@ function createWindow() {
     // En production : on charge le fichier HTML exporté
     win.loadFile(path.join(__dirname, "../out/index.html"));
   }
+
+  // Handle notifications from renderer
+  ipcMain.on("notify", (event, { title, options }) => {
+    const notification = new Notification({
+      title: title,
+      body: options.body,
+      icon: options.icon,
+      silent: false,
+    });
+
+    notification.show();
+
+    notification.on("click", () => {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    });
+  });
+
+  return win;
 }
 
 app.whenReady().then(createWindow);

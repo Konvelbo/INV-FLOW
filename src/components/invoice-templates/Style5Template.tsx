@@ -1,9 +1,10 @@
-import { Ref, useState } from "react";
+import { ReactNode, Ref, useState } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
-import { Plus, Trash2, Command, Zap } from "lucide-react";
-import { Button } from "../ui/button";
+import { Plus, Trash2, Zap } from "lucide-react";
 import OptimizedInput from "../OptimizedInput";
+import { Button } from "../ui/button";
 
 export default function Style5Template({
   divRef,
@@ -16,7 +17,6 @@ export default function Style5Template({
     reference,
     setReference,
     city,
-    setCity,
     clientName,
     setClientName,
     clientAddress,
@@ -33,6 +33,7 @@ export default function Style5Template({
     setItemsArr,
     currency,
   } = useInvoice();
+  const { dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -117,6 +118,23 @@ export default function Style5Template({
     setItemsArr(filteredItems);
   };
 
+  const curr: () => ReactNode = () => {
+    switch (currency) {
+      case "XOF":
+        return (
+          <span className="text-[10px] text-zinc-400 shrink-0">F CFA</span>
+        );
+      case "EUR":
+        return <span className="text-[10px] text-zinc-400 shrink-0">€</span>;
+      case "USD":
+        return <span className="text-[10px] text-zinc-400 shrink-0">$US</span>;
+      case "GBP":
+        return <span className="text-[10px] text-zinc-400 shrink-0">£GB</span>;
+      default:
+        return "";
+    }
+  };
+
   return (
     <div
       className="canvas-wrapper overflow-hidden"
@@ -142,8 +160,14 @@ export default function Style5Template({
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm font-medium text-zinc-500">
-              <div className="px-3 py-1 bg-zinc-100 rounded-md">
-                REF: <span className="text-zinc-900 ml-1">{reference}</span>
+              <div className="px-3 py-1 bg-zinc-100 rounded-md flex items-center gap-1">
+                {dict.reference}:
+                <OptimizedInput
+                  value={reference}
+                  onValueChange={setReference}
+                  placeholder="REF-XXXX"
+                  className="bg-transparent text-zinc-900 w-24 p-0 h-auto border-none focus:ring-0 text-sm font-bold"
+                />
               </div>
               <div>
                 {new Date().toLocaleDateString("en-US", {
@@ -168,12 +192,12 @@ export default function Style5Template({
                   <br />
                   San Francisco, CA
                   <br />
-                  <city className="inline-block mt-1">{city}</city>
+                  <span className="inline-block mt-1">{city}</span>
                 </div>
               </div>
               <div className="w-1/2">
                 <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3 block">
-                  Billed To
+                  {dict.billedTo}
                 </label>
                 <OptimizedInput
                   value={clientName}
@@ -205,13 +229,13 @@ export default function Style5Template({
             </div>
             <div className="mt-8 pt-6 border-t border-zinc-200">
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">
-                Project Description
+                {dict.projectDetails}
               </label>
               <OptimizedInput
                 value={object}
                 onValueChange={setObject}
                 placeholder="Description of the project or services..."
-                className="bg-transparent text-zinc-700 w-full font-medium"
+                className="bg-transparent text-zinc-700 w-full font-medium wrap-break-word whitespace-pre-wrap"
               />
             </div>
           </div>
@@ -219,10 +243,11 @@ export default function Style5Template({
           {/* List */}
           <div className="flex-1">
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-zinc-900 text-white rounded-lg text-xs font-semibold uppercase tracking-wider mb-4">
-              <div className="col-span-6">Description</div>
-              <div className="col-span-2 text-center">Unit</div>
-              <div className="col-span-2 text-center">Qty</div>
-              <div className="col-span-2 text-right">Price</div>
+              <div className="col-span-4">{dict.description}</div>
+              <div className="col-span-1 text-center">{dict.unit}</div>
+              <div className="col-span-1 text-center">{dict.qty}</div>
+              <div className="col-span-3 text-right">{dict.unitPrice}</div>
+              <div className="col-span-3 text-right">{dict.total}</div>
             </div>
             <div className="space-y-2">
               {itemsArr.map((item) => (
@@ -230,29 +255,29 @@ export default function Style5Template({
                   key={item.id}
                   className="grid grid-cols-12 gap-4 px-4 py-3 bg-white border border-zinc-100 rounded-lg items-center hover:border-zinc-300 transition-colors group relative"
                 >
-                  <div className="col-span-6 font-medium text-zinc-800">
+                  <div className="col-span-4 font-medium text-zinc-800">
                     <OptimizedInput
                       value={item.designation}
                       onValueChange={(val) =>
                         updateItem(item.id, "designation", val)
                       }
-                      className="w-full bg-transparent"
+                      className="w-full bg-transparent wrap-break-word whitespace-pre-wrap"
                     />
                     <button
                       onClick={() => deleteItem(item.id)}
-                      className="absolute -left-3 top-1/2 -translate-y-1/2 text-red-400 opacity-0 group-hover:opacity-100 p-1"
+                      className="absolute -left-3 top-1/2 -translate-y-1/2 text-white p-1 cursor-pointer z-50 bg-red-500 rounded-md shadow-sm hover:bg-red-600 transition-colors"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <OptimizedInput
                       value={item.unit}
                       onValueChange={(val) => updateItem(item.id, "unit", val)}
                       className="w-full text-center text-zinc-500 bg-transparent text-sm"
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <OptimizedInput
                       value={item.quantity}
                       onValueChange={(val) =>
@@ -261,26 +286,36 @@ export default function Style5Template({
                       className="w-full text-center font-mono bg-zinc-50 rounded text-zinc-700 text-sm py-1"
                     />
                   </div>
-                  <div className="col-span-2 text-right font-mono font-medium text-zinc-900">
+                  <div className="col-span-3 flex items-center justify-end gap-1 font-mono font-medium text-zinc-900 overflow-hidden">
                     <OptimizedInput
                       value={item.unitPrice}
                       onValueChange={(val) =>
                         updateItem(item.id, "unitPrice", Number(val))
                       }
-                      className="w-full text-right bg-transparent text-sm"
+                      className="w-full text-right bg-zinc-50 rounded text-sm py-1 px-1"
                     />
+                    {curr()}
+                  </div>
+                  <div className="col-span-3 flex items-center justify-end gap-1 font-mono font-bold text-zinc-900 overflow-hidden">
+                    <span className="text-sm">
+                      {formatCurrency(item.totalPrice).replace(
+                        /\s?[A-Z$€£]{1,3}$/,
+                        "",
+                      )}
+                    </span>
+                    {curr()}
                   </div>
                 </div>
               ))}
               {/* Add New */}
               <div className="grid grid-cols-12 gap-4 px-4 py-3 border border-dashed border-zinc-200 rounded-lg items-center hover:bg-zinc-50 transition-colors cursor-text">
-                <div className="col-span-6 flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded bg-zinc-100 flex items-center justify-center text-zinc-400"
+                <div className="col-span-4 flex items-center gap-2">
+                  <Button
+                    className="w-6 h-6 rounded bg-zinc-100 flex items-center justify-center text-zinc-400 cursor-pointer"
                     onClick={addItem}
                   >
                     <Plus className="w-3 h-3" />
-                  </div>
+                  </Button>
                   <OptimizedInput
                     value={newItem.designation}
                     onValueChange={(val) =>
@@ -290,7 +325,7 @@ export default function Style5Template({
                     className="w-full bg-transparent text-sm text-zinc-500"
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1">
                   <OptimizedInput
                     value={newItem.unit}
                     onValueChange={(val) =>
@@ -299,7 +334,7 @@ export default function Style5Template({
                     className="w-full text-center bg-transparent text-sm text-zinc-400"
                   />
                 </div>
-                <div className="col-span-2 text-center">
+                <div className="col-span-1 text-center">
                   <OptimizedInput
                     value={newItem.quantity}
                     onValueChange={(val) =>
@@ -312,7 +347,7 @@ export default function Style5Template({
                     className="w-full text-center bg-transparent text-sm text-zinc-400"
                   />
                 </div>
-                <div className="col-span-2 text-right">
+                <div className="col-span-3 flex items-center justify-end gap-1 font-mono font-medium text-zinc-900 overflow-hidden">
                   <OptimizedInput
                     value={newItem.unitPrice}
                     onValueChange={(val) =>
@@ -322,8 +357,18 @@ export default function Style5Template({
                         totalPrice: newItem.quantity * Number(val),
                       })
                     }
-                    className="w-full text-right bg-transparent text-sm text-zinc-400"
+                    className="w-full text-right bg-zinc-50 rounded text-sm py-1 px-1"
                   />
+                  {curr()}
+                </div>
+                <div className="col-span-3 flex items-center justify-end gap-1 font-mono font-medium text-zinc-400 overflow-hidden">
+                  <span className="text-sm">
+                    {formatCurrency(newItem.totalPrice).replace(
+                      /\s?[A-Z$€£]{1,3}$/,
+                      "",
+                    )}
+                  </span>
+                  {curr()}
                 </div>
               </div>
             </div>
@@ -334,7 +379,7 @@ export default function Style5Template({
             <div className="flex justify-between items-end">
               <div className="w-1/2">
                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-                  Authorized Signature
+                  {dict.authorizedSignature}
                 </div>
                 <OptimizedInput
                   value={managerName}
@@ -343,27 +388,24 @@ export default function Style5Template({
                   className="bg-transparent text-xl font-handwriting text-zinc-800 w-full border-b border-zinc-200 pb-2"
                 />
               </div>
-              <div className="w-1/3">
+              <div className="w-2/3">
                 <div className="flex justify-between mb-3 text-sm text-zinc-500">
-                  <span>Subtotal</span>
+                  <span>{dict.subtotal}</span>
                   <span className="font-mono">
                     {formatCurrency(totalGeneral)}
                   </span>
                 </div>
                 <div className="flex justify-between mb-3 text-sm text-zinc-500">
-                  <span>Tax</span>
-                  <span className="font-mono"> - </span>
+                  <span>{dict.totalMaterial}</span>
+                  <span>{totalMaterialGeneral}</span>
                 </div>
-                <div className="flex justify-between pt-4 border-t border-zinc-200 text-lg font-bold text-zinc-900">
-                  <span>Total Due</span>
-                  <span className="font-mono">
+                <div className="flex justify-between pt-4 border-t border-zinc-200 text-lg font-bold text-zinc-900 gap-4">
+                  <span className="whitespace-nowrap">{dict.totalDue}</span>
+                  <span className="font-mono break-all text-right">
                     {formatCurrency(totalGeneral)}
                   </span>
                 </div>
               </div>
-            </div>
-            <div className="mt-12 text-center text-xs text-zinc-400">
-              <p>Powered by SaaS.bill • Terms & Conditions Apply</p>
             </div>
           </div>
         </div>

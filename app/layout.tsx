@@ -3,8 +3,10 @@ import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { InvoiceProvider } from "@/src/context/InvoiceContext";
+import { LanguageProvider } from "@/src/context/LanguageContext";
 import { Toaster } from "react-hot-toast";
 import CanvasProvider from "@/src/context/canvasContext";
+import { NotificationProvider } from "@/src/context/NotificationContext";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -37,9 +39,13 @@ export default function RootLayout({
         )}
       >
         <Toaster />
-        <CanvasProvider>
-          <InvoiceProvider>{children}</InvoiceProvider>
-        </CanvasProvider>
+        <LanguageProvider>
+          <NotificationProvider>
+            <CanvasProvider>
+              <InvoiceProvider>{children}</InvoiceProvider>
+            </CanvasProvider>
+          </NotificationProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -2,13 +2,12 @@
 
 import {
   LogOutIcon,
-  UserPenIcon,
   ChevronRight,
   User,
-  Check,
   Camera,
   LayoutDashboard,
   Settings,
+  Languages,
 } from "lucide-react";
 
 import {
@@ -36,12 +35,15 @@ import { useEffect, useState, useRef } from "react";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 export default function UserMenu() {
   const router = useRouter();
   const { currency, setCurrency } = useInvoice();
+  const { language, setLanguage, dict } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<{
@@ -182,10 +184,10 @@ export default function UserMenu() {
             </div>
             <div className="space-y-1">
               <p className="font-sans font-bold text-foreground text-base tracking-tight truncate max-w-[240px]">
-                {user?.name || "Invité"}
+                {user?.name || dict.guest}
               </p>
               <p className="font-sans text-xs text-muted-foreground truncate max-w-[240px]">
-                {user?.email || "Connectez-vous pour voir les détails"}
+                {user?.email || dict.loginToSeeDetails}
               </p>
             </div>
           </DropdownMenuLabel>
@@ -213,7 +215,7 @@ export default function UserMenu() {
                     {currency}
                   </span>
                   <span className="font-sans font-medium text-sm text-foreground">
-                    Devise de Facture
+                    {dict.currency}
                   </span>
                 </div>
                 <ChevronRight size={14} className="text-muted-foreground" />
@@ -224,7 +226,7 @@ export default function UserMenu() {
                     value={currency}
                     onValueChange={(val) => {
                       setCurrency(val);
-                      toast.success(`Devise changée en ${val}`);
+                      toast.success(`${dict.currencyChanged} ${val}`);
                     }}
                   >
                     {currencies.map((curr) => (
@@ -242,6 +244,48 @@ export default function UserMenu() {
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
             </DropdownMenuSub>
+
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer w-full">
+                <div className="flex items-center gap-3 flex-1 text-muted-foreground group-hover:text-primary transition-colors">
+                  <Languages size={18} />
+                  <span className="font-sans font-medium text-sm text-foreground">
+                    {dict.language}
+                  </span>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground" />
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="p-2 rounded-xl bg-card/95 backdrop-blur-xl border-border/50 shadow-xl min-w-[180px]">
+                  <DropdownMenuRadioGroup
+                    value={language}
+                    onValueChange={(val) => {
+                      setLanguage(val as any);
+                      toast.success(
+                        `${dict.languageChanged} ${val === "fr" ? "Français" : "English"}`,
+                      );
+                    }}
+                  >
+                    <DropdownMenuRadioItem
+                      value="fr"
+                      className="flex items-center justify-between gap-4 p-3 rounded-lg cursor-pointer hover:bg-primary/10"
+                    >
+                      <span className="font-sans text-sm font-medium">
+                        Français
+                      </span>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="en"
+                      className="flex items-center justify-between gap-4 p-3 rounded-lg cursor-pointer hover:bg-primary/10"
+                    >
+                      <span className="font-sans text-sm font-medium">
+                        English
+                      </span>
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator className="bg-border/50" />
@@ -254,7 +298,7 @@ export default function UserMenu() {
               size={18}
               className="opacity-70 group-hover:opacity-100"
             />
-            <span className="font-sans font-bold text-sm">Se Déconnecter</span>
+            <span className="font-sans font-bold text-sm">{dict.logout}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,5 +1,6 @@
 import { Ref, useState } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
 import { ArrowDown, CookingPot, Plus, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -33,6 +34,7 @@ export default function Style1Template({
     setItemsArr,
     currency,
   } = useInvoice();
+  const { dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -137,10 +139,12 @@ export default function Style1Template({
         {/* Header Section */}
         <div className="bg-slate-900 text-white p-12 flex justify-between items-start">
           <div className="w-1/2">
-            <h1 className="text-4xl font-light tracking-wide mb-2">INVOICE</h1>
+            <h1 className="text-4xl font-light tracking-wide mb-2">
+              {dict.invoice}
+            </h1>
             <div className="flex items-center gap-2 text-slate-400">
               <span className="text-sm uppercase tracking-wider">
-                Reference:
+                {dict.reference}:
               </span>
               <OptimizedInput
                 value={reference}
@@ -169,7 +173,7 @@ export default function Style1Template({
         <div className="p-12 pb-6 grid grid-cols-2 gap-12">
           <div>
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-              Billed To
+              {dict.billedTo}
             </h3>
             <div className="space-y-2">
               <OptimizedInput
@@ -202,7 +206,7 @@ export default function Style1Template({
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-              Project Details
+              {dict.projectDetails}
             </h3>
             <div className="bg-slate-50 p-6 rounded-lg">
               <label className="block text-xs font-semibold text-slate-500 mb-1">
@@ -224,19 +228,19 @@ export default function Style1Template({
             <thead>
               <tr className="border-b-2 border-slate-100">
                 <th className="py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider w-1/2">
-                  Description
+                  {dict.description}
                 </th>
                 <th className="py-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Unit
+                  {dict.unit}
                 </th>
                 <th className="py-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Qty
+                  {dict.qty}
                 </th>
                 <th className="py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Price
+                  {dict.unitPrice}
                 </th>
                 <th className="py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Total
+                  {dict.totalPrice}
                 </th>
               </tr>
             </thead>
@@ -257,7 +261,7 @@ export default function Style1Template({
                     />
                     <button
                       onClick={() => deleteItem(item.id)}
-                      className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-all p-1"
+                      className="absolute -left-8 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700 transition-all p-1 cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -360,33 +364,36 @@ export default function Style1Template({
           </table>
         </div>
 
-        {/* Footer / Totals Section */}
-        <div className="px-12 mt-4 flex justify-end">
-          <div className="w-1/3 space-y-3">
-            <div className="flex justify-between text-slate-500 text-sm">
-              <span>Total Material</span>
-              <span>{totalMaterialGeneral}</span>
+        {/* Footer / Totals & Signature Section */}
+        <div className="px-12 mt-12 flex justify-between items-end gap-12">
+          <div className="flex-1">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+              {dict.authorizedSignature}
+            </p>
+            <OptimizedInput
+              value={managerName}
+              onValueChange={setManagerName}
+              placeholder="Manager Name"
+              className="font-script text-2xl text-slate-800 w-full max-w-[250px] border-b border-slate-200 pb-2"
+            />
+          </div>
+
+          <div className="min-w-[300px] max-w-[50%] space-y-3">
+            <div className="flex justify-between items-center gap-4 text-slate-500 text-sm tabular-nums">
+              <span className="whitespace-nowrap">{dict.totalMaterial}</span>
+              <span className="text-right break-all font-medium">
+                {totalMaterialGeneral}
+              </span>
             </div>
-            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-              <span className="font-bold text-lg text-slate-900">TOTAL</span>
-              <span className="font-bold text-2xl text-slate-900">
+            <div className="flex justify-between items-center gap-4 pt-4 border-t border-slate-200 tabular-nums">
+              <span className="font-bold text-lg text-slate-900 whitespace-nowrap">
+                {dict.total}
+              </span>
+              <span className="font-bold text-2xl text-slate-900 text-right break-all leading-tight">
                 {formatCurrency(totalGeneral)}
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Signature */}
-        <div className="absolute bottom-12 right-12 text-right">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">
-            Authorized Signature
-          </p>
-          <OptimizedInput
-            value={managerName}
-            onValueChange={setManagerName}
-            placeholder="Manager Name"
-            className="text-right font-script text-2xl text-slate-800"
-          />
         </div>
       </div>
     </div>

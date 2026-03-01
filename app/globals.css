@@ -742,3 +742,88 @@ td {
   background-color: var(--secondary);
   color: var(--secondary-foreground);
 }
+
+#Invoice_Choice_btn {
+  transition: all 0.3s ease;
+}
+
+#Invoice_Choice_btn:hover {
+  scale: 1.1;
+}
+
+/* =========================
+     RADIAL FAB SYSTEM
+  ========================== */
+.fab-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab-item {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fab-item-left {
+  right: calc(100% + 10px);
+  transform: translateX(20px) scale(0.8);
+}
+.fab-item-left:hover {
+  scale: 1.1;
+  filter: drop-shadow(-20px 5px 5px rgba(225, 225, 225, 0.3));
+}
+
+.fab-item-up {
+  bottom: calc(100% + 10px);
+  transform: translateY(20px) scale(0.8);
+}
+.fab-item-up:hover {
+  scale: 1.1;
+  filter: drop-shadow(4px -5px 5px rgba(225, 225, 225, 0.3));
+}
+
+.fab-container:hover .fab-item {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0) scale(1);
+}
+
+.fab-container:hover .fab-item-up {
+  transition-delay: 50ms;
+}
+
+.fab-main-btn {
+  position: relative;
+  z-index: 10;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.fab-container:hover .fab-main-btn {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+}
+
+.fab-glow {
+  position: absolute;
+  inset: -1rem;
+  background: var(--primary);
+  border-radius: 9999px;
+  filter: blur(24px);
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  z-index: 0;
+}
+
+.fab-container:hover .fab-glow {
+  opacity: 0.2;
+}

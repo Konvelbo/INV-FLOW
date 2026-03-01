@@ -27,7 +27,6 @@ export async function POST(req: Request) {
       throw new Error("Invalid input data. Required fields are missing.");
     }
 
-    console.log("DATA RECEIVED:", data);
     // Verify user authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -56,6 +55,7 @@ export async function POST(req: Request) {
     const html = invoiceTemplate({
       ...data,
       currencyCode: data.currencyCode,
+      language: data.language,
     });
 
     // Generate a unique temporary directory for this browser instance to avoid locking issues
@@ -89,8 +89,6 @@ export async function POST(req: Request) {
       printBackground: true,
     });
 
-    console.log("✅ PDF Generated. Size:", pdf.length);
-
     // Return response immediately, handle persistence asynchronously if possible or safely
     // However, Next.js serverless functions might kill the process if we don't await.
     // We will await but wrap in try/catch specifically for persistence to not fail the PDF download.
@@ -121,11 +119,11 @@ export async function POST(req: Request) {
           object: data.object,
           managerName: data.managerName,
           totalHT: data.totalHT,
+          totalMaterial: data.totalMaterial,
           style: data.style || "default",
           author: {
             connect: { id: userId },
           },
-          totalMaterial: data.totalMaterial,
           items: {
             create: data.items.map((item: InvoiceItemProps) => ({
               designation: item.designation,
@@ -159,12 +157,12 @@ export async function POST(req: Request) {
               })),
             }),
           ]);
-        } catch (dbErr) {
-          console.error("⚠️ Failed to update invoice items:", dbErr);
+        } catch {
+          // Silenced
         }
       }
-    } catch (persistErr) {
-      console.error("⚠️ Failed to persist invoice:", persistErr);
+    } catch {
+      // Silenced
     }
 
     return new Response(Buffer.from(pdf), {
@@ -174,8 +172,6 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error("❌ PDF GENERATION ERROR:", error);
-
     // Ensure browser is closed if an error occurs
     if (browser) {
       await browser.close();

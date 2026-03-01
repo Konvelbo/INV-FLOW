@@ -10,8 +10,6 @@ async function generatePdf(data) {
       throw new Error("Invalid input data. Required fields are missing.");
     }
 
-    console.log("DATA RECEIVED:", data);
-
     // const html = invoiceTemplate(data);
     // For now we need to make sure invoiceTemplate is available here.
     // If it's a pure function in a .ts/.js file in lib, you can require it.
@@ -36,7 +34,6 @@ async function generatePdf(data) {
 
     return pdf;
   } catch (error) {
-    console.error("❌ PDF GENERATION ERROR:", error);
     throw error;
   }
 }

@@ -1,5 +1,6 @@
 import { Ref, useState } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -33,6 +34,7 @@ export default function Style4Template({
     setItemsArr,
     currency,
   } = useInvoice();
+  const { dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -138,10 +140,10 @@ export default function Style4Template({
           <div className="flex justify-between items-start mb-16">
             <div>
               <h1 className="text-4xl font-serif text-[#1e293b] tracking-tight mb-2">
-                INVOICE
+                {dict.invoice}
               </h1>
               <div className="text-sm text-slate-500 uppercase tracking-widest font-medium">
-                #{" "}
+                {dict.reference}:{" "}
                 <OptimizedInput
                   value={reference}
                   onValueChange={setReference}
@@ -176,7 +178,7 @@ export default function Style4Template({
           <div className="grid grid-cols-2 gap-12 mb-16">
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-200 pb-2">
-                Issued To
+                {dict.billedTo}
               </h3>
               <OptimizedInput
                 value={clientName}
@@ -205,7 +207,7 @@ export default function Style4Template({
             </div>
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-200 pb-2">
-                Project Details
+                {dict.projectDetails}
               </h3>
               <OptimizedInput
                 value={object}
@@ -222,19 +224,19 @@ export default function Style4Template({
               <thead>
                 <tr className="border-b-2 border-[#1e293b]">
                   <th className="py-3 text-left text-xs font-bold text-[#1e293b] uppercase tracking-wider">
-                    Item Description
+                    {dict.description}
                   </th>
                   <th className="py-3 text-center text-xs font-bold text-[#1e293b] uppercase tracking-wider w-24">
-                    Unit
+                    {dict.unit}
                   </th>
                   <th className="py-3 text-center text-xs font-bold text-[#1e293b] uppercase tracking-wider w-24">
-                    Qty
+                    {dict.qty}
                   </th>
                   <th className="py-3 text-right text-xs font-bold text-[#1e293b] uppercase tracking-wider w-32">
-                    Price
+                    {dict.price}
                   </th>
                   <th className="py-3 text-right text-xs font-bold text-[#1e293b] uppercase tracking-wider w-32">
-                    Amount
+                    {dict.total}
                   </th>
                 </tr>
               </thead>
@@ -251,7 +253,7 @@ export default function Style4Template({
                       />
                       <button
                         onClick={() => deleteItem(item.id)}
-                        className="absolute -left-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -left-6 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700 transition-opacity cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -353,18 +355,26 @@ export default function Style4Template({
 
           {/* Footer Totals */}
           <div className="flex justify-end mb-20">
-            <div className="w-1/3">
-              <div className="flex justify-between py-2 border-b border-slate-100 text-sm text-slate-500">
-                <span>Subtotal</span>
-                <span>{formatCurrency(totalGeneral)}</span>
+            <div className="min-w-[320px] max-w-full space-y-1 tabular-nums">
+              <div className="flex justify-between items-center gap-6 py-2 border-b border-slate-100 text-sm text-slate-500">
+                <span className="whitespace-nowrap">{dict.subtotal}</span>
+                <span className="text-right break-all">
+                  {formatCurrency(totalGeneral)}
+                </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-100 text-sm text-slate-500">
-                <span>Tax (0%)</span>
-                <span>{formatCurrency(0)}</span>
+              <div className="flex justify-between items-center gap-6 py-2 border-b border-slate-100 text-sm text-slate-500">
+                <span className="whitespace-nowrap">{dict.tax}</span>
+                <span className="text-right break-all">
+                  {formatCurrency(0)}
+                </span>
               </div>
-              <div className="flex justify-between py-4 border-b-2 border-[#1e293b] text-xl font-serif text-[#1e293b]">
-                <span>Total</span>
-                <span>{formatCurrency(totalGeneral)}</span>
+              <div className="flex justify-between items-center gap-8 py-4 border-b-2 border-[#1e293b] text-xl font-serif text-[#1e293b]">
+                <span className="font-bold uppercase tracking-wider whitespace-nowrap">
+                  {dict.total}
+                </span>
+                <span className="font-bold break-all text-right">
+                  {formatCurrency(totalGeneral)}
+                </span>
               </div>
             </div>
           </div>
@@ -372,8 +382,8 @@ export default function Style4Template({
           {/* Signature */}
           <div className="flex justify-between items-end">
             <div className="text-xs text-slate-400">
-              <p>Thank you for your business.</p>
-              <p>Payment is due within 30 days.</p>
+              {/*<p>Thank you for your business.</p>
+              <p>Payment is due within 30 days.</p>*/}
             </div>
             <div className="text-center w-64">
               <OptimizedInput
@@ -383,7 +393,7 @@ export default function Style4Template({
                 className="text-center font-cursive text-2xl text-[#1e293b] w-full mb-2"
               />
               <div className="border-t border-slate-300 pt-2 text-xs uppercase tracking-widest text-slate-400">
-                Authorized Signature
+                {dict.authorizedSignature}
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { Ref, useState } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -33,6 +34,7 @@ export default function Style2Template({
     setItemsArr,
     currency,
   } = useInvoice();
+  const { dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -142,7 +144,7 @@ export default function Style2Template({
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="text-5xl font-bold text-blue-900 mb-2">
-                  INVOICE
+                  {dict.invoice}
                 </h1>
                 <div className="flex items-center gap-2 text-gray-500">
                   <span>#</span>
@@ -177,7 +179,7 @@ export default function Style2Template({
         <div className="p-10 flex gap-12">
           <div className="w-1/2">
             <h3 className="text-blue-900 font-bold uppercase text-xs tracking-widest mb-4 border-b-2 border-blue-900 pb-2 inline-block">
-              Invoice To
+              {dict.billedTo}
             </h3>
             <OptimizedInput
               value={clientName}
@@ -208,7 +210,7 @@ export default function Style2Template({
           </div>
           <div className="w-1/2">
             <h3 className="text-blue-900 font-bold uppercase text-xs tracking-widest mb-4 border-b-2 border-blue-900 pb-2 inline-block">
-              Description
+              {dict.projectDetails}
             </h3>
             <OptimizedInput
               value={object}
@@ -225,19 +227,19 @@ export default function Style2Template({
             <thead className="bg-blue-900 text-white">
               <tr>
                 <th className="py-3 px-4 text-left font-semibold text-sm">
-                  Description
+                  {dict.description}
                 </th>
                 <th className="py-3 px-4 text-center font-semibold text-sm">
-                  Unit
+                  {dict.unit}
                 </th>
                 <th className="py-3 px-4 text-center font-semibold text-sm">
-                  Qty
+                  {dict.qty}
                 </th>
                 <th className="py-3 px-4 text-right font-semibold text-sm">
-                  Price
+                  {dict.price}
                 </th>
                 <th className="py-3 px-4 text-right font-semibold text-sm">
-                  Total
+                  {dict.total}
                 </th>
               </tr>
             </thead>
@@ -253,11 +255,11 @@ export default function Style2Template({
                       onValueChange={(val) =>
                         updateItem(item.id, "designation", val)
                       }
-                      className="w-full font-medium text-gray-800 bg-transparent"
+                      className="w-full font-medium text-gray-800 bg-transparent wrap-break-word whitespace-pre-wrap min-h-[1.5rem]"
                     />
                     <button
                       onClick={() => deleteItem(item.id)}
-                      className="absolute -left-6 top-3 text-red-500 hover:text-red-700"
+                      className="absolute -left-6 top-3 text-red-500 hover:text-red-700 cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -287,57 +289,113 @@ export default function Style2Template({
                       className="text-right w-24 ml-auto bg-transparent"
                     />
                   </td>
-                  <td className="py-3 px-4 text-right font-bold text-gray-800">
+                  <td className="py-3 px-4 text-right font-bold text-gray-800 tabular-nums">
                     {formatCurrency(item.totalPrice)}
                   </td>
                 </tr>
               ))}
+              {/* Add New Item Input Row */}
+              <tr className="bg-blue-50/50 outline outline-blue-200 outline-dashed">
+                <td className="py-3 px-4">
+                  <OptimizedInput
+                    value={newItem.designation}
+                    onValueChange={(val) =>
+                      setNewItem({ ...newItem, designation: val })
+                    }
+                    placeholder="New Item Name..."
+                    className="w-full bg-transparent font-medium"
+                  />
+                </td>
+                <td className="py-3 px-4 text-center">
+                  <OptimizedInput
+                    value={newItem.unit}
+                    onValueChange={(val) =>
+                      setNewItem({ ...newItem, unit: val })
+                    }
+                    className="text-center w-12 mx-auto bg-transparent"
+                  />
+                </td>
+                <td className="py-3 px-4 text-center">
+                  <OptimizedInput
+                    value={newItem.quantity}
+                    onValueChange={(val) =>
+                      setNewItem({
+                        ...newItem,
+                        quantity: Number(val),
+                        totalPrice: Number(val) * newItem.unitPrice,
+                      })
+                    }
+                    className="text-center w-12 mx-auto bg-transparent font-mono"
+                  />
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <OptimizedInput
+                    value={newItem.unitPrice}
+                    onValueChange={(val) =>
+                      setNewItem({
+                        ...newItem,
+                        unitPrice: Number(val),
+                        totalPrice: newItem.quantity * Number(val),
+                      })
+                    }
+                    className="text-right w-24 ml-auto bg-transparent font-mono"
+                  />
+                </td>
+                <td className="py-3 px-4 text-right font-bold text-blue-700">
+                  {formatCurrency(newItem.quantity * newItem.unitPrice)}
+                </td>
+              </tr>
             </tbody>
           </table>
 
-          <div className="mt-2 flex items-center justify-center border-t border-dashed border-gray-300 py-2">
+          <div className="mt-4 flex items-center justify-center">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={addItem}
-              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+              className="bg-blue-900 hover:bg-blue-800 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
-              <Plus className="w-4 h-4 mr-2" /> Add Item
+              <Plus className="w-4 h-4 mr-2" /> Confirm Add Item
             </Button>
           </div>
         </div>
 
-        {/* Totals */}
-        <div className="px-10 mt-8 flex justify-end">
-          <div className="w-1/2 bg-gray-100 p-6 rounded-lg">
-            <div className="flex justify-between mb-2 text-gray-600">
-              <span className="font-semibold">Items Count</span>
-              <span>{itemsArr.length}</span>
+        {/* Totals & Signature Section */}
+        <div className="px-10 mt-12 flex justify-between items-end gap-12 pb-16">
+          <div className="flex-1">
+            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">
+              {dict.authorizedSignature}
             </div>
-            <div className="flex justify-between mb-2 text-gray-600">
-              <span className="font-semibold">Total Material</span>
-              <span>{totalMaterialGeneral}</span>
+            <OptimizedInput
+              value={managerName}
+              onValueChange={setManagerName}
+              placeholder="Manager Name"
+              className="text-lg font-serif italic text-gray-800 border-b border-gray-200 pb-1 w-full max-w-[250px]"
+            />
+          </div>
+
+          <div className="min-w-[400px] max-w-[50%] bg-blue-900 text-white p-8 rounded-2xl shadow-xl space-y-4 tabular-nums">
+            <div className="flex justify-between items-center gap-4 text-blue-100/70">
+              <span className="text-sm font-medium uppercase tracking-wider">
+                {dict.totalMaterial}
+              </span>
+              <span className="text-xl font-bold break-all">
+                {totalMaterialGeneral}
+              </span>
             </div>
-            <div className="flex justify-between mt-4 pt-4 border-t border-gray-300">
-              <span className="font-bold text-2xl text-blue-900">Total</span>
-              <span className="font-bold text-2xl text-blue-900">
+            <div className="pt-4 border-t border-blue-800 flex justify-between items-center gap-6">
+              <span className="text-lg font-bold uppercase tracking-widest text-blue-200">
+                {dict.total}
+              </span>
+              <span className="text-2xl font-black text-white break-all text-right leading-tight">
                 {formatCurrency(totalGeneral)}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="absolute bottom-0 left-0 w-full bg-blue-900 h-12"></div>
-        <div className="absolute bottom-16 left-10">
-          <div className="text-xs text-gray-400">Authorized Signatory</div>
-          <OptimizedInput
-            value={managerName}
-            onValueChange={setManagerName}
-            placeholder="Manager Name"
-            className="text-lg font-serif italic text-gray-800 mt-2 w-64"
-          />
-        </div>
+        {/* Decorative Bottom Line (Non-absolute) */}
+        <div className="w-full bg-blue-900 h-4 mt-auto"></div>
       </div>
     </div>
   );

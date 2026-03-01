@@ -2,6 +2,7 @@ import InfoMenu from "@/src/components/navbar-components/info-menu";
 import Logo from "@/src/components/navbar-components/logo";
 import NotificationMenu from "@/src/components/navbar-components/notification-menu";
 import UserMenu from "@/src/components/navbar-components/user-menu";
+import { NotificationObserver } from "@/src/components/navbar-components/NotificationObserver";
 
 export default function Navbare() {
   return (
@@ -21,13 +22,14 @@ export default function Navbare() {
           <div className="flex items-center gap-2">
             {/* Info menu */}
             {/*<InfoMenu />*/}
-            {/* Notification */}
-            {/*<NotificationMenu />*/}
+            {/*Notification */}
+            <NotificationMenu />
           </div>
           {/*User menu */}
           <UserMenu />
         </div>
       </div>
+      <NotificationObserver />
     </header>
   );
 }

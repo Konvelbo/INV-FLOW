@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import Link from "next/link";
 
 interface Invoice {
   id: string;
@@ -108,7 +109,8 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                   className="space-y-3"
                 >
                   {selectedInvoices.map((inv) => (
-                    <div
+                    <Link
+                      href="/history"
                       key={inv.id}
                       className="p-4 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-primary/40 hover:bg-slate-900/60 transition-all duration-300 flex items-center justify-between group/item cursor-pointer"
                     >
@@ -141,7 +143,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                           {inv.isScaled ? "Scalé" : "Attente"}
                         </Badge>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </motion.div>
               ) : (

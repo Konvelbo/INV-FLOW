@@ -105,16 +105,17 @@ export default function InvoiceCanvas({
   return (
     <div className="flex flex-col items-center w-full gap-8">
       {/* Visual Style Selector */}
-      <div className="w-full max-w-[1024px] px-6">
+      <div className="w-full max-w-[700px] px-3">
         <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 flex gap-6 overflow-x-auto justify-center">
           {templates.map((t) => (
             <button
+              id="Invoice_Choice_btn"
               key={t.id}
               onClick={() => setStyle(t.id)}
               className={cn(
-                "relative w-28 h-36 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-end overflow-hidden group shadow-sm hover:shadow-md",
+                "relative w-20 h-28 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-end overflow-hidden group shadow-sm hover:shadow-md cursor-pointer",
                 style === t.id
-                  ? "border-primary ring-2 ring-primary/30 scale-105 shadow-xl"
+                  ? "border-primary rounded-xl! ring-2 ring-primary/30 scale-105 shadow-xl"
                   : "border-transparent hover:border-gray-200 hover:scale-105 opacity-80 hover:opacity-100",
               )}
             >

@@ -97,6 +97,24 @@ export async function POST(req: Request) {
       },
     });
 
+    // Send Push Notification
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId },
+      });
+
+      const { sendPushNotification } = await import("@/lib/push");
+      for (const sub of subscriptions) {
+        sendPushNotification(sub, {
+          title: "Nouvelle Facture",
+          body: `Facture créée : ${data.reference} pour ${data.clientName}`,
+          url: "/dashboard",
+        });
+      }
+    } catch (pushErr) {
+      // Silently fail push if something goes wrong
+    }
+
     revalidatePath("/dashboard");
     return NextResponse.json(createdInvoice, { status: 201 });
   } catch (error) {

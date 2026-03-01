@@ -107,6 +107,24 @@ export async function DELETE(
       },
     });
 
+    // Send Push Notification
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId },
+      });
+
+      const { sendPushNotification } = await import("@/lib/push");
+      for (const sub of subscriptions) {
+        sendPushNotification(sub, {
+          title: "Facture Supprimée",
+          body: `Facture supprimée : ${invoice.reference}`,
+          url: "/dashboard",
+        });
+      }
+    } catch (pushErr) {
+      // Silently fail push
+    }
+
     revalidatePath("/dashboard");
     return NextResponse.json(
       { message: "Invoice deleted successfully" },
@@ -194,6 +212,25 @@ export async function PUT(
     });
 
     revalidatePath("/dashboard");
+
+    // Send Push Notification
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId },
+      });
+
+      const { sendPushNotification } = await import("@/lib/push");
+      for (const sub of subscriptions) {
+        sendPushNotification(sub, {
+          title: "Facture Modifiée",
+          body: `Facture mise à jour : ${updatedInvoice.reference}`,
+          url: "/dashboard",
+        });
+      }
+    } catch (pushErr) {
+      // Silently fail push
+    }
+
     return NextResponse.json(updatedInvoice, { status: 200 });
   } catch (error) {
     console.error("Error updating invoice:", error);
@@ -235,6 +272,24 @@ export async function PATCH(
         isScaled: isScaled,
       },
     });
+
+    // Send Push Notification
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId },
+      });
+
+      const { sendPushNotification } = await import("@/lib/push");
+      for (const sub of subscriptions) {
+        sendPushNotification(sub, {
+          title: "Statut Facture Mis à Jour",
+          body: `La facture ${updated.reference} est désormais ${isScaled ? "Scalée" : "Standard"}`,
+          url: "/dashboard",
+        });
+      }
+    } catch (pushErr) {
+      // Silently fail push
+    }
 
     revalidatePath("/dashboard");
     return NextResponse.json(updated, { status: 200 });

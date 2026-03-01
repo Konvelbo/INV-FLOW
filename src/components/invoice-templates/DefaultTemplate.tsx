@@ -1,5 +1,6 @@
 import { Ref, useState } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
 import { ArrowDown, CookingPot } from "lucide-react";
 import { Button } from "../ui/button";
@@ -33,6 +34,7 @@ export default function DefaultTemplate({
     setItemsArr,
     currency,
   } = useInvoice();
+  const { language, dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -43,7 +45,7 @@ export default function DefaultTemplate({
   });
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: currency || "XOF",
       minimumFractionDigits: 2,
@@ -142,12 +144,12 @@ export default function DefaultTemplate({
         <div className="flex justify-between items-center relative w-full mb-2">
           <div>
             <h1 className="mb-3">
-              PROFORMA :{" "}
+              {dict.proforma} :{" "}
               {
                 <OptimizedInput
                   value={reference}
                   onValueChange={setReference}
-                  placeholder="Reference"
+                  placeholder={dict.reference}
                   className="w-60 pl-2"
                 />
               }
@@ -158,48 +160,51 @@ export default function DefaultTemplate({
               value={city}
               dir="rtl"
               onValueChange={setCity}
-              placeholder="City"
+              placeholder={dict.city}
               className="w-60 pr-2"
             />
-            le {new Date().toLocaleDateString("fr-FR")}
+            {dict.date}{" "}
+            {new Date().toLocaleDateString(
+              language === "fr" ? "fr-FR" : "en-US",
+            )}
           </h2>
         </div>
         <div className="border h-35 w-full min-h-70">
           <div className="flex justify-between">
             <div className="border-b h-15 p-5 w-full">
-              <h2>Adress de facture</h2>
+              <h2>{dict.billingAddress}</h2>
             </div>
             <div className="border-b border-l h-15 p-5 w-full">
-              <h2>Adress de livraison:</h2>
+              <h2>{dict.deliveryAddress}:</h2>
             </div>
           </div>
           <div className="px-5 mt-2 space-y-2">
             <div className="flex flex-col gap-2"></div>
             <div className="flex justify-between items-center gap-2 text-sm w-full">
               <div>
-                Address:
+                {dict.address}:
                 <OptimizedInput
                   value={clientAddress}
                   onValueChange={setClientAddress}
-                  placeholder="Address (Optional)"
+                  placeholder={`${dict.address} (Optional)`}
                   className="w-full pl-2 border-b"
                 />
               </div>
               <div>
-                Contact:
+                {dict.contact}:
                 <OptimizedInput
                   value={clientContact}
                   onValueChange={setClientContact}
-                  placeholder="Contact (Optional)"
+                  placeholder={`${dict.contact} (Optional)`}
                   className="w-full pl-2 border-b"
                 />
               </div>
               <div>
-                PO Box:
+                {dict.poBox}:
                 <OptimizedInput
                   value={clientPOBox}
                   onValueChange={setClientPOBox}
-                  placeholder="BP (Optional)"
+                  placeholder={`${dict.poBox} (Optional)`}
                   className="w-full pl-2 border-b"
                 />
               </div>
@@ -214,11 +219,11 @@ export default function DefaultTemplate({
               />
             </h1>
             <h1 className="w-1/2">
-              Object:
+              {dict.object}:
               <OptimizedInput
                 value={object}
                 onValueChange={setObject}
-                placeholder="Object"
+                placeholder={dict.object}
                 className="w-full pl-2 border-b"
               />
             </h1>
@@ -227,11 +232,11 @@ export default function DefaultTemplate({
         <table>
           <thead>
             <tr>
-              <th>DESIGNATION</th>
-              <th>UNIT</th>
-              <th>QUANTITY</th>
-              <th>U.PRICE</th>
-              <th>TOTALPRICE</th>
+              <th>{dict.designation}</th>
+              <th>{dict.unit}</th>
+              <th>{dict.quantity}</th>
+              <th>{dict.unitPrice}</th>
+              <th>{dict.totalPrice}</th>
             </tr>
           </thead>
           <tbody className="relative">
@@ -243,7 +248,7 @@ export default function DefaultTemplate({
                     onValueChange={(val) =>
                       updateItem(item.id, "designation", val)
                     }
-                    placeholder="Designation"
+                    placeholder={dict.designation}
                     className="border-none outline-none w-full bg-transparent"
                   />
                   <CookingPot
@@ -256,7 +261,7 @@ export default function DefaultTemplate({
                   <OptimizedInput
                     value={item.unit}
                     onValueChange={(val) => updateItem(item.id, "unit", val)}
-                    placeholder="Unit"
+                    placeholder={dict.unit}
                     // className="border-none outline-none w-15"
                   />
                 </td>
@@ -267,7 +272,7 @@ export default function DefaultTemplate({
                     onValueChange={(val) =>
                       updateItem(item.id, "quantity", Number(val))
                     }
-                    placeholder="Quantity"
+                    placeholder={dict.quantity}
                     // className="border-none outline-none w-20"
                   />
                 </td>
@@ -277,7 +282,7 @@ export default function DefaultTemplate({
                     onValueChange={(val) =>
                       updateItem(item.id, "unitPrice", Number(val))
                     }
-                    placeholder="Unit price"
+                    placeholder={dict.unitPrice}
                     // className="border-none outline-none w-40"
                   />
                 </td>
@@ -293,7 +298,7 @@ export default function DefaultTemplate({
                   onValueChange={(val) =>
                     setNewItem({ ...newItem, designation: val })
                   }
-                  placeholder="Designation"
+                  placeholder={dict.designation}
                   className="border-none outline-none w-full"
                 />
                 <ArrowDown
@@ -305,7 +310,7 @@ export default function DefaultTemplate({
                 <OptimizedInput
                   value={newItem.unit}
                   onValueChange={(val) => setNewItem({ ...newItem, unit: val })}
-                  placeholder="Unit"
+                  placeholder={dict.unit}
                   // className="border-none outline-none w-15"
                 />
               </td>
@@ -320,7 +325,7 @@ export default function DefaultTemplate({
                       totalPrice: q * Number(prev.unitPrice),
                     }));
                   }}
-                  placeholder="Quantity"
+                  placeholder={dict.quantity}
                   // className="border-none outline-none w-20"
                 />
               </td>
@@ -335,7 +340,7 @@ export default function DefaultTemplate({
                       totalPrice: up * Number(prev.quantity),
                     }));
                   }}
-                  placeholder="Unit price"
+                  placeholder={dict.unitPrice}
                   // className="border-none outline-none w-40"
                 />
               </td>
@@ -349,23 +354,23 @@ export default function DefaultTemplate({
         <table className="totals">
           <tbody>
             <tr>
-              <td>TOTAL MATERIEL</td>
+              <td>{dict.totalMaterial}</td>
               <td>{totalmaterial}</td>
             </tr>
             <tr>
-              <td>TOTAL HT</td>
+              <td>{dict.totalHT}</td>
               <td>{formatCurrency(totalGeneral)}</td>
             </tr>
           </tbody>
         </table>
 
         <div className="signature">
-          <h2 className="font-semibold mb-3">Manager name</h2>
+          <h2 className="font-semibold mb-3">{dict.managerName}</h2>
           <OptimizedInput
             value={managerName}
             onValueChange={setManagerName}
             dir="rtl"
-            placeholder="Name"
+            placeholder={dict.managerName}
             className="border-none outline-none w-90"
           />
         </div>
@@ -374,7 +379,7 @@ export default function DefaultTemplate({
           onClick={clearAllItems}
           className="mt-4 p-5 bg-red-500 text-white"
         >
-          Clear All Items
+          {dict.clearAll}
         </Button>
       </div>
     </div>

@@ -8,14 +8,16 @@ export default function InvoiceLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="w-full h-full overflow-y-hidden">
+    <div className="flex flex-col h-screen overflow-hidden">
       <Navbare />
-      <SidebarProvider>
-        <AppSidebar />
-        <main id="scroll_main" className="w-full h-screen overflow-y-scroll">
-          {children}
-        </main>
-      </SidebarProvider>
-    </main>
+      <div className="flex-1 flex overflow-hidden">
+        <SidebarProvider>
+          <AppSidebar />
+          <main id="scroll_main" className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </SidebarProvider>
+      </div>
+    </div>
   );
 }

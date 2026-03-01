@@ -306,7 +306,7 @@ export default function Home() {
 
                 <div className="relative p-1 rounded-[3rem] bg-linear-to-tr from-primary/50 via-white/10 to-secondary/50 shadow-2xl overflow-hidden">
                   <div className="rounded-[2.8rem] bg-slate-950 p-10 aspect-square flex items-center justify-center">
-                    <div className="relative w-full h-full flex flex-col items-center justify-center space-y-8">
+                    <div className="relative w-full h-200 flex flex-col items-center justify-center space-y-8">
                       <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
                         <Brain className="w-16 h-16 text-primary drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
                       </div>

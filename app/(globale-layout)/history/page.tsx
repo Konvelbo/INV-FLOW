@@ -6,12 +6,10 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 // import { format } from "date-fns";
 import {
-  Loader2,
   Trash2,
   Eye,
   Search,
   X,
-  FileText,
   Calendar,
   DollarSign,
   Package,
@@ -25,9 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { itemsProps } from "@/src/components/InvoiceCanvas";
-import { InvoiceProps } from "@/lib/invoice-pdf";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/src/context/NotificationContext";
 
 export default function HistoryPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -37,7 +34,8 @@ export default function HistoryPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const router = useRouter();
-  const { currency } = useInvoice();
+  const { currency, clearInvoiceData } = useInvoice();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     fetchInvoices();
@@ -77,7 +75,14 @@ export default function HistoryPage() {
       });
 
       setInvoices(invoices.filter((inv) => inv.id !== id));
-    } catch (err) {
+
+      addNotification({
+        user: "Système",
+        action: "a supprimé",
+        target: `la facture ${id}`,
+        type: "invoice",
+      });
+    } catch {
       alert("Failed to delete invoice");
     }
   };
@@ -100,17 +105,20 @@ export default function HistoryPage() {
           inv.id === id ? { ...inv, isScaled: !currentStatus } : inv,
         ),
       );
-    } catch (err) {
+
+      addNotification({
+        user: "Système",
+        action: "a mis à jour le statut de",
+        target: `la facture ${id}`,
+        type: "invoice",
+      });
+    } catch {
       alert("Failed to update status");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-background text-foreground">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-      </div>
-    );
+  if (loading && invoices.length === 0) {
+    return null; // Let loading.tsx handle the skeleton
   }
 
   return (
