@@ -257,25 +257,45 @@ export default function PlanningPage() {
   }, [editingTodo?.startTime, findFreeSlot]);
 
   return (
-    <div className="flex flex-col min-h-full bg-background font-sans">
+    <div className="flex flex-col min-h-full min-w-full pt-5 md:pt-5 lg:pt-16 bg-background font-sans">
+      <div className="flex flex-row justify-between items-center px-10 mb-15">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-linear-to-tr from-primary to-emerald-600 rounded-xl shadow-lg shadow-primary/20">
+            <TrendingUp className="size-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">
+              {t("productivityDashboard")}
+            </h1>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest -mt-1">
+              {t("workPlanningAnalysis")}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => openAddModal()}
+            className="rounded-full bg-linear-to-r from-primary to-emerald-600 shadow-lg shadow-primary/25 hover:opacity-90 px-6"
+          >
+            <Plus className="size-4 mr-2" />
+            {t("addTask")}
+          </Button>
+          <div className="h-8 w-px bg-border mx-2" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            onClick={() => setIsSearchModalOpen(true)}
+          >
+            <Search className="size-5" />
+          </Button>
+        </div>
+      </div>
       {/* Top Header Controls */}
       <header className="flex items-center justify-between px-6 py-3 border-b bg-card/50 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-linear-to-tr from-primary to-emerald-600 rounded-xl shadow-lg shadow-primary/20">
-              <TrendingUp className="size-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">
-                {t("productivityDashboard")}
-              </h1>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest -mt-1">
-                {t("workPlanningAnalysis")}
-              </p>
-            </div>
-          </div>
-
-          <div className="h-8 w-px bg-border mx-2 hidden md:block" />
+          {/*<div className="h-8 w-px bg-border mx-2 hidden md:block" />*/}
 
           <div className="flex items-center gap-2">
             <Button
@@ -308,25 +328,6 @@ export default function PlanningPage() {
               {format(currentMonth, "MMMM yyyy", { locale })}
             </h2>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => openAddModal()}
-            className="rounded-full bg-linear-to-r from-primary to-emerald-600 shadow-lg shadow-primary/25 hover:opacity-90 px-6"
-          >
-            <Plus className="size-4 mr-2" />
-            {t("addTask")}
-          </Button>
-          <div className="h-8 w-px bg-border mx-2" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={() => setIsSearchModalOpen(true)}
-          >
-            <Search className="size-5" />
-          </Button>
         </div>
       </header>
 

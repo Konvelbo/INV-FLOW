@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/src/context/LanguageContext";
 import { useEffect, useRef, useState } from "react";
-import InvoiceCanvas from "@/src/components/InvoiceCanvas";
+import InvoiceCanvas, { ChoiceInvoice } from "@/src/components/InvoiceCanvas";
 import { Button } from "@/src/components/ui/button";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import toast from "react-hot-toast";
@@ -254,7 +254,7 @@ function Invoice() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center py-12 pb-32">
+    <div className="min-h-screen min-w-full bg-background text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center lg:p-16 py-12 pb-32">
       {/* Premium Background Aesthetics - Animated Mesh Gradients */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
@@ -264,7 +264,7 @@ function Invoice() {
       </div>
 
       {/* Professional Header Section */}
-      <div className="relative z-10 w-full max-w-7xl px-8 mb-16 flex justify-between items-center animate-fade-in-up">
+      <div className="relative z-10 w-full max-w-8xl px- mb-16 flex justify-between items-center animate-fade-in-up">
         <div className="flex items-center gap-8">
           <div className="p-5 bg-card/40 backdrop-blur-2xl rounded-[2rem] border border-border/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] group hover:border-primary/50 transition-all duration-500">
             <FileText className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
@@ -298,7 +298,9 @@ function Invoice() {
       </div>
 
       {/* Focused Editor Area */}
-      <div className="relative z-10 flex-1 w-full max-w-[1100px] flex justify-center animate-fade-in-up delay-100 px-8">
+      <ChoiceInvoice />
+
+      <div className="relative z-10 flex-1 w-full max-w-[1300px] mt-5 flex justify-center animate-fade-in-up delay-100 px-8">
         <div className="relative w-full group/canvas">
           {/* Dynamic Ambient Glow */}
           <div className="absolute -inset-10 bg-linear-to-tr from-primary/15 via-transparent to-secondary/15 rounded-[3rem] blur-[80px] opacity-40 group-hover/canvas:opacity-70 transition duration-1000"></div>

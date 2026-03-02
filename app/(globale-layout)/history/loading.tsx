@@ -2,9 +2,9 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function HistoryLoading() {
   return (
-    <div className="min-h-screen bg-background/50 p-6 md:p-10 lg:p-12 space-y-12 animate-in fade-in duration-500">
+    <div className="min-h-screen min-w-full bg-background/50 p-6 md:p-10 lg:p-12 space-y-12 animate-in fade-in duration-500">
       {/* Header Skeleton */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="max-w-8xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <Skeleton className="h-1.5 w-10 bg-primary/20 rounded-full" />

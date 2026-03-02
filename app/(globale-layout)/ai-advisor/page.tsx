@@ -5,14 +5,14 @@ import { ChatInterface } from "@/src/components/ai/ChatInterface";
 
 export default function AIAdvisorPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 md:p-10 lg:p-12 relative overflow-hidden pb-20">
+    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 relative overflow-hidden pb-20">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[5%] left-[-10%] w-[35%] h-[35%] bg-blue-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-12 relative z-10 h-full flex flex-col">
+      <div className="max-w-8xl mx-auto space-y-12 relative z-10 h-full flex flex-col">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-up">
           <div className="space-y-3">

@@ -76,9 +76,9 @@ export const CalendarGrid = memo(function CalendarGrid({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background">
+    <div className="flex-1 flex flex-col bg-background rounded-3xl ">
       {/* Week Headers */}
-      <div className="grid grid-cols-7 border-b bg-muted/20">
+      <div className="grid grid-cols-7 border-b rounded-3xl bg-muted/20">
         {weekDays.map((day) => (
           <div
             key={day}

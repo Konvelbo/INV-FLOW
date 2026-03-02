@@ -148,7 +148,7 @@ export default function DefaultTemplate({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[794px] text-black relative ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[850px] text-black relative ${scale < 0.8 ? "scale-small" : ""}`}
       >
         <div className="flex justify-between items-center relative w-full mb-2">
           <div>

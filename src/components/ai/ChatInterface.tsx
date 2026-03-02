@@ -16,7 +16,7 @@ export function ChatInterface() {
     {
       role: "assistant",
       content:
-        "Salue ! Je suis votre conseiller économique INV FLOW. Je peux analyser vos factures, évaluer vos marges et vous aider à optimiser votre stratégie financière. Comment puis-je vous éclairer aujourd'hui ?",
+        "Salue ! Je suis votre conseiller économique ESSOR. Je peux analyser vos factures, évaluer vos marges et vous aider à optimiser votre stratégie financière. Comment puis-je vous éclairer aujourd'hui ?",
     },
   ]);
   const [user, setUser] = useState<{

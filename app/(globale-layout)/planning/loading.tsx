@@ -2,7 +2,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function PlanningLoading() {
   return (
-    <div className="flex flex-col min-h-full bg-background/50 animate-in fade-in duration-500">
+    <div className="flex flex-col min-h-full min-w-full bg-background/50 animate-in fade-in duration-500">
       {/* Header Skeleton */}
       <header className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-6">

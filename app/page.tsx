@@ -57,10 +57,10 @@ export default function Home() {
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/20">
-              <Logo />
+              <Logo w={45} h={45} />
             </div>
             <span className="text-xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent">
-              INV FLOW
+              Essor
             </span>
           </div>
 
@@ -109,7 +109,7 @@ export default function Home() {
           <h1 className="flex flex-col items-center justify-center text-7xl md:text-9xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-white to-slate-500 leading-none">
             <span className="opacity-40">NEXT-GEN</span>
             <SparklesText className="text-white text-9xl md:text-[10.5rem] -mt-6">
-              INV FLOW
+              ESSOR
             </SparklesText>
           </h1>
 
@@ -424,7 +424,7 @@ export default function Home() {
               </h2>
               <p className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto font-medium font-sans italic">
                 Ne vous contentez pas de gérer. Dominez vos flux avec
-                l&apos;architecture INV FLOW.
+                l&apos;architecture ESSOR.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -462,7 +462,7 @@ export default function Home() {
                 <Logo />
               </div>
               <span className="font-black tracking-[0.5em] uppercase text-sm text-foreground">
-                INV FLOW
+                ESSOR
               </span>
             </div>
             <p className="text-xs max-w-xs text-center md:text-left leading-relaxed font-medium">
@@ -484,8 +484,8 @@ export default function Home() {
               </Link>
             </div>
             <p className="font-bold tracking-tight text-[11px] opacity-40">
-              &copy; {new Date().getFullYear()} INV FLOW ARCHITECTURE. TOUS
-              DROITS RÉSERVÉS.
+              &copy; {new Date().getFullYear()} ESSOR ARCHITECTURE. TOUS DROITS
+              RÉSERVÉS.
             </p>
           </div>
         </div>

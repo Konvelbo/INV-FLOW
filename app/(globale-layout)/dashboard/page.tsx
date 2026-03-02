@@ -131,7 +131,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-full bg-background text-foreground p-6 md:p-10 lg:p-12 relative pb-20">
+    <div className="min-h-full min-w-full bg-background text-foreground p-5 md:p-5 lg:p-16 relative pb-20">
       {/* Background Decorative Elements - Refined Mesh Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[60px] animate-pulse" />
@@ -139,7 +139,7 @@ export default function Dashboard() {
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[70px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+      <div className="max-w-8xl mx-auto space-y-12 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-up">
           <div className="space-y-3">
             <div className="flex items-center gap-3">

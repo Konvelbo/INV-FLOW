@@ -136,7 +136,7 @@ export default function UserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="relative h-10 w-10 rounded-xl p-0 border border-white/5 hover:border-primary/20 transition-all overflow-hidden bg-card"
+            className="relative h-10 w-10 rounded-xl p-0 border border-white/5 hover:border-primary/20 transition-all bg-card overflow-hidden"
             variant="ghost"
           >
             <Avatar className="h-full w-full rounded-xl">

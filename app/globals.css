@@ -825,3 +825,11 @@ td {
 #sidebare-link:hover {
     scale: 1.1;
 }
+
+#floatLink {
+    transition: all 0.3s ease;
+}
+#floatLink:hover,
+#floatLink:focus {
+    color: var(--color-neutral-900);
+}

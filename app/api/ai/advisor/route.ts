@@ -73,8 +73,8 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: `Tu es un conseiller économique expert pour l'application INV FLOW. 
-          Ton rôle est d'analyser les données de facturation de l'utilisateur et de lui donner des conseils financiers, stratégiques et technologiques pour optimiser sa rentabilité. 
+          content: `Tu es un conseiller économique expert pour l'application ESSOR.
+          Ton rôle est d'analyser les données de facturation de l'utilisateur et de lui donner des conseils financiers, stratégiques et technologiques pour optimiser sa rentabilité.
           Sois professionnel, précis et constructif. Utilise les données suivantes pour tes réponses : ${promptContext}`,
         },
         { role: "user", content: message },

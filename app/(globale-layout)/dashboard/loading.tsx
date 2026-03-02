@@ -2,7 +2,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function DashboardLoading() {
   return (
-    <div className="min-h-full bg-background text-foreground p-6 md:p-10 lg:p-12 space-y-12 animate-in fade-in duration-500">
+    <div className="min-h-full min-w-full bg-background text-foreground p-6 md:p-10 lg:p-12 space-y-12 animate-in fade-in duration-500">
       {/* Header Skeleton */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
