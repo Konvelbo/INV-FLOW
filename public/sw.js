@@ -25,7 +25,8 @@ self.addEventListener("push", function (event) {
 
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
+  const url = event.notification.data?.url || "/planning";
   if (event.action === "open" || !event.action) {
-    event.waitUntil(clients.openWindow(event.notification.data.url));
+    event.waitUntil(clients.openWindow(url));
   }
 });

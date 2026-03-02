@@ -5,6 +5,8 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
+  useCallback,
   ReactNode,
 } from "react";
 import { translations, Language, TranslationKey } from "@/src/lib/translations";
@@ -35,21 +37,28 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.lang = language;
   }, [language]);
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("app_language", lang);
-    // Optional: Refresh or update meta tags if needed
     document.documentElement.lang = lang;
-  };
+  }, []);
 
-  const t = (key: TranslationKey): string => {
-    return translations[language][key] || translations["fr"][key] || key;
-  };
+  const t = useCallback(
+    (key: TranslationKey): string => {
+      return translations[language][key] || translations["fr"][key] || key;
+    },
+    [language],
+  );
 
-  const dict = translations[language];
+  const dict = useMemo(() => translations[language], [language]);
+
+  const contextValue = useMemo(
+    () => ({ language, setLanguage, t, dict }),
+    [language, setLanguage, t, dict],
+  );
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, dict }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

@@ -2,7 +2,9 @@
 
 import { RiCalendarLine, RiDeleteBinLine } from "@remixicon/react";
 import { format, isBefore } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import {
   DefaultEndHour,
@@ -65,6 +67,9 @@ export function EventDialog({
   const [location, setLocation] = useState("");
   const [color, setColor] = useState<EventColor>("sky");
   const [error, setError] = useState<string | null>(null);
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
 
@@ -118,12 +123,12 @@ export function EventDialog({
         const value = `${formattedHour}:${formattedMinute}`;
         // Use a fixed date to avoid unnecessary date object creations
         const date = new Date(2000, 0, 1, hour, minute);
-        const label = format(date, "h:mm a");
+        const label = format(date, "h:mm a", { locale });
         options.push({ label, value });
       }
     }
     return options;
-  }, []); // Empty dependency array ensures this only runs once
+  }, [locale]); // Added locale dependency
 
   const handleSave = () => {
     const start = new Date(startDate);
@@ -142,7 +147,9 @@ export function EventDialog({
         endHours > EndHour
       ) {
         setError(
-          `Selected time must be between ${StartHour}:00 and ${EndHour}:00`,
+          t("timeRangeError")
+            .replace("{start}", String(StartHour))
+            .replace("{end}", String(EndHour)),
         );
         return;
       }
@@ -156,12 +163,12 @@ export function EventDialog({
 
     // Validate that end date is not before start date
     if (isBefore(end, start)) {
-      setError("End date cannot be before start date");
+      setError(t("dateOrderError"));
       return;
     }
 
     // Use generic title if empty
-    const eventTitle = title.trim() ? title : "(no title)";
+    const eventTitle = title.trim() ? title : t("noTitle");
 
     onSave({
       allDay,
@@ -191,37 +198,37 @@ export function EventDialog({
     {
       bgClass: "bg-sky-400 data-[state=checked]:bg-sky-400",
       borderClass: "border-sky-400 data-[state=checked]:border-sky-400",
-      label: "Sky",
+      label: t("colorSky"),
       value: "sky",
     },
     {
       bgClass: "bg-amber-400 data-[state=checked]:bg-amber-400",
       borderClass: "border-amber-400 data-[state=checked]:border-amber-400",
-      label: "Amber",
+      label: t("colorAmber"),
       value: "amber",
     },
     {
       bgClass: "bg-violet-400 data-[state=checked]:bg-violet-400",
       borderClass: "border-violet-400 data-[state=checked]:border-violet-400",
-      label: "Violet",
+      label: t("colorViolet"),
       value: "violet",
     },
     {
       bgClass: "bg-rose-400 data-[state=checked]:bg-rose-400",
       borderClass: "border-rose-400 data-[state=checked]:border-rose-400",
-      label: "Rose",
+      label: t("colorRose"),
       value: "rose",
     },
     {
       bgClass: "bg-emerald-400 data-[state=checked]:bg-emerald-400",
       borderClass: "border-emerald-400 data-[state=checked]:border-emerald-400",
-      label: "Emerald",
+      label: t("colorEmerald"),
       value: "emerald",
     },
     {
       bgClass: "bg-orange-400 data-[state=checked]:bg-orange-400",
       borderClass: "border-orange-400 data-[state=checked]:border-orange-400",
-      label: "Orange",
+      label: t("colorOrange"),
       value: "orange",
     },
   ];
@@ -230,7 +237,9 @@ export function EventDialog({
     <Dialog onOpenChange={(open) => !open && onClose()} open={isOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{event?.id ? "Edit Event" : "Create Event"}</DialogTitle>
+          <DialogTitle>
+            {event?.id ? t("editEvent") : t("createEvent")}
+          </DialogTitle>
           <DialogDescription className="sr-only">
             {event?.id
               ? "Edit the details of this event"
@@ -244,7 +253,7 @@ export function EventDialog({
         )}
         <div className="grid gap-4 py-4">
           <div className="*:not-first:mt-1.5">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t("eventTitleLabel")}</Label>
             <Input
               id="title"
               onChange={(e) => setTitle(e.target.value)}
@@ -253,7 +262,7 @@ export function EventDialog({
           </div>
 
           <div className="*:not-first:mt-1.5">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("eventDescriptionLabel")}</Label>
             <Textarea
               id="description"
               onChange={(e) => setDescription(e.target.value)}
@@ -264,7 +273,7 @@ export function EventDialog({
 
           <div className="flex gap-4">
             <div className="flex-1 *:not-first:mt-1.5">
-              <Label htmlFor="start-date">Start Date</Label>
+              <Label htmlFor="start-date">{t("eventStartDate")}</Label>
               <Popover onOpenChange={setStartDateOpen} open={startDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -281,7 +290,9 @@ export function EventDialog({
                         !startDate && "text-muted-foreground",
                       )}
                     >
-                      {startDate ? format(startDate, "PPP") : "Pick a date"}
+                      {startDate
+                        ? format(startDate, "PPP", { locale })
+                        : t("pickDate")}
                     </span>
                     <RiCalendarLine
                       aria-hidden="true"
@@ -294,6 +305,7 @@ export function EventDialog({
                   <Calendar
                     defaultMonth={startDate}
                     mode="single"
+                    locale={locale}
                     onSelect={(date) => {
                       if (date) {
                         setStartDate(date);
@@ -313,10 +325,10 @@ export function EventDialog({
 
             {!allDay && (
               <div className="min-w-28 *:not-first:mt-1.5">
-                <Label htmlFor="start-time">Start Time</Label>
+                <Label htmlFor="start-time">{t("eventStartTime")}</Label>
                 <Select onValueChange={setStartTime} value={startTime}>
                   <SelectTrigger id="start-time">
-                    <SelectValue placeholder="Select time" />
+                    <SelectValue placeholder={t("selectTime")} />
                   </SelectTrigger>
                   <SelectContent>
                     {timeOptions.map((option) => (
@@ -332,7 +344,7 @@ export function EventDialog({
 
           <div className="flex gap-4">
             <div className="flex-1 *:not-first:mt-1.5">
-              <Label htmlFor="end-date">End Date</Label>
+              <Label htmlFor="end-date">{t("eventEndDate")}</Label>
               <Popover onOpenChange={setEndDateOpen} open={endDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -349,7 +361,9 @@ export function EventDialog({
                         !endDate && "text-muted-foreground",
                       )}
                     >
-                      {endDate ? format(endDate, "PPP") : "Pick a date"}
+                      {endDate
+                        ? format(endDate, "PPP", { locale })
+                        : t("pickDate")}
                     </span>
                     <RiCalendarLine
                       aria-hidden="true"
@@ -363,6 +377,7 @@ export function EventDialog({
                     defaultMonth={endDate}
                     disabled={{ before: startDate }}
                     mode="single"
+                    locale={locale}
                     onSelect={(date) => {
                       if (date) {
                         setEndDate(date);
@@ -378,10 +393,10 @@ export function EventDialog({
 
             {!allDay && (
               <div className="min-w-28 *:not-first:mt-1.5">
-                <Label htmlFor="end-time">End Time</Label>
+                <Label htmlFor="end-time">{t("eventEndTime")}</Label>
                 <Select onValueChange={setEndTime} value={endTime}>
                   <SelectTrigger id="end-time">
-                    <SelectValue placeholder="Select time" />
+                    <SelectValue placeholder={t("selectTime")} />
                   </SelectTrigger>
                   <SelectContent>
                     {timeOptions.map((option) => (
@@ -401,11 +416,11 @@ export function EventDialog({
               id="all-day"
               onCheckedChange={(checked) => setAllDay(checked === true)}
             />
-            <Label htmlFor="all-day">All day</Label>
+            <Label htmlFor="all-day">{t("allDayLabel")}</Label>
           </div>
 
           <div className="*:not-first:mt-1.5">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">{t("eventLocation")}</Label>
             <Input
               id="location"
               onChange={(e) => setLocation(e.target.value)}
@@ -414,7 +429,7 @@ export function EventDialog({
           </div>
           <fieldset className="space-y-4">
             <legend className="font-medium text-foreground text-sm leading-none">
-              Etiquette
+              {t("eventLabel")}
             </legend>
             <RadioGroup
               className="flex gap-1.5"
@@ -451,9 +466,9 @@ export function EventDialog({
           )}
           <div className="flex flex-1 justify-end gap-2">
             <Button onClick={onClose} variant="outline">
-              Cancel
+              {t("cancel")}
             </Button>
-            <Button onClick={handleSave}>Save</Button>
+            <Button onClick={handleSave}>{t("save")}</Button>
           </div>
         </DialogFooter>
       </DialogContent>

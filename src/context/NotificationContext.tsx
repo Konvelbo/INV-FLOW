@@ -5,6 +5,8 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import { toast } from "react-hot-toast";
@@ -117,108 +119,126 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [notifications, isInitialized]);
 
-  const addNotification = (
-    notif: Omit<Notification, "id" | "timestamp" | "unread">,
-  ) => {
-    const newNotif: Notification = {
-      ...notif,
-      id: Math.random().toString(36).substring(7),
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      unread: true,
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
-
-    // Play notification sound
-    try {
-      const audio = new Audio("/Notification.mp3");
-      audio.play().catch(() => {
-        // Autoplay might be blocked until user interacts with the page
-      });
-    } catch {
-      // Audio not supported or failed
-    }
-
-    // In-app toast
-    toast.success(`${notif.user}: ${notif.action} ${notif.target}`, {
-      icon: "🔔",
-      style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-      },
-    });
-
-    // Browser/Desktop/Electron notification
-    if (typeof window !== "undefined") {
-      const title = `INV-FLOW: ${notif.user}`;
-      const options: NotificationOptions = {
-        body: `${notif.action} ${notif.target}`,
-        icon: "/INV_WEBLOGO.png",
-        badge: "/INV_WEBLOGO.png",
+  const addNotification = useCallback(
+    (notif: Omit<Notification, "id" | "timestamp" | "unread">) => {
+      const newNotif: Notification = {
+        ...notif,
+        id: Math.random().toString(36).substring(7),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        unread: true,
       };
+      setNotifications((prev) => [newNotif, ...prev]);
 
-      // 1. Prioritize Electron IPC if available
-      // @ts-ignore - electronAPI is injected by preload.js
-      if (window.electronAPI?.sendNotification) {
-        // @ts-ignore
-        window.electronAPI.sendNotification(title, options);
+      // Play notification sound
+      try {
+        const audio = new Audio("/Notification.mp3");
+        audio.play().catch(() => {
+          // Autoplay might be blocked until user interacts with the page
+        });
+      } catch {
+        // Audio not supported or failed
       }
-      // 2. Fallback to standard Browser Notifications
-      else if (
-        "Notification" in window &&
-        Notification.permission === "granted"
-      ) {
-        // Try to use ServiceWorker for consistent experience, but fallback immediately if not ready
-        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-          navigator.serviceWorker.ready
-            .then((registration) => {
-              registration.showNotification(title, options);
-            })
-            .catch(() => {
-              new window.Notification(title, options);
-            });
-        } else {
-          new window.Notification(title, options);
+
+      // In-app toast
+      toast.success(`${notif.user}: ${notif.action} ${notif.target}`, {
+        icon: "🔔",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+
+      // Browser/Desktop/Electron notification
+      if (typeof window !== "undefined") {
+        const title = `INV-FLOW: ${notif.user}`;
+        const options: NotificationOptions = {
+          body: `${notif.action} ${notif.target}`,
+          icon: "/INV_WEBLOGO.png",
+          badge: "/INV_WEBLOGO.png",
+          tag: "ai-insight-notification", // Deduplication tag
+          renotify: true, // Show alert even if same tag
+        };
+
+        // 1. Prioritize Electron IPC if available
+        // @ts-ignore - electronAPI is injected by preload.js
+        if (window.electronAPI?.sendNotification) {
+          // @ts-ignore
+          window.electronAPI.sendNotification(title, options);
+        }
+        // 2. Fallback to standard Browser Notifications
+        else if (
+          "Notification" in window &&
+          Notification.permission === "granted"
+        ) {
+          // Use standard notification for immediate result,
+          // Browser UI handles deduplication based on 'tag'
+          if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+            navigator.serviceWorker.ready
+              .then((reg) => {
+                reg.showNotification(title, options);
+              })
+              .catch(() => {
+                new window.Notification(title, options);
+              });
+          } else {
+            new window.Notification(title, options);
+          }
         }
       }
-    }
-  };
+    },
+    [],
+  );
 
-  const markAsRead = (id: string) => {
+  const markAsRead = useCallback((id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, unread: false } : n)),
     );
-  };
+  }, []);
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
-  };
+  }, []);
 
-  const removeNotification = (id: string) => {
+  const removeNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
+  }, []);
 
-  const clearAllNotifications = () => {
+  const clearAllNotifications = useCallback(() => {
     setNotifications([]);
-  };
+  }, []);
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => n.unread).length,
+    [notifications],
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      notifications,
+      addNotification,
+      markAsRead,
+      markAllAsRead,
+      removeNotification,
+      clearAllNotifications,
+      unreadCount,
+    }),
+    [
+      notifications,
+      addNotification,
+      markAsRead,
+      markAllAsRead,
+      removeNotification,
+      clearAllNotifications,
+      unreadCount,
+    ],
+  );
 
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        addNotification,
-        markAsRead,
-        markAllAsRead,
-        removeNotification,
-        clearAllNotifications,
-        unreadCount,
-      }}
-    >
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
   );

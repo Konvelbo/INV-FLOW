@@ -1,72 +1,135 @@
 import { Brain, Lightbulb, TrendingUp, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/src/context/LanguageContext";
+import { useEffect, useState, useMemo, useRef } from "react";
+import {
+  TaxAdviceDataset,
+  type TaxAdvice,
+} from "@/src/myComponents/economicTypes";
+import { useNotifications } from "@/src/context/NotificationContext";
+import { type TranslationKey } from "@/src/lib/translations";
+import { Insight, type DashboardStats } from "./types";
 
-interface Insight {
-  id: string;
-  type: "opportunity" | "warning" | "tip";
-  title: string;
-  description: string;
-}
+export function AIInsightCard({ stats }: { stats?: DashboardStats }) {
+  const { t, language } = useLanguage();
+  const { addNotification } = useNotifications();
+  const [rotatingAdvice, setRotatingAdvice] = useState<TaxAdvice[]>([]);
+  const lastGrowthType = useRef<string | null>(null);
 
-const mockInsights: Insight[] = [
-  {
-    id: "1",
-    type: "opportunity",
-    title: "Opportunité de Revenu",
-    description:
-      "Basé sur les données de l'an dernier, le mois prochain voit habituellement une hausse de 20% des services. Envisagez une promotion.",
-  },
-  {
-    id: "2",
-    type: "warning",
-    title: "Alerte Dépenses",
-    description:
-      "Les coûts des services publics sont 15% plus élevés que la moyenne ce trimestre. Vérifiez les anomalies.",
-  },
-  {
-    id: "3",
-    type: "tip",
-    title: "Optimisation Fiscale",
-    description:
-      "Vous avez 2 000 € de dépenses potentiellement déductibles qui n'ont pas encore été catégorisées.",
-  },
-];
+  const isFirstRun = useRef(true);
 
-export function AIInsightCard({ stats }: { stats?: any }) {
-  const dynamicInsights: Insight[] = [];
+  // Rotation logic: Pick 7 random advice items every 20 minutes
+  useEffect(() => {
+    const getNewAdvice = () => {
+      const allAdvice = TaxAdviceDataset.advice_list;
+      const shuffled = [...allAdvice].sort(() => 0.5 - Math.random());
+      setRotatingAdvice(shuffled.slice(0, 7));
+    };
 
-  if (stats) {
-    if (Number(stats.growth) > 10) {
-      dynamicInsights.push({
-        id: "growth",
-        type: "opportunity",
-        title: "Croissance Exceptionnelle",
-        description: `Performance en hausse de ${stats.growth}% ce mois-ci. Votre stratégie porte ses fruits !`,
-      });
-    } else if (Number(stats.growth) < 0) {
-      dynamicInsights.push({
-        id: "decline",
-        type: "warning",
-        title: "Vigilance Revenus",
-        description: `Baisse de ${Math.abs(Number(stats.growth))}% détectée. Une analyse des factures impayées est conseillée.`,
-      });
+    getNewAdvice();
+    const interval = setInterval(getNewAdvice, 20 * 60 * 1000); // 20 minutes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Notification logic for growth changes only (preventing refresh alerts)
+  useEffect(() => {
+    if (!stats) return;
+
+    const currentGrowthType =
+      Number(stats.growth) > 10
+        ? "up"
+        : Number(stats.growth) < 0
+          ? "down"
+          : null;
+
+    if (currentGrowthType) {
+      if (isFirstRun.current) {
+        // Just initialize on first load without notifying
+        lastGrowthType.current = currentGrowthType;
+        isFirstRun.current = false;
+        return;
+      }
+
+      if (currentGrowthType !== lastGrowthType.current) {
+        const title =
+          currentGrowthType === "up"
+            ? t("exceptionalGrowth")
+            : t("revenueVigilance");
+
+        addNotification({
+          user: t("aiAssistant"),
+          action: t("generated"),
+          target: title,
+          type: "system",
+        });
+        lastGrowthType.current = currentGrowthType;
+      }
+    }
+  }, [stats, t, addNotification]);
+
+  const displayInsights = useMemo(() => {
+    const dynamicInsights: Insight[] = [];
+
+    if (stats) {
+      if (Number(stats.growth) > 10) {
+        dynamicInsights.push({
+          id: "growth_up",
+          type: "opportunity",
+          title: t("exceptionalGrowth"),
+          description: t("growth_insight_desc").replace(
+            "{growth}",
+            String(stats.growth),
+          ),
+        });
+      } else if (Number(stats.growth) < 0) {
+        dynamicInsights.push({
+          id: "growth_down",
+          type: "warning",
+          title: t("revenueVigilance"),
+          description: t("decline_insight_desc").replace(
+            "{growth}",
+            String(Math.abs(Number(stats.growth))),
+          ),
+        });
+      }
+
+      if (stats.invoiceCount > 5) {
+        dynamicInsights.push({
+          id: "volume",
+          type: "tip",
+          title: t("automationAdvice"),
+          description: t("volume_insight_desc"),
+        });
+      }
     }
 
-    if (stats.invoiceCount > 5) {
-      dynamicInsights.push({
-        id: "volume",
-        type: "tip",
-        title: "Conseil Automatisation",
-        description:
-          "Le volume de facturation augmente. Pensez à vérifier l'état des relances.",
-      });
-    }
-  }
+    // Convert rotatingAdvice to Insight format
+    const adviceInsights: Insight[] = rotatingAdvice.map((advice) => ({
+      id: `advice_${advice.id}`,
+      type:
+        advice.impact_level === "High"
+          ? "opportunity"
+          : advice.impact_level === "Medium"
+            ? "tip"
+            : "tip",
+      title: advice.title[language as "fr" | "en"] || advice.title.fr,
+      description:
+        advice.description[language as "fr" | "en"] || advice.description.fr,
+    }));
 
-  const displayInsights =
-    dynamicInsights.length > 0 ? dynamicInsights : mockInsights;
+    // Combine: priority to dynamic, then fill with advice up to 4 total items
+    const combined = [...dynamicInsights];
+    adviceInsights.forEach((advice) => {
+      if (combined.length < 4) {
+        combined.push(advice);
+      }
+    });
+
+    return combined.length > 0 ? combined : adviceInsights.slice(0, 7);
+  }, [stats, rotatingAdvice, t, language]);
 
   return (
-    <div className="group relative p-6 rounded-2xl bg-card border border-border/50 overflow-hidden backdrop-blur-xl shadow-2xl transition-all duration-500 hover:bg-card/80">
+    <div className="group relative p-3 rounded-2xl bg-card border border-border/50 overflow-hidden backdrop-blur-xl shadow-2xl transition-all duration-500 hover:bg-card/80 h-full">
       {/* Decorative Light Glow */}
       <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-secondary/20 transition-colors duration-700" />
 
@@ -75,12 +138,12 @@ export function AIInsightCard({ stats }: { stats?: any }) {
           <Brain className="w-6 h-6" />
         </div>
         <h3 className="text-lg font-bold text-foreground font-sans tracking-tight">
-          Analyses Business{" "}
+          {t("aiBusinessAnalysis").split("IA")[0]}
           <span className="text-secondary italic font-semibold">IA</span>
         </h3>
       </div>
 
-      <div className="space-y-4 relative z-10">
+      <div className="space-y-4 relative z-10 flex-1 overflow-y-auto pr-1 scrollbar-none">
         {displayInsights.map((insight) => (
           <div
             key={insight.id}

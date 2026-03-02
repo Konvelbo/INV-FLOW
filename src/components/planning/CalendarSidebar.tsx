@@ -5,7 +5,8 @@ import { Button } from "@/src/components/ui/button";
 import { Calendar } from "@/src/components/ui/calendar";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Plus, ChevronDown } from "lucide-react";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 interface CalendarSidebarProps {
   selectedDate: Date | undefined;
@@ -22,6 +23,9 @@ export function CalendarSidebar({
   filterCompleted,
   setFilterCompleted,
 }: CalendarSidebarProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+
   return (
     <div className="w-64 flex flex-col p-4 space-y-8 bg-background">
       {/* Create Button */}
@@ -30,7 +34,7 @@ export function CalendarSidebar({
         className="w-fit px-6 py-6 rounded-full shadow-md hover:shadow-lg transition-all bg-background text-foreground border hover:bg-muted gap-3"
       >
         <Plus className="size-6 text-primary" />
-        <span className="font-medium">Créer</span>
+        <span className="font-medium">{t("create")}</span>
         <ChevronDown className="size-4 text-muted-foreground ml-2" />
       </Button>
 
@@ -40,14 +44,14 @@ export function CalendarSidebar({
           mode="single"
           selected={selectedDate}
           onSelect={onDateSelect}
-          locale={fr}
+          locale={locale}
           className="rounded-md border-none p-0"
         />
       </div>
 
       {/* Task Categories / Filters */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold px-2">Mes agendas</h3>
+        <h3 className="text-sm font-semibold px-2">{t("myCalendars")}</h3>
         <div className="space-y-2">
           <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-muted cursor-pointer transition-colors">
             <Checkbox
@@ -62,7 +66,7 @@ export function CalendarSidebar({
               htmlFor="completed-tasks"
               className="text-sm cursor-pointer select-none truncate"
             >
-              Tâches terminées
+              {t("completedTasks")}
             </label>
           </div>
           <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-muted cursor-pointer transition-colors">
@@ -75,7 +79,7 @@ export function CalendarSidebar({
               htmlFor="pending-tasks"
               className="text-sm cursor-pointer select-none truncate"
             >
-              Rappels
+              {t("reminders")}
             </label>
           </div>
         </div>

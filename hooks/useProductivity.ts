@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { isWithinInterval, parseISO, isSameDay } from "date-fns";
 
 export interface Task {
@@ -76,31 +76,34 @@ export const useProductivity = (tasks: Task[]) => {
   }, [tasks]);
 
   // Suggest first free 1hr slot between 9am-6pm
-  const findFreeSlot = (date: Date) => {
-    const dayTasks = tasks
-      .filter((t) => t.startTime && isSameDay(new Date(t.startTime), date))
-      .sort(
-        (a, b) =>
-          new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime(),
-      );
+  const findFreeSlot = useCallback(
+    (date: Date) => {
+      const dayTasks = tasks
+        .filter((t) => t.startTime && isSameDay(new Date(t.startTime), date))
+        .sort(
+          (a, b) =>
+            new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime(),
+        );
 
-    let currentStart = new Date(date);
-    currentStart.setHours(9, 0, 0, 0);
+      let currentStart = new Date(date);
+      currentStart.setHours(9, 0, 0, 0);
 
-    for (const task of dayTasks) {
-      const taskStart = new Date(task.startTime!);
-      const diff =
-        (taskStart.getTime() - currentStart.getTime()) / (1000 * 60 * 60);
+      for (const task of dayTasks) {
+        const taskStart = new Date(task.startTime!);
+        const diff =
+          (taskStart.getTime() - currentStart.getTime()) / (1000 * 60 * 60);
 
-      if (diff >= 1) {
-        return currentStart;
+        if (diff >= 1) {
+          return currentStart;
+        }
+        currentStart = new Date(task.endTime!);
       }
-      currentStart = new Date(task.endTime!);
-    }
 
-    if (currentStart.getHours() < 18) return currentStart;
-    return null;
-  };
+      if (currentStart.getHours() < 18) return currentStart;
+      return null;
+    },
+    [tasks],
+  );
 
   return { conflicts, stats, findFreeSlot };
 };

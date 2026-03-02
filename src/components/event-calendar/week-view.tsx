@@ -16,8 +16,10 @@ import {
   startOfDay,
   startOfWeek,
 } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import type React from "react";
 import { useMemo } from "react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import { type CalendarEvent } from "./types";
 import { DraggableEvent } from "./draggable-event";
@@ -43,22 +45,25 @@ interface PositionedEvent {
   width: number;
   zIndex: number;
 }
-
 export function WeekView({
   currentDate,
   events,
   onEventSelect,
   onEventCreate,
 }: WeekViewProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+  const weekStartsOn = locale.options?.weekStartsOn || 0;
+
   const days = useMemo(() => {
-    const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
-    const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
+    const weekStart = startOfWeek(currentDate, { weekStartsOn });
+    const weekEnd = endOfWeek(currentDate, { weekStartsOn });
     return eachDayOfInterval({ end: weekEnd, start: weekStart });
-  }, [currentDate]);
+  }, [currentDate, weekStartsOn]);
 
   const weekStart = useMemo(
-    () => startOfWeek(currentDate, { weekStartsOn: 0 }),
-    [currentDate],
+    () => startOfWeek(currentDate, { weekStartsOn }),
+    [currentDate, weekStartsOn],
   );
 
   const hours = useMemo(() => {
@@ -220,7 +225,9 @@ export function WeekView({
     <div className="flex h-full flex-col" data-slot="week-view">
       <div className="sticky top-0 z-30 grid grid-cols-8 border-border/70 border-b bg-background/80 backdrop-blur-md">
         <div className="py-2 text-center text-muted-foreground/70 text-sm">
-          <span className="max-[479px]:sr-only">{format(new Date(), "O")}</span>
+          <span className="max-[479px]:sr-only">
+            {format(new Date(), "O", { locale })}
+          </span>
         </div>
         {days.map((day) => (
           <div
@@ -229,9 +236,11 @@ export function WeekView({
             key={day.toString()}
           >
             <span aria-hidden="true" className="sm:hidden">
-              {format(day, "E")[0]} {format(day, "d")}
+              {format(day, "E", { locale })[0]} {format(day, "d", { locale })}
             </span>
-            <span className="max-sm:hidden">{format(day, "EEE dd")}</span>
+            <span className="max-sm:hidden">
+              {format(day, "EEE dd", { locale })}
+            </span>
           </div>
         ))}
       </div>
@@ -241,7 +250,7 @@ export function WeekView({
           <div className="grid grid-cols-8">
             <div className="relative border-border/70 border-r">
               <span className="absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
-                All day
+                {t("allDayRow")}
               </span>
             </div>
             {days.map((day, dayIndex) => {
@@ -305,12 +314,12 @@ export function WeekView({
         <div className="grid auto-cols-fr border-border/70 border-r">
           {hours.map((hour, index) => (
             <div
-              className="relative min-h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+              className="relative min-h-(--week-cells-height) border-border/70 border-b last:border-b-0"
               key={hour.toString()}
             >
               {index > 0 && (
                 <span className="-top-3 absolute left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
+                  {format(hour, "h a", { locale })}
                 </span>
               )}
             </div>
@@ -365,7 +374,7 @@ export function WeekView({
               const hourValue = getHours(hour);
               return (
                 <div
-                  className="relative min-h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+                  className="relative min-h-(--week-cells-height) border-border/70 border-b last:border-b-0"
                   key={hour.toString()}
                 >
                   {/* Quarter-hour intervals */}

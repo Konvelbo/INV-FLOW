@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { format, setMonth } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export function RevenueChart() {
   const [mounted, setMounted] = useState(false);
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
 
   useEffect(() => {
     setMounted(true);
@@ -17,10 +22,12 @@ export function RevenueChart() {
   return (
     <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 shadow-lg">
       <div className="flex items-center justify-between mb-8">
-        <h3 className="text-lg font-semibold text-white">Aperçu des Revenus</h3>
+        <h3 className="text-lg font-semibold text-white">
+          {t("revenueOverview")}
+        </h3>
         <select className="bg-slate-950 border border-slate-800 text-slate-400 text-sm rounded-lg px-3 py-1 focus:outline-none focus:border-blue-500 transition-colors">
-          <option>Cette Année</option>
-          <option>L'Année Dernière</option>
+          <option>{t("thisYear")}</option>
+          <option>{t("lastYear")}</option>
         </select>
       </div>
 
@@ -38,22 +45,18 @@ export function RevenueChart() {
         ))}
       </div>
 
-      <div className="flex justify-between mt-4 text-xs text-slate-500 font-medium">
-        {[
-          "Jan",
-          "Fév",
-          "Mar",
-          "Avr",
-          "Mai",
-          "Juin",
-          "Juil",
-          "Août",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Déc",
-        ].map((month) => (
-          <span key={month}>{month}</span>
+      <div className="flex justify-between mt-4 text-xs text-slate-500 font-medium w-full">
+        {useMemo(
+          () =>
+            Array.from({ length: 12 }).map((_, i) => {
+              const monthDate = setMonth(new Date(), i);
+              return format(monthDate, "MMM", { locale });
+            }),
+          [locale],
+        ).map((month, idx) => (
+          <span key={idx} className="flex-1 text-center truncate px-0.5">
+            {month}
+          </span>
         ))}
       </div>
     </div>

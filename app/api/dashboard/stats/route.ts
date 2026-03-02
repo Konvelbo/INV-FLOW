@@ -88,7 +88,7 @@ export async function GET(req: Request) {
     // Get 4 most recent invoices
     const recentInvoices = [...invoices]
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, 4)
+      .slice(0, 5)
       .map((inv) => ({
         id: inv.id,
         reference: inv.reference,

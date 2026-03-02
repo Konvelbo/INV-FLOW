@@ -5,11 +5,14 @@ import { Rocket, Sparkles, TrendingUp, Zap, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/src/context/LanguageContext";
+import { type DashboardStats } from "./types";
 
-export function InteractivePulse({ stats }: { stats: any }) {
+export function InteractivePulse({ stats }: { stats?: DashboardStats }) {
   const [boostActive, setBoostActive] = useState(false);
   const [level, setLevel] = useState(1);
   const [progress, setProgress] = useState(0);
+  const { t } = useLanguage();
 
   // Constants
   const REVENUE_GOAL = 50000; // Monthly goal
@@ -50,15 +53,14 @@ export function InteractivePulse({ stats }: { stats: any }) {
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary fill-primary animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-              Niveau {level} • Pulse™ Active
+              {t("pulseLevel")} {level} • {t("pulseActive")}
             </span>
           </div>
           <h3 className="text-2xl font-bold tracking-tight text-foreground font-sans">
             Pulse Financial <span className="text-primary italic">Rocket</span>
           </h3>
           <p className="text-muted-foreground text-xs font-sans max-w-[200px]">
-            Explosez vos objectifs mensuels et propulsez votre business vers de
-            nouveaux sommets.
+            {t("pulseDescription")}
           </p>
         </div>
 
@@ -67,7 +69,7 @@ export function InteractivePulse({ stats }: { stats: any }) {
             {progress.toFixed(0)}%
           </div>
           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-            Objectif Atteint
+            {t("goalAchieved")}
           </span>
         </div>
       </div>
@@ -164,7 +166,7 @@ export function InteractivePulse({ stats }: { stats: any }) {
           >
             <span className="relative z-10 flex items-center gap-2">
               <Zap className="w-4 h-4 fill-current" />
-              Active Boost IA
+              {t("activateAiBoost")}
             </span>
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
           </Button>
@@ -172,11 +174,11 @@ export function InteractivePulse({ stats }: { stats: any }) {
           <div className="flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all cursor-help relative group/tip">
             <Target className="w-6 h-6" />
             <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-48 p-3 rounded-xl bg-popover/90 backdrop-blur-md border border-white/10 text-[10px] leading-relaxed opacity-0 invisible group-hover/tip:opacity-100 group-hover/tip:visible transition-all">
-              Objectif conseillé :{" "}
+              {t("suggestedGoal")}{" "}
               <strong>
                 {REVENUE_GOAL.toLocaleString()} {stats?.currency || "XOF"}
               </strong>{" "}
-              pour optimiser votre rentabilité ce trimestre.
+              {t("profitabilityOptim")}
             </div>
           </div>
         </div>
@@ -184,15 +186,15 @@ export function InteractivePulse({ stats }: { stats: any }) {
         <div className="flex items-center justify-center gap-6 pt-2">
           <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-            STABLE
+            {t("stableStatus")}
           </div>
           <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            FLUIDE
+            {t("fluidStatus")}
           </div>
           <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
-            ANALYSE ACTIVE
+            {t("activeAnalysisStatus")}
           </div>
         </div>
       </div>

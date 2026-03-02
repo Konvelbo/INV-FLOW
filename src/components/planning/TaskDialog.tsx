@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, memo } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
@@ -43,7 +44,7 @@ interface TaskDialogProps {
   onDelete?: (id: string) => void;
 }
 
-export function TaskDialog({
+export const TaskDialog = memo(function TaskDialog({
   isOpen,
   onOpenChange,
   onSubmit,
@@ -51,7 +52,7 @@ export function TaskDialog({
   initialValues,
   onDelete,
 }: TaskDialogProps) {
-  const { dict } = useLang();
+  const { dict, t } = useLang();
   const [form, setForm] = useState<TaskFormValues>({
     title: "",
     description: "",
@@ -62,21 +63,30 @@ export function TaskDialog({
     category: "work",
   });
 
-  useEffect(() => {
-    if (initialValues) {
-      setForm(initialValues);
-    } else {
-      setForm({
-        title: "",
-        description: "",
-        startTime: "",
-        endTime: "",
-        priority: "medium",
-        status: "todo",
-        category: "work",
-      });
-    }
-  }, [initialValues, isOpen]);
+  const [prevInitialValues, setPrevInitialValues] = useState(initialValues);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  if (initialValues !== prevInitialValues || isOpen !== prevIsOpen) {
+    setPrevInitialValues(initialValues);
+    setPrevIsOpen(isOpen);
+    setForm(
+      initialValues
+        ? {
+            ...initialValues,
+            startTime: initialValues.startTime?.slice(0, 16) || "",
+            endTime: initialValues.endTime?.slice(0, 16) || "",
+          }
+        : {
+            title: "",
+            description: "",
+            startTime: "",
+            endTime: "",
+            priority: "medium",
+            status: "todo",
+            category: "work",
+          },
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,9 +120,12 @@ export function TaskDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle>
-            {initialValues?.id ? "Modifier la tâche" : dict.addTask}
-          </DialogTitle>
+          <div className="flex flex-col">
+            <DialogTitle>
+              {initialValues?.id ? dict.editTask : dict.addTask}
+            </DialogTitle>
+            <DialogDescription>{t("taskDialogDescription")}</DialogDescription>
+          </div>
           {!initialValues?.id && onSuggestSlot && (
             <Button
               type="button"
@@ -121,7 +134,7 @@ export function TaskDialog({
               onClick={handleSuggest}
               className="text-xs text-primary font-bold"
             >
-              Suggérer un créneau libre
+              {dict.suggestFreeSlot}
             </Button>
           )}
         </DialogHeader>
@@ -132,27 +145,27 @@ export function TaskDialog({
               id="title"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Ex : Réunion de projet"
+              placeholder={dict.taskTitlePlaceholder}
               autoFocus
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="description">Description détaillée</Label>
+            <Label htmlFor="description">{dict.taskDescriptionLabel}</Label>
             <Textarea
               id="description"
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
-              placeholder="Ajoutez des détails sur cette tâche..."
+              placeholder={dict.taskDescriptionPlaceholder}
               className="resize-none h-20"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="startTime">Heure de début</Label>
+              <Label htmlFor="startTime">{dict.startTimeLabel}</Label>
               <Input
                 id="startTime"
                 type="datetime-local"
@@ -163,7 +176,7 @@ export function TaskDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="endTime">Heure de fin</Label>
+              <Label htmlFor="endTime">{dict.endTimeLabel}</Label>
               <Input
                 id="endTime"
                 type="datetime-local"
@@ -175,7 +188,7 @@ export function TaskDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Priorité</Label>
+              <Label>{dict.priorityLabel}</Label>
               <Select
                 value={form.priority}
                 onValueChange={(val: "low" | "medium" | "high") =>
@@ -186,14 +199,14 @@ export function TaskDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Faible</SelectItem>
-                  <SelectItem value="medium">Moyenne</SelectItem>
-                  <SelectItem value="high">Élevée</SelectItem>
+                  <SelectItem value="low">{dict.lowPriority}</SelectItem>
+                  <SelectItem value="medium">{dict.mediumPriority}</SelectItem>
+                  <SelectItem value="high">{dict.highPriority}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Catégorie</Label>
+              <Label>{dict.categoryLabel}</Label>
               <Select
                 value={form.category}
                 onValueChange={(val) => setForm({ ...form, category: val })}
@@ -202,17 +215,19 @@ export function TaskDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="work">Travail</SelectItem>
-                  <SelectItem value="personal">Personnel</SelectItem>
-                  <SelectItem value="study">Études</SelectItem>
-                  <SelectItem value="sport">Sport</SelectItem>
+                  <SelectItem value="work">{dict.workCategory}</SelectItem>
+                  <SelectItem value="personal">
+                    {dict.personalCategory}
+                  </SelectItem>
+                  <SelectItem value="study">{dict.studyCategory}</SelectItem>
+                  <SelectItem value="sport">{dict.sportCategory}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label>Statut</Label>
+            <Label>{dict.statusLabel}</Label>
             <Select
               value={form.status}
               onValueChange={(val: "todo" | "in_progress" | "done") =>
@@ -223,9 +238,11 @@ export function TaskDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todo">À faire</SelectItem>
-                <SelectItem value="in_progress">En cours</SelectItem>
-                <SelectItem value="done">Terminé</SelectItem>
+                <SelectItem value="todo">{dict.todoStatus}</SelectItem>
+                <SelectItem value="in_progress">
+                  {dict.inProgressStatus}
+                </SelectItem>
+                <SelectItem value="done">{dict.doneStatus}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -243,7 +260,7 @@ export function TaskDialog({
                 }}
                 className="bg-rose-500 hover:bg-rose-600"
               >
-                Supprimer
+                {t("delete")}
               </Button>
             ) : (
               <div />
@@ -254,10 +271,10 @@ export function TaskDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Annuler
+                {dict.cancel}
               </Button>
               <Button type="submit" disabled={!form.title.trim()}>
-                Enregistrer
+                {dict.save}
               </Button>
             </div>
           </DialogFooter>
@@ -265,4 +282,4 @@ export function TaskDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

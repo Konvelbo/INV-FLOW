@@ -40,7 +40,7 @@ function Calendar({
     range_middle: "range-middle",
     range_start: "range-start",
     today:
-      "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-[12px] *:after:ml-[3px] *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary [&[data-selected]:not(.range-middle)>*]:after:bg-background [&[data-disabled]>*]:after:bg-foreground/30 *:after:transition-colors",
+      "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-[11px] *:after:ml-[3px] *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary [&[data-selected]:not(.range-middle)>*]:after:bg-background [&[data-disabled]>*]:after:bg-foreground/30 *:after:transition-colors",
     week: "flex w-full mt-2",
     week_number: "size-9 p-0 text-xs font-medium text-muted-foreground/80",
     weekday: "size-9 p-0 text-xs font-medium text-muted-foreground/80",

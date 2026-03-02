@@ -15,21 +15,22 @@ export default function Home() {
   const [signUpChoise, setSignUpChoise] = useState<string>("");
   const [visibility, setVisibility] = useState<boolean>(false);
   const { clearInvoiceData } = useInvoice();
-  const [storage, setStorage] = useState<{
+  const [storage] = useState<{
     name: string;
     token: string;
-  } | null>(null);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        setStorage(JSON.parse(userStr));
-      } catch (e) {
-        console.error("Failed to parse user from local storage", e);
+  } | null>(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch (e) {
+          console.error("Failed to parse user from local storage", e);
+        }
       }
     }
-  }, []);
+    return null;
+  });
 
   return (
     <div

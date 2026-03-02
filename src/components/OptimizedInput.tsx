@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, InputHTMLAttributes } from "react";
+import { useEffect, useState, InputHTMLAttributes, useRef } from "react";
 
 interface OptimizedInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -18,10 +18,13 @@ export default function OptimizedInput({
   ...props
 }: OptimizedInputProps) {
   const [localValue, setLocalValue] = useState(value);
+  const lastValueProp = useRef(value);
 
-  useEffect(() => {
+  // Sync state if prop changes externally (e.g. loaded from API)
+  if (value !== lastValueProp.current) {
     setLocalValue(value);
-  }, [value]);
+    lastValueProp.current = value;
+  }
 
   useEffect(() => {
     if (debounce > 0) {

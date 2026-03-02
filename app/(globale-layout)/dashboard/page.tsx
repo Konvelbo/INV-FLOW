@@ -13,36 +13,33 @@ import { RecentInvoices } from "@/src/components/dashboard/RecentInvoices";
 import { InvoiceCalendar } from "@/src/components/dashboard/InvoiceCalendar";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useInvoiceState } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
+import {
+  type User,
+  type DashboardStats,
+  type Todo,
+} from "@/src/components/dashboard/types";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    token: string;
-  } | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
 
-  const [stats, setStats] = useState<{
-    totalRevenue: number;
-    totalMaterial: number;
-    pendingRevenue: number;
-    pendingCount: number;
-    chartData: Array<{ name: string; revenue: number }>;
-    growth: string;
-    performance: string;
-    invoiceCount: number;
-    recentInvoices: Array<{
-      id: string;
-      reference: string;
-      clientName: string;
-      totalHT: number;
-      isScaled: boolean;
-      createdAt: string;
-    }>;
-  } | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
 
-  const [todos, setTodos] = useState<any[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
 
   const fetchStats = async (token: string) => {
     try {
@@ -78,28 +75,22 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        setUser(userData);
-        // Consolidated fetching
-        fetchStats(userData.token);
-        fetchTodos(userData.token);
-      } catch {
-        // Handle error silently
-      }
+    // Only fetch if we have a user token and stats are not yet loaded
+    // This avoids immediate state updates on every render cycle which can trigger cascading render warnings
+    if (user?.token && !stats) {
+      const initDashboard = async () => {
+        await Promise.all([fetchStats(user.token), fetchTodos(user.token)]);
+      };
+      initDashboard();
     }
-  }, []);
+  }, [user?.token, !!stats]);
 
   const productivityStats = useMemo(() => {
     const total = todos.length;
-    const completedTasks = todos.filter((t: any) => t.status === "done");
-    const inProgress = todos.filter(
-      (t: any) => t.status === "in_progress",
-    ).length;
+    const completedTasks = todos.filter((t) => t.status === "done");
+    const inProgress = todos.filter((t) => t.status === "in_progress").length;
 
-    const productiveMs = completedTasks.reduce((acc: number, t: any) => {
+    const productiveMs = completedTasks.reduce((acc: number, t) => {
       if (t.startTime && t.endTime) {
         return (
           acc +
@@ -124,13 +115,15 @@ export default function Dashboard() {
   }, [todos]);
 
   const { currency } = useInvoiceState();
+  const { t, language } = useLanguage();
+
   const formatCurrency = useCallback(
     (value: number) =>
-      new Intl.NumberFormat("fr-FR", {
+      new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
         style: "currency",
         currency: currency || "XOF",
       }).format(value),
-    [currency],
+    [currency, language],
   );
 
   if (!stats) {
@@ -156,18 +149,17 @@ export default function Dashboard() {
               </span>
             </div>
             <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent font-sans">
-              Bonjour, {user?.name || "Invité"}
+              {t("hello")}, {user?.name || t("guest")}
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl font-sans">
-              Consultez et gérez vos flux de facturation et votre productivité
-              avec précision.
+              {t("dashboardDescription")}
             </p>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-card border border-border/50 backdrop-blur-xl shadow-lg">
               <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
               <span className="text-foreground text-xs font-bold uppercase tracking-widest">
-                En Ligne
+                {t("online")}
               </span>
             </div>
           </div>
@@ -176,47 +168,47 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-100">
           <StatsCard
-            title="Revenu Scalé"
+            title={t("scaledRevenue")}
             value={formatCurrency(stats?.totalRevenue || 0)}
-            trend={`${stats?.growth || 0}% mois`}
+            trend={`${stats?.growth || 0}% ${t("perMonth")}`}
             trendUp={Number(stats?.growth) >= 0}
             icon={DollarSign}
             variant="blue"
           />
           <StatsCard
-            title="Matériel Facturé"
+            title={t("billedMaterial")}
             value={`${stats?.totalMaterial || 0}`}
-            trend="Unités"
+            trend={t("units")}
             trendUp={true}
             icon={Package}
             variant="indigo"
           />
           <StatsCard
-            title="Productivité"
+            title={t("productivity")}
             value={`${productivityStats.percentage}%`}
-            trend="Planning"
+            trend={t("planning")}
             trendUp={productivityStats.percentage >= 50}
             icon={TrendingUp}
             variant="emerald"
           />
           <StatsCard
-            title="Factures Validées"
+            title={t("validatedInvoices")}
             value={String(stats?.invoiceCount || 0)}
-            trend="Total"
+            trend={t("total_stat")}
             trendUp={true}
             icon={Package}
             variant="slate"
           />
           <StatsCard
-            title="Tâches"
+            title={t("tasks")}
             value={String(productivityStats.total)}
-            trend={`${productivityStats.completed} finies`}
+            trend={`${productivityStats.completed} ${t("done_stat")}`}
             trendUp={productivityStats.completed > 0}
             icon={ListTodo}
             variant="blue"
           />
           <StatsCard
-            title="En Attente"
+            title={t("pending")}
             value={String(stats?.pendingCount || 0)}
             trend={formatCurrency(stats?.pendingRevenue || 0)}
             trendUp={false}
@@ -233,21 +225,23 @@ export default function Dashboard() {
                 <div className="p-2 bg-primary/20 rounded-lg">
                   <ListTodo className="size-5 text-primary" />
                 </div>
-                Objectifs de la période
+                {t("periodGoals")}
               </h3>
               <span className="text-[10px] bg-primary/20 text-primary px-3 py-1 rounded-full font-black uppercase tracking-[0.2em]">
-                Analyse en cours
+                {t("analysisInProgress")}
               </span>
             </div>
             <CardContent className="p-8 grid md:grid-cols-2 gap-10">
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-bold opacity-80 text-slate-300">
-                    Objectif Quotidien
+                    {t("dailyGoal")}
                   </p>
                   <span className="text-xs font-black text-primary">
                     {productivityStats.completed} / {productivityStats.total}{" "}
-                    tâches
+                    {productivityStats.total > 1
+                      ? t("tasks_plural")
+                      : t("task")}
                   </span>
                 </div>
                 <Progress
@@ -257,18 +251,18 @@ export default function Dashboard() {
                 <p className="text-[11px] text-muted-foreground italic tracking-tight leading-relaxed opacity-70">
                   &quot;
                   {productivityStats.percentage >= 100
-                    ? "Félicitations ! Vous avez atteint votre objectif."
-                    : "Continuez ainsi pour atteindre vos objectifs du jour."}
+                    ? t("congratsGoal")
+                    : t("keepGoing")}
                   &quot;
                 </p>
               </div>
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-bold opacity-80 text-slate-300">
-                    Objectif Hebdomadaire
+                    {t("weeklyGoal")}
                   </p>
                   <span className="text-xs font-black text-secondary">
-                    {productivityStats.productiveHours} / 20h actives
+                    {productivityStats.productiveHours} / 20{t("activeHours")}
                   </span>
                 </div>
                 <Progress
@@ -278,7 +272,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-secondary animate-pulse" />
                   <p className="text-[11px] text-muted-foreground font-medium tracking-tight opacity-70">
-                    Cible Dynamique : 35h / semaine
+                    {t("dynamicTarget")} : 35h {t("perWeek")}
                   </p>
                 </div>
               </div>
@@ -288,28 +282,28 @@ export default function Dashboard() {
           <Card className="border border-primary/20 shadow-2xl bg-linear-to-br from-primary/10 via-primary/5 to-transparent backdrop-blur-3xl rounded-3xl overflow-hidden group">
             <div className="px-8 py-6 border-b border-primary/10 bg-primary/10 italic text-sm font-black text-primary flex items-center gap-3">
               <TrendingUp className="size-5 animate-bounce" />
-              Focus Stratégique
+              {t("focusStrategic")}
             </div>
             <CardContent className="p-8 flex flex-col items-center justify-center text-center space-y-6 h-[180px]">
               {productivityStats.inProgress > 0 ? (
                 <>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground opacity-60">
-                    Actuellement actif sur
+                    {t("activeOn")}
                   </p>
                   <p className="text-2xl font-black text-primary leading-tight group-hover:scale-105 transition-transform duration-500">
                     {todos.find(
                       (t: { status: string; title: string }) =>
                         t.status === "in_progress",
-                    )?.title || "Mise au point"}
+                    )?.title || t("validatedInvoices")}
                   </p>
                 </>
               ) : (
                 <div className="space-y-3 opacity-60 group-hover:opacity-100 transition-opacity">
                   <p className="text-sm font-bold text-slate-400">
-                    Aucune tâche en cours
+                    {t("noActiveTask")}
                   </p>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Boostez votre score de productivité !
+                    {t("boostProductivity")}
                   </p>
                 </div>
               )}

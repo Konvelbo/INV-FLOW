@@ -2,7 +2,9 @@
 
 import { RiCalendarEventLine } from "@remixicon/react";
 import { addDays, format, isToday } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import { useMemo } from "react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import { AgendaDaysToShow } from "./constants";
 import { type CalendarEvent } from "./types";
@@ -20,6 +22,9 @@ export function AgendaView({
   events,
   onEventSelect,
 }: AgendaViewProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+
   // Show events for the next days based on constant
   const days = useMemo(() => {
     return Array.from({ length: AgendaDaysToShow }, (_, i) =>
@@ -46,10 +51,8 @@ export function AgendaView({
             className="mb-2 text-muted-foreground/50"
             size={32}
           />
-          <h3 className="font-medium text-lg">No events found</h3>
-          <p className="text-muted-foreground">
-            There are no events scheduled for this time period.
-          </p>
+          <h3 className="font-medium text-lg">{t("noEventsFound")}</h3>
+          <p className="text-muted-foreground">{t("noEventsDesc")}</p>
         </div>
       ) : (
         days.map((day) => {
@@ -66,7 +69,12 @@ export function AgendaView({
                 className="-top-3 absolute left-0 flex h-6 items-center bg-background pe-4 text-[10px] uppercase data-today:font-medium sm:pe-4 sm:text-xs"
                 data-today={isToday(day) || undefined}
               >
-                {format(day, "d MMM, EEEE")}
+                <span aria-hidden="true" className="sm:hidden">
+                  {format(day, "d MMM", { locale })}
+                </span>
+                <span className="hidden sm:inline">
+                  {format(day, "d MMM, EEEE", { locale })}
+                </span>
               </span>
               <div className="mt-6 space-y-2">
                 {dayEvents.map((event) => (

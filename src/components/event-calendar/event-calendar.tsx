@@ -12,6 +12,7 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -20,6 +21,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useLanguage } from "@/src/context/LanguageContext";
+import { type TranslationKey } from "@/src/lib/translations";
 
 import { AgendaView } from "./agenda-view";
 import { CalendarDndProvider } from "./calendar-dnd-context";
@@ -62,6 +65,9 @@ export function EventCalendar({
   className,
   initialView = "month",
 }: EventCalendarProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
@@ -172,8 +178,8 @@ export function EventCalendar({
     if (event.id) {
       onEventUpdate?.(event);
       // Show toast notification when an event is updated
-      toast(`Event "${event.title}" updated`, {
-        description: format(new Date(event.start), "MMM d, yyyy"),
+      toast(t("eventUpdated").replace("{title}", event.title), {
+        description: format(new Date(event.start), "MMM d, yyyy", { locale }),
         position: "bottom-left",
       });
     } else {
@@ -182,8 +188,8 @@ export function EventCalendar({
         id: Math.random().toString(36).substring(2, 11),
       });
       // Show toast notification when an event is added
-      toast(`Event "${event.title}" added`, {
-        description: format(new Date(event.start), "MMM d, yyyy"),
+      toast(t("eventAdded").replace("{title}", event.title), {
+        description: format(new Date(event.start), "MMM d, yyyy", { locale }),
         position: "bottom-left",
       });
     }
@@ -199,8 +205,10 @@ export function EventCalendar({
 
     // Show toast notification when an event is deleted
     if (deletedEvent) {
-      toast(`Event "${deletedEvent.title}" deleted`, {
-        description: format(new Date(deletedEvent.start), "MMM d, yyyy"),
+      toast(t("eventDeleted").replace("{title}", deletedEvent.title), {
+        description: format(new Date(deletedEvent.start), "MMM d, yyyy", {
+          locale,
+        }),
         position: "bottom-left",
       });
     }
@@ -210,35 +218,37 @@ export function EventCalendar({
     onEventUpdate?.(updatedEvent);
 
     // Show toast notification when an event is updated via drag and drop
-    toast(`Event "${updatedEvent.title}" moved`, {
-      description: format(new Date(updatedEvent.start), "MMM d, yyyy"),
+    toast(t("eventMoved").replace("{title}", updatedEvent.title), {
+      description: format(new Date(updatedEvent.start), "MMM d, yyyy", {
+        locale,
+      }),
       position: "bottom-left",
     });
   };
 
   const viewTitle = useMemo(() => {
     if (view === "month") {
-      return format(currentDate, "MMMM yyyy");
+      return format(currentDate, "MMMM yyyy", { locale });
     }
     if (view === "week") {
       const start = startOfWeek(currentDate, { weekStartsOn: 0 });
       const end = endOfWeek(currentDate, { weekStartsOn: 0 });
       if (isSameMonth(start, end)) {
-        return format(start, "MMMM yyyy");
+        return format(start, "MMMM yyyy", { locale });
       }
-      return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
+      return `${format(start, "MMM", { locale })} - ${format(end, "MMM yyyy", { locale })}`;
     }
     if (view === "day") {
       return (
         <>
           <span aria-hidden="true" className="min-[480px]:hidden">
-            {format(currentDate, "MMM d, yyyy")}
+            {format(currentDate, "MMM d, yyyy", { locale })}
           </span>
           <span aria-hidden="true" className="max-[479px]:hidden min-md:hidden">
-            {format(currentDate, "MMMM d, yyyy")}
+            {format(currentDate, "MMMM d, yyyy", { locale })}
           </span>
           <span className="max-md:hidden">
-            {format(currentDate, "EEE MMMM d, yyyy")}
+            {format(currentDate, "EEE MMMM d, yyyy", { locale })}
           </span>
         </>
       );
@@ -249,12 +259,12 @@ export function EventCalendar({
       const end = addDays(currentDate, AgendaDaysToShow - 1);
 
       if (isSameMonth(start, end)) {
-        return format(start, "MMMM yyyy");
+        return format(start, "MMMM yyyy", { locale });
       }
-      return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
+      return `${format(start, "MMM", { locale })} - ${format(end, "MMM yyyy", { locale })}`;
     }
-    return format(currentDate, "MMMM yyyy");
-  }, [currentDate, view]);
+    return format(currentDate, "MMMM yyyy", { locale });
+  }, [currentDate, view, locale]);
 
   return (
     <div
@@ -285,7 +295,7 @@ export function EventCalendar({
                 className="min-[480px]:hidden"
                 size={16}
               />
-              <span className="max-[479px]:sr-only">Today</span>
+              <span className="max-[479px]:sr-only">{t("today")}</span>
             </Button>
             <div className="flex items-center sm:gap-2">
               <Button
@@ -313,13 +323,8 @@ export function EventCalendar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="gap-1.5 max-[479px]:h-8" variant="outline">
-                  <span>
-                    <span aria-hidden="true" className="min-[480px]:hidden">
-                      {view.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="max-[479px]:sr-only">
-                      {view.charAt(0).toUpperCase() + view.slice(1)}
-                    </span>
+                  <span className="max-[479px]:sr-only">
+                    {t(`${view}View` as TranslationKey)}
                   </span>
                   <ChevronDownIcon
                     aria-hidden="true"
@@ -330,16 +335,18 @@ export function EventCalendar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-32">
                 <DropdownMenuItem onClick={() => setView("month")}>
-                  Month <DropdownMenuShortcut>M</DropdownMenuShortcut>
+                  {t("monthView")}{" "}
+                  <DropdownMenuShortcut>M</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("week")}>
-                  Week <DropdownMenuShortcut>W</DropdownMenuShortcut>
+                  {t("weekView")} <DropdownMenuShortcut>W</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("day")}>
-                  Day <DropdownMenuShortcut>D</DropdownMenuShortcut>
+                  {t("dayView")} <DropdownMenuShortcut>D</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("agenda")}>
-                  Agenda <DropdownMenuShortcut>A</DropdownMenuShortcut>
+                  {t("agendaView")}{" "}
+                  <DropdownMenuShortcut>A</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -356,7 +363,7 @@ export function EventCalendar({
                 className="sm:-ms-1 opacity-60"
                 size={16}
               />
-              <span className="max-sm:sr-only">New event</span>
+              <span className="max-sm:sr-only">{t("createEvent")}</span>
             </Button>
           </div>
         </div>
@@ -409,3 +416,5 @@ export function EventCalendar({
     </div>
   );
 }
+
+export default EventCalendar;

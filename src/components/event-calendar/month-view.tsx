@@ -12,8 +12,10 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import { type CalendarEvent, type EventColor } from "./types";
 import { DraggableEvent } from "./draggable-event";
@@ -39,13 +41,15 @@ interface MonthViewProps {
   onEventSelect: (event: CalendarEvent) => void;
   onEventCreate: (startTime: Date) => void;
 }
-
 export function MonthView({
   currentDate,
   events,
   onEventSelect,
   onEventCreate,
 }: MonthViewProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
@@ -57,10 +61,10 @@ export function MonthView({
 
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
-      const date = addDays(startOfWeek(new Date()), i);
-      return format(date, "EEE");
+      const date = addDays(startOfWeek(new Date(), { locale }), i);
+      return format(date, "EEE", { locale });
     });
-  }, []);
+  }, [locale]);
 
   const weeks = useMemo(() => {
     const result = [];
@@ -148,7 +152,7 @@ export function MonthView({
                     }}
                   >
                     <div className="mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm group-data-today:bg-primary group-data-today:text-primary-foreground">
-                      {format(day, "d")}
+                      {format(day, "d", { locale })}
                     </div>
                     <div
                       className="min-h-[calc((var(--event-height)+var(--event-gap))*2)] sm:min-h-[calc((var(--event-height)+var(--event-gap))*3)] lg:min-h-[calc((var(--event-height)+var(--event-gap))*4)]"
@@ -185,10 +189,9 @@ export function MonthView({
                                   <div aria-hidden={true} className="invisible">
                                     {!event.allDay && (
                                       <span>
-                                        {format(
-                                          new Date(event.start),
-                                          "h:mm",
-                                        )}{" "}
+                                        {format(new Date(event.start), "h:mm", {
+                                          locale,
+                                        })}{" "}
                                       </span>
                                     )}
                                     {event.title}
@@ -225,8 +228,10 @@ export function MonthView({
                               type="button"
                             >
                               <span>
-                                + {remainingCount}{" "}
-                                <span className="max-sm:sr-only">more</span>
+                                {t("moreCount").replace(
+                                  "{count}",
+                                  String(remainingCount),
+                                )}
                               </span>
                             </button>
                           </PopoverTrigger>
@@ -241,7 +246,7 @@ export function MonthView({
                           >
                             <div className="space-y-2">
                               <div className="font-medium text-sm">
-                                {format(day, "EEE d")}
+                                {format(day, "EEE d", { locale })}
                               </div>
                               <div className="space-y-1">
                                 {sortEvents(allEvents).map(

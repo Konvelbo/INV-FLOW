@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import {
   startOfMonth,
   endOfMonth,
@@ -13,6 +13,7 @@ import {
   isToday,
 } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 interface Todo {
   id: string;
@@ -32,14 +33,15 @@ interface CalendarGridProps {
   onDateClick: (date: Date) => void;
   onTodoClick: (todo: Todo) => void;
 }
-
-export function CalendarGrid({
+export const CalendarGrid = memo(function CalendarGrid({
   currentMonth,
   todos,
   conflicts,
   onDateClick,
   onTodoClick,
 }: CalendarGridProps) {
+  const { t } = useLanguage();
+
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -50,7 +52,15 @@ export function CalendarGrid({
     end: endDate,
   });
 
-  const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+  const weekDays = [
+    t("mon"),
+    t("tue"),
+    t("wed"),
+    t("thu"),
+    t("fri"),
+    t("sat"),
+    t("sun"),
+  ];
 
   const getPriorityColor = (p: string) => {
     switch (p) {
@@ -111,7 +121,8 @@ export function CalendarGrid({
                   </span>
                   {dayTodos.length > 0 && (
                     <span className="text-[10px] font-bold text-muted-foreground/60">
-                      {dayTodos.length} tâches
+                      {dayTodos.length}{" "}
+                      {dayTodos.length > 1 ? t("tasks_plural") : t("task")}
                     </span>
                   )}
                 </div>
@@ -137,7 +148,7 @@ export function CalendarGrid({
                         {conflicts.has(todo.id) && (
                           <span
                             className="size-1.5 rounded-full bg-rose-500"
-                            title="Conflit d'horaire"
+                            title={t("scheduleConflict")}
                           />
                         )}
                         <span className="truncate">{todo.title}</span>
@@ -150,7 +161,7 @@ export function CalendarGrid({
                         )}
                         {conflicts.has(todo.id) && (
                           <span className="text-[7px] font-black bg-rose-500 text-white px-1 rounded-[2px] animate-pulse">
-                            CONFLIT
+                            {t("conflict")}
                           </span>
                         )}
                       </div>
@@ -164,4 +175,4 @@ export function CalendarGrid({
       </div>
     </div>
   );
-}
+});

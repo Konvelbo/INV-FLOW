@@ -13,22 +13,18 @@ import { FileText, Calendar as CalendarIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { useInvoice } from "@/src/context/InvoiceContext";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/src/context/LanguageContext";
 import Link from "next/link";
-
-interface Invoice {
-  id: string;
-  reference: string;
-  clientName: string;
-  totalHT: number;
-  isScaled: boolean;
-  createdAt: string;
-}
+import { type RecentInvoice as Invoice } from "./types";
+import { useInvoice } from "@/src/context/InvoiceContext";
 
 export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { currency } = useInvoice();
+  const { t, language } = useLanguage();
+
+  const locale = language === "fr" ? fr : enUS;
 
   // Group invoices by date string (ignoring time)
   const invoicesByDate = invoices.reduce(
@@ -63,7 +59,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
           <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
             <CalendarIcon className="w-5 h-5" />
           </div>
-          Calendrier Factures
+          {t("calendarInvoices")}
         </CardTitle>
       </CardHeader>
 
@@ -74,7 +70,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
             mode="single"
             selected={date}
             onSelect={setDate}
-            locale={fr}
+            locale={locale}
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-2xl border border-white/5 bg-slate-900/30 p-4 shadow-inner"
@@ -85,16 +81,14 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-4 px-1">
             <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-              {date
-                ? format(date, "d MMMM yyyy", { locale: fr })
-                : "Sélectionnez une date"}
+              {date ? format(date, "d MMMM yyyy", { locale }) : t("selectDate")}
             </div>
             {selectedInvoices.length > 0 && (
               <Badge
                 variant="outline"
                 className="bg-primary/5 text-primary border-primary/20 text-[9px] font-bold"
               >
-                {selectedInvoices.length} Facture
+                {selectedInvoices.length} {t("invoice")}
                 {selectedInvoices.length > 1 ? "s" : ""}
               </Badge>
             )}
@@ -122,7 +116,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                         </div>
                         <div>
                           <div className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors font-sans">
-                            {inv.reference || "SANS RÉF"}
+                            {inv.reference || t("noRef")}
                           </div>
                           <div className="text-[11px] text-muted-foreground font-sans">
                             {inv.clientName}
@@ -142,7 +136,9 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                               : "bg-amber-500/10 text-amber-500",
                           )}
                         >
-                          {inv.isScaled ? "Scalé" : "Attente"}
+                          {inv.isScaled
+                            ? t("scaled_badge")
+                            : t("waiting_badge")}
                         </Badge>
                       </div>
                     </Link>
@@ -158,7 +154,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                     <CalendarIcon className="w-10 h-10 opacity-20" />
                   </div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                    Aucune transaction
+                    {t("noTransaction")}
                   </p>
                 </motion.div>
               )}

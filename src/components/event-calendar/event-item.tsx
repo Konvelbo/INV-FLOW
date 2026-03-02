@@ -3,19 +3,15 @@
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { differenceInMinutes, format, getMinutes, isPast } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import { useMemo } from "react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import { type CalendarEvent } from "./types";
 import { getBorderRadiusClasses, getEventColorClasses } from "./utils";
 import { cn } from "@/lib/utils";
 
-// Using date-fns format with custom formatting:
-// 'h' - hours (1-12)
-// 'a' - am/pm
-// ':mm' - minutes with leading zero (only if the token 'mm' is present)
-const formatTimeWithOptionalMinutes = (date: Date) => {
-  return format(date, getMinutes(date) === 0 ? "ha" : "h:mma").toLowerCase();
-};
+// Formatting utility moved inside or modified to accept locale
 
 interface EventWrapperProps {
   event: CalendarEvent;
@@ -112,6 +108,15 @@ export function EventItem({
   onMouseDown,
   onTouchStart,
 }: EventItemProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? fr : enUS;
+
+  const formatTimeWithOptionalMinutes = (date: Date) => {
+    return format(date, getMinutes(date) === 0 ? "ha" : "h:mma", {
+      locale,
+    }).toLowerCase();
+  };
+
   const eventColor = event.color;
 
   // Use the provided currentTime (for dragging) or the event's actual time
@@ -131,10 +136,10 @@ export function EventItem({
   // Calculate event duration in minutes
   const durationMinutes = useMemo(() => {
     return differenceInMinutes(displayEnd, displayStart);
-  }, [displayStart, displayEnd]);
+  }, [currentTime, event.start, event.end]);
 
   const getEventTime = () => {
-    if (event.allDay) return "All day";
+    if (event.allDay) return t("allDayRow");
 
     // For short events (less than 45 minutes), only show start time
     if (durationMinutes < 45) {
@@ -149,7 +154,7 @@ export function EventItem({
     return (
       <EventWrapper
         className={cn(
-          "mt-[var(--event-gap)] h-[var(--event-height)] items-center text-[10px] sm:text-xs",
+          "mt-(--event-gap) h-(--event-height) items-center text-[10px] sm:text-xs",
           className,
         )}
         currentTime={currentTime}
@@ -239,7 +244,7 @@ export function EventItem({
       <div className="font-medium text-sm">{event.title}</div>
       <div className="text-xs opacity-70">
         {event.allDay ? (
-          <span>All day</span>
+          <span>{t("allDayRow")}</span>
         ) : (
           <span className="uppercase">
             {formatTimeWithOptionalMinutes(displayStart)} -{" "}

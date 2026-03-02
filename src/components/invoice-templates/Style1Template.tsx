@@ -1,4 +1,4 @@
-import { Ref, useState } from "react";
+import { Ref, useState, useCallback, useMemo } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
@@ -51,7 +51,7 @@ export default function Style1Template({
       minimumFractionDigits: 2,
     }).format(value);
 
-  const addItem = () => {
+  const addItem = useCallback(() => {
     if (newItem.designation === "" && newItem.quantity === 0) return;
     const itemWithId = {
       ...newItem,
@@ -66,62 +66,71 @@ export default function Style1Template({
       unitPrice: 0,
       totalPrice: 0,
     });
-  };
+  }, [itemsArr, newItem, setItemsArr]);
 
-  const totalGeneral = itemsArr.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.totalPrice ?? Number(item.quantity) * Number(item.unitPrice)),
-    0,
+  const totalGeneral = useMemo(
+    () =>
+      itemsArr.reduce(
+        (sum, item) =>
+          sum +
+          Number(
+            item.totalPrice ?? Number(item.quantity) * Number(item.unitPrice),
+          ),
+        0,
+      ),
+    [itemsArr],
   );
 
-  const totalMaterialGeneral = itemsArr.reduce(
-    (sum, item) => sum + Number(item.quantity),
-    0,
+  const totalMaterialGeneral = useMemo(
+    () => itemsArr.reduce((sum, item) => sum + Number(item.quantity), 0),
+    [itemsArr],
   );
 
-  const updateItem = (
-    id: string | number,
-    field: string,
-    value: string | number,
-  ) => {
-    const updatedItems = itemsArr.map((item: InvoiceItemWithId) => {
-      if (item.designation === "" && item.quantity === 0) return item;
-      if (item.id !== id) return item;
+  const updateItem = useCallback(
+    (id: string | number, field: string, value: string | number) => {
+      const updatedItems = itemsArr.map((item: InvoiceItemWithId) => {
+        if (item.designation === "" && item.quantity === 0) return item;
+        if (item.id !== id) return item;
 
-      const updatedItem: InvoiceItemWithId = {
-        ...item,
-        designation:
-          field === "designation" && typeof value === "string"
-            ? value
-            : item.designation,
-        unit:
-          field === "unit" && typeof value === "string"
-            ? String(value)
-            : item.unit,
-        quantity: field === "quantity" ? Number(value) : Number(item.quantity),
-        unitPrice:
-          field === "unitPrice" ? Number(value) : Number(item.unitPrice),
-        totalPrice: 0,
-        id: item.id,
-      };
+        const updatedItem: InvoiceItemWithId = {
+          ...item,
+          designation:
+            field === "designation" && typeof value === "string"
+              ? value
+              : item.designation,
+          unit:
+            field === "unit" && typeof value === "string"
+              ? String(value)
+              : item.unit,
+          quantity:
+            field === "quantity" ? Number(value) : Number(item.quantity),
+          unitPrice:
+            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+          totalPrice: 0,
+          id: item.id,
+        };
 
-      updatedItem.totalPrice = updatedItem.quantity * updatedItem.unitPrice;
-      return updatedItem;
-    });
-    setItemsArr(updatedItems);
-  };
+        updatedItem.totalPrice = updatedItem.quantity * updatedItem.unitPrice;
+        return updatedItem;
+      });
+      setItemsArr(updatedItems);
+    },
+    [itemsArr, setItemsArr],
+  );
 
-  const deleteItem = (id: number | string) => {
-    const filteredItems = itemsArr.filter(
-      (item: InvoiceItemWithId) => item.id !== id,
-    );
-    setItemsArr(filteredItems);
-  };
+  const deleteItem = useCallback(
+    (id: number | string) => {
+      const filteredItems = itemsArr.filter(
+        (item: InvoiceItemWithId) => item.id !== id,
+      );
+      setItemsArr(filteredItems);
+    },
+    [itemsArr, setItemsArr],
+  );
 
-  const clearAllItems = () => {
+  const clearAllItems = useCallback(() => {
     setItemsArr([]);
-  };
+  }, [setItemsArr]);
 
   return (
     <div

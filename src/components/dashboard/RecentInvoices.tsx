@@ -11,18 +11,12 @@ import { FileText, User, ArrowRight } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useInvoice } from "@/src/context/InvoiceContext";
-
-interface RecentInvoice {
-  id: string;
-  reference: string;
-  clientName: string;
-  totalHT: number;
-  isScaled: boolean;
-  createdAt: string;
-}
+import { useLanguage } from "@/src/context/LanguageContext";
+import { type RecentInvoice } from "./types";
 
 export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
   const router = useRouter();
+  const { t, language } = useLanguage();
 
   const { currency } = useInvoice();
 
@@ -32,12 +26,12 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-500" />
-            Factures Récentes
+            {t("recentInvoices")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-10 text-slate-500">
           <FileText className="w-12 h-12 mb-4 opacity-20" />
-          <p>Aucune facture trouvée.</p>
+          <p>{t("noInvoicesFound")}.</p>
         </CardContent>
       </Card>
     );
@@ -50,7 +44,7 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
           <div className="p-2 rounded-lg bg-primary/10 text-primary">
             <FileText className="w-5 h-5" />
           </div>
-          Factures Récentes
+          {t("recentInvoices")}
         </CardTitle>
         <Button
           variant="ghost"
@@ -58,7 +52,7 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
           className="text-secondary hover:text-secondary hover:bg-secondary/10 font-bold text-xs uppercase tracking-widest"
           onClick={() => router.push("/history")}
         >
-          Voir tout
+          {t("viewHistory")}
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardHeader>
@@ -75,7 +69,7 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
               </div>
               <div>
                 <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors font-sans">
-                  {invoice.reference || "Sans Référence"}
+                  {invoice.reference || t("noRef")}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                   <User className="w-3 h-3" />
@@ -90,10 +84,13 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-[10px] text-muted-foreground font-mono bg-slate-900/50 px-2 py-0.5 rounded-md border border-border/50">
-                  {new Date(invoice.createdAt).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                  })}
+                  {new Date(invoice.createdAt).toLocaleDateString(
+                    language === "fr" ? "fr-FR" : "en-US",
+                    {
+                      day: "2-digit",
+                      month: "2-digit",
+                    },
+                  )}
                 </div>
                 <Badge
                   variant="outline"
@@ -103,7 +100,7 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
                       : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                   }`}
                 >
-                  {invoice.isScaled ? "Scalé" : "Attente"}
+                  {invoice.isScaled ? t("scaled_badge") : t("waiting_badge")}
                 </Badge>
               </div>
             </div>

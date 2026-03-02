@@ -171,6 +171,16 @@ export const AppSidebar = React.memo(function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent className="px-2 py-4">
+            <div className="flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
+              <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[8px] font-mono tracking-widest uppercase">
+                v1.0.4-obsidian
+              </span>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
