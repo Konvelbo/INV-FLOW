@@ -6,10 +6,12 @@ export default function Logo({
   className,
   w,
   h,
+  logoUrl,
 }: {
   className?: string;
   w: number;
   h: number;
+  logoUrl: string;
 }): JSX.Element {
   return (
     <Link className={className} href="/">
@@ -18,7 +20,7 @@ export default function Logo({
         width={w || 45}
         height={h || 45}
         className="rounded-lg"
-        src="/INV_LOGO.png"
+        src={logoUrl}
         alt="Logo"
       />
     </Link>

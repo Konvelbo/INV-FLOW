@@ -57,7 +57,7 @@ export default function Home() {
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/20">
-              <Logo w={45} h={45} />
+              <Logo logoUrl="/black-caractere-non-black.png" w={45} h={45} />
             </div>
             <span className="text-xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent">
               Essor
