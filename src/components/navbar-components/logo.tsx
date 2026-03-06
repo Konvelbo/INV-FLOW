@@ -6,7 +6,7 @@ export default function Logo({
   className,
   w,
   h,
-  logoUrl,
+  logoUrl = "/logo-caracterer-bg-non-ESSOR.png",
 }: {
   className?: string;
   w: number;

@@ -13,7 +13,7 @@ export default function Navbare() {
           {/* Main nav */}
           <div className="flex items-center gap-6">
             <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/20">
-              <Logo />
+              <Logo w={45} h={45} logoUrl={"/black-caractere-non-black.png"} />
             </div>
           </div>
         </div>

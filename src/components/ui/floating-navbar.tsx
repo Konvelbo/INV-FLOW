@@ -49,7 +49,10 @@ export const FloatingNav = ({
   });
 
   useEffect(() => {
-    return setVisible(true);
+    const time = setTimeout(() => {
+      setVisible(true);
+    }, 0);
+    return () => clearTimeout(time);
   }, [path]);
 
   return (
@@ -74,7 +77,7 @@ export const FloatingNav = ({
         <div className="flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/80 px-2 py-1.5 shadow-lg shadow-black/10 backdrop-blur-md dark:border-white/10 dark:bg-black/50">
           {/* Nav items container */}
           <div>
-            <Logo logoUrl="/logo-caracterer-bg-non-ESSOR.png" w={30} h={30} />
+            <Logo logoUrl={"/logo-caracterer-bg-non-ESSOR.png"} w={30} h={30} />
           </div>
           <div className="flex items-center gap-1">
             {navItems.map((navItem, idx: number) => {

@@ -2,6 +2,7 @@ import { invoiceTemplate } from "@/lib/invoice-pdf";
 import { prisma } from "@/lib/prisma";
 import { InvoiceItemProps } from "@/src/context/InvoiceContext";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { invoiceSchema } from "@/lib/zod/invoice.schema";
 
 // We need to import 'path' and 'os' and 'fs' but we can use a random path in /tmp or similar
 const puppeteer = require("puppeteer");
@@ -15,17 +16,21 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json();
+    const validateData = invoiceSchema.safeParse(data);
 
     // Validate input data
-    if (
-      !data ||
-      !data.reference ||
-      !data.clientName ||
-      !data.object ||
-      !data.items
-    ) {
-      throw new Error("Invalid input data. Required fields are missing.");
+    if (!validateData.success) {
+      console.error("Zod Validation Error:", validateData.error.format());
+      return new Response(
+        JSON.stringify({
+          message: "Invalid input data.",
+          errors: validateData.error.errors,
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
     }
+
+    const validatedInvoice = validateData.data;
 
     // Verify user authentication
     const authHeader = req.headers.get("authorization");
@@ -53,9 +58,9 @@ export async function POST(req: Request) {
     }
 
     const html = invoiceTemplate({
-      ...data,
-      currencyCode: data.currencyCode,
-      language: data.language,
+      ...validatedInvoice,
+      currencyCode: validatedInvoice.currencyCode,
+      language: validatedInvoice.language,
     });
 
     // Generate a unique temporary directory for this browser instance to avoid locking issues
@@ -96,36 +101,36 @@ export async function POST(req: Request) {
     try {
       // Use upsert
       const createdInvoice = await prisma.invoice.upsert({
-        where: { reference: data.reference },
+        where: { reference: validatedInvoice.reference },
         update: {
-          city: data.city,
-          clientName: data.clientName,
-          clientAddress: data.clientAddress,
-          clientContact: data.clientContact,
-          clientPOBox: data.clientPOBox,
-          object: data.object,
-          managerName: data.managerName,
-          totalHT: data.totalHT,
-          totalMaterial: data.totalMaterial,
-          style: data.style || "default",
+          city: validatedInvoice.city,
+          clientName: validatedInvoice.clientName,
+          clientAddress: validatedInvoice.clientAddress,
+          clientContact: validatedInvoice.clientContact,
+          clientPOBox: validatedInvoice.clientPOBox,
+          object: validatedInvoice.object,
+          managerName: validatedInvoice.managerName,
+          totalHT: validatedInvoice.totalHT,
+          totalMaterial: validatedInvoice.totalMaterial,
+          style: validatedInvoice.style || "default",
         },
         create: {
-          reference: data.reference,
-          city: data.city,
-          clientName: data.clientName,
-          clientAddress: data.clientAddress,
-          clientContact: data.clientContact,
-          clientPOBox: data.clientPOBox,
-          object: data.object,
-          managerName: data.managerName,
-          totalHT: data.totalHT,
-          totalMaterial: data.totalMaterial,
-          style: data.style || "default",
+          reference: validatedInvoice.reference,
+          city: validatedInvoice.city,
+          clientName: validatedInvoice.clientName,
+          clientAddress: validatedInvoice.clientAddress,
+          clientContact: validatedInvoice.clientContact,
+          clientPOBox: validatedInvoice.clientPOBox,
+          object: validatedInvoice.object,
+          managerName: validatedInvoice.managerName,
+          totalHT: validatedInvoice.totalHT,
+          totalMaterial: validatedInvoice.totalMaterial,
+          style: validatedInvoice.style || "default",
           author: {
             connect: { id: userId },
           },
           items: {
-            create: data.items.map((item: InvoiceItemProps) => ({
+            create: validatedInvoice.items.map((item: InvoiceItemProps) => ({
               designation: item.designation,
               unit: item.unit,
               quantity: item.quantity,
@@ -147,7 +152,7 @@ export async function POST(req: Request) {
               where: { invoiceId: createdInvoice.id },
             }),
             prisma.invoiceItem.createMany({
-              data: data.items.map((item: InvoiceItemProps) => ({
+              data: validatedInvoice.items.map((item: InvoiceItemProps) => ({
                 designation: item.designation,
                 unit: item.unit,
                 quantity: item.quantity,

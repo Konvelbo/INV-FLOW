@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import { LoginSchema } from "@/lib/zod/UserProtect";
 
 const createToken = (id: string) => {
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         { status: 404 },
       );
     } else {
-      const isPasswordValid = await bcrypt.compare(
+      const isPasswordValid = await bcryptjs.compare(
         password,
         isExistUserEmail.password,
       );
