@@ -34,7 +34,7 @@ export default function Style2Template({
     setItemsArr,
     currency,
   } = useInvoice();
-  const { dict } = useLanguage();
+  const { dict, language } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -45,7 +45,7 @@ export default function Style2Template({
   });
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: currency || "XOF",
       minimumFractionDigits: 2,
@@ -173,11 +173,14 @@ export default function Style2Template({
                   className="text-right text-gray-600 w-32 bg-transparent"
                 />
                 <div className="text-sm text-gray-500">
-                  {new Date().toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {new Date().toLocaleDateString(
+                    language === "fr" ? "fr-FR" : "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  )}
                 </div>
               </div>
             </div>
@@ -212,7 +215,7 @@ export default function Style2Template({
               <OptimizedInput
                 value={clientContact}
                 onValueChange={setClientContact}
-                placeholder="Contact Info"
+                placeholder={dict.contact}
                 className="text-gray-600 w-full text-sm"
               />
             </div>
@@ -224,7 +227,7 @@ export default function Style2Template({
             <OptimizedInput
               value={object}
               onValueChange={setObject}
-              placeholder="Project or Service Description..."
+              placeholder={dict.object}
               className="w-full text-gray-700 bg-gray-50 p-2 border-l-4 border-gray-300"
             />
           </div>
@@ -311,7 +314,7 @@ export default function Style2Template({
                     onValueChange={(val) =>
                       setNewItem({ ...newItem, designation: val })
                     }
-                    placeholder="New Item Name..."
+                    placeholder={dict.add}
                     className="w-full bg-transparent font-medium"
                   />
                 </td>
@@ -364,7 +367,7 @@ export default function Style2Template({
               onClick={addItem}
               className="bg-blue-900 hover:bg-blue-800 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
-              <Plus className="w-4 h-4 mr-2" /> Confirm Add Item
+              <Plus className="w-4 h-4 mr-2" /> {dict.add}
             </Button>
           </div>
         </div>
@@ -378,7 +381,7 @@ export default function Style2Template({
             <OptimizedInput
               value={managerName}
               onValueChange={setManagerName}
-              placeholder="Manager Name"
+              placeholder={dict.managerName}
               className="text-lg font-serif italic text-gray-800 border-b border-gray-200 pb-1 w-full max-w-[250px]"
             />
           </div>

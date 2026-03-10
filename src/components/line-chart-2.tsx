@@ -36,10 +36,18 @@ const cashflowData: Array<{ month: string; value: number }> = [];
 
 // Use custom or Tailwind standard colors: https://tailwindcss.com/docs/colors
 const chartConfig = {
-  value: {
-    label: "Revenu",
+  revenus: {
+    label: "Revenus",
     color: "var(--primary)",
   },
+  depenses: {
+    label: "Dépenses",
+    color: "hsl(var(--destructive, 0 84.2% 60.2%))",
+  },
+  profit: {
+    label: "Profit",
+    color: "hsl(var(--chart-2, 160 60% 45%))",
+  }
 } satisfies ChartConfig;
 
 // Custom Tooltip
@@ -61,12 +69,18 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl bg-card border border-border/50 text-foreground p-3 shadow-2xl backdrop-blur-md">
-        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1 font-sans">
-          Total HT
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 font-sans">
+          {payload[0].payload.month}
         </div>
-        <div className="text-sm font-bold text-primary font-mono tracking-tight">
-          {payload[0].value.toLocaleString()} {currency}
-        </div>
+        {payload.map((entry, index) => (
+          <div key={`item-${index}`} className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-xs text-muted-foreground uppercase tracking-widest">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label || entry.dataKey}:</span>
+            <span className="text-sm font-bold font-mono tracking-tight" style={{ color: entry.color }}>
+              {entry.value.toLocaleString()} {currency}
+            </span>
+          </div>
+        ))}
       </div>
     );
   }
@@ -114,10 +128,12 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
     const baseData =
       externalData && externalData.length > 0
         ? externalData.map((d) => ({
-            month: d.name.toUpperCase(),
-            value: d.total,
-          }))
-        : cashflowData;
+          month: d.name.toUpperCase(),
+          revenus: d.Revenus,
+          depenses: d.Dépenses,
+          profit: d.Profit,
+        }))
+        : [];
 
     switch (selectedPeriod) {
       case "6m":
@@ -125,26 +141,18 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
       case "12m":
         return baseData;
       case "2y":
-        // Simulate 2 years data
-        const previousYear = baseData.map((item) => ({
-          month: `${item.month} '${String(prevYearStr).slice(-2)}`,
-          value: Math.round(item.value * 0.85),
-        }));
-        const currentYear = baseData.map((item) => ({
-          month: `${item.month} '${String(currentYearStr).slice(-2)}`,
-          value: item.value,
-        }));
-        return [...previousYear, ...currentYear];
+        // Simulate 2 years data logic if needed, simplify for now
+        return baseData;
       default:
         return baseData;
     }
-  }, [externalData, selectedPeriod, prevYearStr, currentYearStr]);
+  }, [externalData, selectedPeriod]);
 
   // Memoize aggregates
   const stats = useMemo(() => {
-    const totalCash = filteredData.reduce((sum, item) => sum + item.value, 0);
-    const lastValue = filteredData[filteredData.length - 1]?.value || 0;
-    const previousValue = filteredData[filteredData.length - 2]?.value || 0;
+    const totalCash = filteredData.reduce((sum, item) => sum + (item.revenus || 0), 0);
+    const lastValue = filteredData[filteredData.length - 1]?.revenus || 0;
+    const previousValue = filteredData[filteredData.length - 2]?.revenus || 0;
     const percentageChange =
       previousValue > 0
         ? ((lastValue - previousValue) / previousValue) * 100
@@ -237,12 +245,12 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
                   >
                     <stop
                       offset="0%"
-                      stopColor={chartConfig.value.color}
+                      stopColor={chartConfig.revenus.color}
                       stopOpacity={0.15}
                     />
                     <stop
                       offset="100%"
-                      stopColor={chartConfig.value.color}
+                      stopColor={chartConfig.revenus.color}
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -291,37 +299,43 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
 
                 <ChartTooltip
                   content={<CustomTooltip currency={currency} />}
-                  cursor={{
-                    stroke: chartConfig.value.color,
-                    strokeWidth: 1,
-                    strokeDasharray: "none",
-                  }}
+                  cursor={{ stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, strokeDasharray: "3 3" }}
                 />
 
-                {/* Gradient area */}
+                {/* Gradient areas */}
                 <Area
                   type="monotone"
-                  dataKey="value"
+                  dataKey="revenus"
                   stroke="transparent"
                   fill="url(#cashflowGradient)"
                   strokeWidth={0}
                   dot={false}
                 />
 
-                {/* Main cashflow line */}
+                {/* Main lines */}
                 <Line
                   type="monotone"
-                  dataKey="value"
-                  stroke={chartConfig.value.color}
+                  dataKey="revenus"
+                  stroke={chartConfig.revenus.color}
                   strokeWidth={3}
                   dot={false}
-                  activeDot={{
-                    r: 6,
-                    fill: chartConfig.value.color,
-                    stroke: "white",
-                    strokeWidth: 2,
-                    filter: "url(#dotShadow)",
-                  }}
+                  activeDot={{ r: 6, fill: chartConfig.revenus.color, stroke: "white", strokeWidth: 2, filter: "url(#dotShadow)" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="depenses"
+                  stroke={chartConfig.depenses.color}
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 6, fill: chartConfig.depenses.color, stroke: "white", strokeWidth: 2 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="profit"
+                  stroke={chartConfig.profit.color}
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 6, fill: chartConfig.profit.color, stroke: "white", strokeWidth: 2 }}
                 />
               </ComposedChart>
             </ChartContainer>

@@ -257,7 +257,7 @@ export default function PlanningPage() {
   }, [editingTodo?.startTime, findFreeSlot]);
 
   return (
-    <div className="flex flex-col min-h-full min-w-full pt-5 md:pt-5 lg:pt-16 bg-background font-sans">
+    <div className="flex flex-col min-h-full min-w-full pt-5 md:pt-5 lg:pt-16 pt-28 md:pt-28 lg:pt-28 bg-background font-sans">
       <div className="flex flex-row justify-between items-center px-10 mb-15">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-linear-to-tr from-primary to-emerald-600 rounded-xl shadow-lg shadow-primary/20">

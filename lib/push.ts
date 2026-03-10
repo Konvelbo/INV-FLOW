@@ -27,7 +27,11 @@ export async function sendPushNotification(
 
     await webpush.sendNotification(pushSubscription, JSON.stringify(payload));
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
+    if (error.statusCode === 410 || error.statusCode === 404) {
+      console.warn("Push subscription expired.");
+      return { success: false, expired: true, error };
+    }
     console.error("Error sending push notification:", error);
     return { success: false, error };
   }

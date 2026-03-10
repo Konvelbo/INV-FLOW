@@ -34,10 +34,10 @@ export const FloatingNav = ({
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     if (typeof current === "number") {
-      const direction = current - scrollYProgress.getPrevious()!;
+      const direction = current - (scrollYProgress.getPrevious() ?? 0);
 
       if (scrollYProgress.get() < 0.05) {
-        // setVisible(true);
+        setVisible(true);
       } else {
         if (direction < 0) {
           setVisible(true);
@@ -49,10 +49,24 @@ export const FloatingNav = ({
   });
 
   useEffect(() => {
+    // Check if page is scrollable
+    const checkScrollable = () => {
+      const isScrollable = document.documentElement.scrollHeight > window.innerHeight;
+      if (!isScrollable) {
+        setVisible(true);
+      }
+    };
+
+    checkScrollable();
+    window.addEventListener("resize", checkScrollable);
+
     const time = setTimeout(() => {
       setVisible(true);
     }, 0);
-    return () => clearTimeout(time);
+    return () => {
+      clearTimeout(time);
+      window.removeEventListener("resize", checkScrollable);
+    };
   }, [path]);
 
   return (

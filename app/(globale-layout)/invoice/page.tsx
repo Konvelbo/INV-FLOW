@@ -8,15 +8,44 @@ import { useInvoice } from "@/src/context/InvoiceContext";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
-import { Download, Loader2, FileText, Save, Zap, X } from "lucide-react";
+import {
+  Download,
+  Loader2,
+  FileText,
+  Save,
+  Zap,
+  X,
+  Settings2,
+  Mail,
+  Send,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/src/context/NotificationContext";
+import SmartAutofill from "@/src/components/SmartAutofill";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
+import { Label } from "@/src/components/ui/label";
 
 function Invoice() {
   const [loading, setLoading] = useState(false);
   const divRef = useRef(null);
 
-  const { language } = useLanguage();
+  // Advanced Settings State
+  const [invoiceType, setInvoiceType] = useState("invoice");
+  const [invoiceStatus, setInvoiceStatus] = useState("draft");
+  const [dueDate, setDueDate] = useState("");
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceFreq, setRecurrenceFreq] = useState("monthly");
+
+  // Email State
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [targetEmail, setTargetEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  const { t, language } = useLanguage();
   const {
     reference,
     city,
@@ -54,8 +83,21 @@ function Invoice() {
         });
 
         if (res.status === 200) {
-          setInvoiceData(res.data);
-          toast.success("Invoice loaded successfully");
+          const inv = res.data;
+          setInvoiceData(inv);
+
+          // Synchronize local states with loaded data to prevent defaults overwriting DB
+          setInvoiceType(inv.type || "invoice");
+          setInvoiceStatus(inv.status || "draft");
+          setDueDate(
+            inv.dueDate
+              ? new Date(inv.dueDate).toISOString().split("T")[0]
+              : "",
+          );
+          setIsRecurring(inv.isRecurring || false);
+          setRecurrenceFreq(inv.recurrenceFreq || "monthly");
+
+          toast.success(t("invoiceLoaded"));
         }
       } catch (err) {
         console.error("Failed to load invoice", err);
@@ -76,9 +118,11 @@ function Invoice() {
     try {
       const data = {
         reference: reference || "",
-        type: "PROFORMA",
+        type: invoiceType,
+        status: invoiceStatus,
         city: city || "",
         invoiceDate: new Date().toISOString(),
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         clientName: clientName || "",
         clientAddress: clientAddress || "",
         clientContact: clientContact || "",
@@ -127,7 +171,7 @@ function Invoice() {
         throw new Error(json.message || "Server Error (JSON)");
       }
 
-      toast.success("PDF Downloaded Successfully!");
+      toast.success(t("pdfSuccess"));
 
       const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
@@ -176,6 +220,8 @@ function Invoice() {
     try {
       const data = {
         reference: reference || "",
+        type: invoiceType,
+        status: invoiceStatus,
         city: city || "",
         clientName: clientName || "",
         clientAddress: clientAddress || "",
@@ -189,13 +235,14 @@ function Invoice() {
         items: itemsArr || [],
         currencyCode: currency,
         style: style || "default",
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        isRecurring,
+        recurrenceFreq: isRecurring ? recurrenceFreq : null,
       };
 
       // Validate required fields
       if (!data.reference || !data.clientName || data.items.length === 0) {
-        throw new Error(
-          "Please fill in the Reference, Client Name, and add at least one item.",
-        );
+        throw new Error(t("fillFields"));
       }
 
       const userStr = localStorage.getItem("user");
@@ -223,11 +270,7 @@ function Invoice() {
       }
 
       if (res.status === 201 || res.status === 200) {
-        toast.success(
-          invoiceId
-            ? "Invoice Updated Successfully!"
-            : "Invoice Saved Successfully!",
-        );
+        toast.success(invoiceId ? t("updateSuccess") : t("saveSuccess"));
 
         addNotification({
           user: "Système",
@@ -253,8 +296,54 @@ function Invoice() {
     }
   };
 
+  const handleSendEmail = async () => {
+    if (!targetEmail) {
+      toast.error(t("invalidEmail"));
+      return;
+    }
+
+    // Determine the invoice ID (if already saved, we have invoiceId from URL,
+    // but if we just created it, we might not have it in state if we didn't redirect.
+    // Actually, HandleSave does not update the URL. We should save first if no ID, then send.
+    // For simplicity, let's enforce saving first.)
+
+    if (!invoiceId) {
+      toast.error(t("saveFirst"));
+      setIsEmailModalOpen(false);
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
+
+      const res = await axios.post(
+        "/api/invoices/send",
+        {
+          invoiceId: invoiceId,
+          email: targetEmail,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (res.status === 200) {
+        toast.success(t("emailSentSuccess"));
+        setIsEmailModalOpen(false);
+        setTargetEmail("");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || t("emailSendError"));
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen min-w-full bg-background text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center lg:p-16 py-12 pb-32">
+    <div className="min-h-screen min-w-full bg-background pt-28 md:pt-28 lg:pt-28 text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center lg:p-16 py-12 pb-32">
       {/* Premium Background Aesthetics - Animated Mesh Gradients */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
@@ -277,7 +366,7 @@ function Invoice() {
               </span>
             </div>
             <h1 className="text-5xl font-bold text-foreground tracking-tighter bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent">
-              Invoice Editor
+              {t("invoiceEditor")}
             </h1>
           </div>
         </div>
@@ -290,11 +379,108 @@ function Invoice() {
                 Status
               </span>
               <span className="text-xs font-bold text-white tracking-tight">
-                System Ready
+                {t("systemReady")}
               </span>
             </div>
           </div>
         </div>
+      </div>
+
+      <SmartAutofill />
+
+      {/* Configuration Panel */}
+      <div className="w-full max-w-[1300px] px-8 mb-6 flex justify-end animate-fade-in-up">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="gap-2 font-bold backdrop-blur-xl border-border/50 shadow-lg"
+            >
+              <Settings2 className="w-4 h-4" />
+              {t("documentSettings")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-4 space-y-4 bg-card/95 backdrop-blur-2xl border-border/50 text-foreground mr-8">
+            <div className="space-y-2">
+              <h4 className="font-bold">{t("documentType")}</h4>
+              <div className="flex bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setInvoiceType("invoice")}
+                  className={cn(
+                    "flex-1 text-xs py-1.5 rounded-md font-bold transition-all",
+                    invoiceType === "invoice"
+                      ? "bg-background shadow text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {t("invoice")}
+                </button>
+                <button
+                  onClick={() => setInvoiceType("quote")}
+                  className={cn(
+                    "flex-1 text-xs py-1.5 rounded-md font-bold transition-all",
+                    invoiceType === "quote"
+                      ? "bg-background shadow text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {t("quote")}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-bold">{t("statut")}</h4>
+              <select
+                value={invoiceStatus}
+                onChange={(e) => setInvoiceStatus(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+              >
+                <option value="draft">{t("draft")}</option>
+                <option value="pending">{t("sent")}</option>
+                <option value="paid">{t("paid")}</option>
+                <option value="overdue">{t("overdue")}</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="font-bold">{t("dueDate")}</Label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+              />
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/50">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isRecurring}
+                  onChange={(e) => setIsRecurring(e.target.checked)}
+                  className="rounded text-primary focus:ring-primary w-4 h-4"
+                />
+                <span className="text-sm font-bold">
+                  {t("recurringInvoice")}
+                </span>
+              </label>
+              {isRecurring && (
+                <div className="pl-6 animate-in slide-in-from-left-2 duration-300">
+                  <select
+                    value={recurrenceFreq}
+                    onChange={(e) => setRecurrenceFreq(e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="weekly">{t("weekly")}</option>
+                    <option value="monthly">{t("monthly")}</option>
+                    <option value="yearly">{t("yearly")}</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Focused Editor Area */}
@@ -325,7 +511,7 @@ function Invoice() {
                 "h-14 w-14 rounded-2xl shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-emerald-500 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
                 loading && "opacity-50",
               )}
-              title="Enregistrer"
+              title={t("save")}
             >
               <Save className="h-7 w-7" />
             </Button>
@@ -340,9 +526,37 @@ function Invoice() {
                 "h-14 w-14 rounded-2xl shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
                 loading && "opacity-50",
               )}
-              title="Télécharger"
+              title={t("download")}
             >
               <Download className="h-7 w-7" />
+            </Button>
+          </div>
+
+          {/* Send Email Button (Expansion Right or custom placement) */}
+          {/* We'll place it as a separate fab item; let's reuse fab-item with a custom class inline if needed, or just add it here */}
+          <div
+            className="fab-item"
+            style={{
+              transform: "translate(70px, -45px)",
+              position: "absolute",
+            }}
+          >
+            <Button
+              onClick={() => {
+                if (!invoiceId) {
+                  toast.error(t("saveFirst"));
+                  return;
+                }
+                setIsEmailModalOpen(true);
+              }}
+              disabled={loading}
+              className={cn(
+                "h-14 w-14 rounded-2xl shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-violet-600 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
+                loading && "opacity-50",
+              )}
+              title={t("sendInvoiceEmail")}
+            >
+              <Mail className="h-6 w-6" />
             </Button>
           </div>
 
@@ -372,6 +586,54 @@ function Invoice() {
           </div>
         </div>
       </div>
+
+      {/* Email Modal */}
+      {isEmailModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-card w-full max-w-md rounded-2xl border border-border/50 shadow-2xl p-6 animate-fade-in-up">
+            <h3 className="text-xl font-bold mb-2">{t("sendInvoiceEmail")}</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              {t("sendInvoiceEmailDesc")}
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 block">
+                  {t("clientEmailAddress")}
+                </label>
+                <input
+                  type="email"
+                  value={targetEmail}
+                  onChange={(e) => setTargetEmail(e.target.value)}
+                  className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
+                  placeholder="client@exemple.com"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  onClick={() => setIsEmailModalOpen(false)}
+                  disabled={isSendingEmail}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  className="flex-1 rounded-xl gap-2"
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail || !targetEmail}
+                >
+                  {isSendingEmail ? (
+                    <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {t("send")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

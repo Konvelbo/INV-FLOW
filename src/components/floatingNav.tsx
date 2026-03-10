@@ -43,6 +43,14 @@ export function FloatingNavDemo() {
       id: "History",
     },
     {
+      title: dict.management || "Gestion Globale",
+      url: "/management",
+      icon: (
+        <IconClipboard className="h-4 w-4 text-neutral-500 dark:text-white" />
+      ),
+      id: "Management",
+    },
+    {
       title: dict.workPlanning,
       url: "/planning",
       icon: (

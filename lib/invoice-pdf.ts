@@ -24,6 +24,7 @@ export type InvoiceProps = {
   managerName: string;
   amountWords: string;
   style?: string;
+  type?: "invoice" | "quote";
   currencyCode?: string;
   language?: "fr" | "en";
 };
@@ -95,11 +96,10 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `
   <div class="page ${pageIndex > 0 ? "page-break" : ""}">
-    ${
-      pageIndex === 0
-        ? `
+    ${pageIndex === 0
+          ? `
     <div class="proforma-line">
-      <span class="ref">${dict.proforma} : ${data.reference}</span>
+      <span class="ref">${data.type === "quote" ? dict.proforma : dict.invoice} : ${data.reference}</span>
       <span class="date">${data.city} ${dict.date} ${date}</span>
     </div>
 
@@ -116,8 +116,8 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         <p>${dict.object} : ${data.object}</p>
       </div>
     </div>`
-        : ""
-    }
+          : ""
+        }
 
     <div style="${pageIndex > 0 ? "padding: 20px 30px;" : ""}">
       <table>
@@ -132,8 +132,8 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         </thead>
         <tbody>
           ${pageItems
-            .map(
-              (item) => `
+          .map(
+            (item) => `
           <tr>
             <td>${item.designation}</td>
             <td>${item.unit}</td>
@@ -141,15 +141,14 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
             <td>${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
             <td>${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
           </tr>`,
-            )
-            .join("")}
+          )
+          .join("")}
         </tbody>
       </table>
 
       ${isLast && remainingTotal > 0 ? `<div style="margin-top:8px; text-align:right; font-weight:bold;">${dict.amountRemaining} : ${formatCurrency(remainingTotal, data.currencyCode, lang)}</div>` : ""}
 
-      ${
-        isLast
+      ${isLast
           ? `
       <table class="totals">
         <tr><td>${dict.totalMaterial}</td><td>${totalmaterial}</td></tr>
@@ -160,7 +159,7 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         <h1>${data.managerName}</h1>
       </div>`
           : ""
-      }
+        }
     </div>
     <div class="pageNumber">${dict.page} ${pageIndex + 1} ${dict.of} ${totalPages}</div>
   </div>`;
@@ -177,7 +176,7 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; }
   .page-break { page-break-before: always; }
   .pageNumber { position: absolute; bottom: 30px; right: 30px; }
-  .proforma-line { display: flex; justify-content: space-between; margin-top: 25px; font-weight: bold; font-size: 20px; }
+  .proforma-line { display: flex; justify-content: space-between; margin-top: 45px; font-weight: bold; font-size: 20px; }
   .address-container { border: 1px solid #000; margin-top: 15px; }
   .address-header { display: flex; border-bottom: 1px solid #000; height: 30px; font-size: 14px; }
   .address-title { width: 50%; padding: 6px; font-weight: bold; border-right: 1px solid #000; }
@@ -213,12 +212,11 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `
     <div class="page ${pageIndex > 0 ? "page-break" : ""}">
-      ${
-        pageIndex === 0
+      ${pageIndex === 0
           ? `
       <div class="header">
           <div class="logo-section">
-              <h1>${dict.invoice}</h1>
+              <h1>${data.type === "quote" ? dict.proforma : dict.invoice}</h1>
               <div class="ref-row"><span class="label">${dict.reference}:</span> <span class="value">${data.reference}</span></div>
           </div>
           <div class="date-section">
@@ -246,7 +244,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
           </div>
       </div>`
           : `<div style="height: 50px;"></div>`
-      }
+        }
 
       <table>
           <thead>
@@ -260,8 +258,8 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
           </thead>
           <tbody>
             ${pageItems
-              .map(
-                (item, idx) => `
+          .map(
+            (item, idx) => `
             <tr class="${idx % 2 === 0 ? "" : "bg-gray"}">
               <td style="text-align:left; word-break: break-word; max-width: 300px;">${item.designation}</td>
               <td style="text-align:center">${item.unit}</td>
@@ -269,13 +267,12 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
               <td style="text-align:right; white-space: nowrap;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
               <td style="text-align:right; font-weight:bold; white-space: nowrap;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
             </tr>`,
-              )
-              .join("")}
+          )
+          .join("")}
           </tbody>
       </table>
 
-      ${
-        isLast
+      ${isLast
           ? `
       <div class="footer-totals">
             <div class="footer-bottom">
@@ -296,7 +293,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
             </div>
       </div>`
           : ""
-      }
+        }
 
       <div class="page-num">${pageIndex + 1} / ${totalPages}</div>
     </div>`;
@@ -340,7 +337,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .signature-area { flex: 1; text-align: left; }
     .sig-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 32px; }
     .sig-name { font-family: 'Inter', cursive; font-size: 24px; font-style: italic; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; display: inline-block; min-width: 200px; }
-    
+
     .totals-section { min-width: 320px; max-width: 50%; font-variant-numeric: tabular-nums; }
     .total-row { display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px; gap: 20px; }
     .total-row.subt { color: #64748b; border-bottom: 1px solid #f1f5f9; }
@@ -371,9 +368,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
-       ${
-         i === 0
-           ? `
+       ${i === 0
+          ? `
          <div class="header-band">
              <div class="logo-container">
                  <div class="logo-circle"></div>
@@ -382,7 +378,7 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
          </div>
          <div class="header-main">
              <div class="left">
-                 <h1 class="title">${dict.invoice}</h1>
+                 <h1 class="title">${data.type === "quote" ? dict.proforma : dict.invoice}</h1>
                  <div class="meta"><span style="color:#64748b;">#</span> ${data.reference}</div>
              </div>
              <div class="right">
@@ -405,8 +401,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                  <div class="description-box">${data.object}</div>
              </div>
          </div>`
-           : '<div style="height:40px"></div>'
-       }
+          : '<div style="height:40px"></div>'
+        }
 
          <div class="table-container">
             <table>
@@ -421,8 +417,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </thead>
                 <tbody>
                     ${pageItems
-                      .map(
-                        (item, idx) => `
+          .map(
+            (item, idx) => `
                     <tr class="${idx % 2 === 1 ? "bg-gray" : ""}">
                         <td style="text-align:left; word-break: break-word; max-width: 300px;">${item.designation}</td>
                         <td class="center">${item.unit}</td>
@@ -430,15 +426,14 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                         <td style="text-align:right; white-space: nowrap;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
                         <td style="text-align:right; font-weight:bold; color:#1e293b; white-space: nowrap;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
                     </tr>`,
-                      )
-                      .join("")}
+          )
+          .join("")}
                 </tbody>
             </table>
          </div>
 
-         ${
-           isLast
-             ? `
+         ${isLast
+          ? `
          <div class="summary">
              <div class="summary-box">
                  <div class="footer-layout">
@@ -453,8 +448,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </div>
             </div>
             <div class="footer-bar"></div>`
-             : `<div class="footer-bar" style="position:absolute; bottom:0;"></div>`
-         }
+          : `<div class="footer-bar" style="position:absolute; bottom:0;"></div>`
+        }
          <div class="page-num" style="position:absolute; bottom:20px; right:40px; font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
        </div>`;
     })
@@ -499,7 +494,7 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .sig-area { flex: 1; }
     .sig-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 32px; font-weight: 700; }
     .sig-name { font-size: 20px; font-style: italic; color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; display: inline-block; min-width: 200px; }
-    
+
     .totals-area { min-width: 320px; max-width: 50%; background: #1e3a8a; color: #fff; padding: 32px; border-radius: 16px; font-variant-numeric: tabular-nums; }
     .total-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; gap: 20px; }
     .total-row.subt { color: #bfdbfe; }
@@ -536,9 +531,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
       return `<div class="page ${i > 0 ? "page-break" : ""}">
         ${bgDecor}
         <div class="content-wrapper">
-            ${
-              i === 0
-                ? `
+            ${i === 0
+          ? `
             <div class="header">
                 <div>
                     <div class="brand">
@@ -551,7 +545,7 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <h1 class="main-title">${dict.invoice}</h1>
+                    <h1 class="main-title">${data.type === "quote" ? dict.proforma : dict.invoice}</h1>
                     <div class="ref-badge"><span style="opacity:0.6;">#</span> ${data.reference}</div>
                 </div>
             </div>
@@ -569,8 +563,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="desc-text">${data.object}</div>
                 </div>
             </div>`
-                : '<div style="height: 50px;"></div>'
-            }
+          : '<div style="height: 50px;"></div>'
+        }
 
             <div class="grid-header">
                 <div class="c-desc">${dict.description}</div>
@@ -581,8 +575,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
             <div class="items-grid">
                 ${pageItems
-                  .map(
-                    (item) => `
+          .map(
+            (item) => `
                 <div class="item-card">
                     <div class="i-desc">
                         <div class="name">${item.designation}</div>
@@ -592,13 +586,12 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="i-qty"><span>${item.quantity}</span></div>
                     <div class="i-total">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</div>
                 </div>`,
-                  )
-                  .join("")}
+          )
+          .join("")}
             </div>
 
-            ${
-              isLast
-                ? `
+            ${isLast
+          ? `
             <div class="footer">
                 <div class="summary-card">
                     <div class="sum-left">
@@ -615,8 +608,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="label">${dict.authorizedSignature}</div>
                 </div>
             </div>`
-                : ""
-            }
+          : ""
+        }
         </div>
         <div class="page-num" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
         </div>`;
@@ -697,12 +690,11 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
       return `<div class="page ${i > 0 ? "page-break" : ""}">
             <div class="top-accent"></div>
             <div class="inner-content">
-            ${
-              i === 0
-                ? `
+            ${i === 0
+          ? `
             <div class="header">
                 <div class="header-left">
-                    <h1 class="main-title">${dict.invoice}</h1>
+                    <h1 class="main-title">${data.type === "quote" ? dict.proforma : dict.invoice}</h1>
                     <div class="ref-row">
                         <span class="ref-label">${dict.reference}:</span>
                         <span class="ref-value">${data.reference}</span>
@@ -730,8 +722,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="object-box">${data.object}</div>
                 </div>
             </div>`
-                : '<div style="height:60px"></div>'
-            }
+          : '<div style="height:60px"></div>'
+        }
 
             <div class="table-wrapper">
                 <table>
@@ -746,8 +738,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </thead>
                     <tbody>
                         ${pageItems
-                          .map(
-                            (item) => `
+          .map(
+            (item) => `
                         <tr>
                             <td style="text-align:left; font-weight: 500;">${item.designation}</td>
                             <td>${item.unit}</td>
@@ -755,15 +747,14 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                             <td style="text-align:right; color: #64748b;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
                             <td style="text-align:right; font-weight: 600; color: #0f172a;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
                         </tr>`,
-                          )
-                          .join("")}
+          )
+          .join("")}
                     </tbody>
                 </table>
             </div>
 
-            ${
-              isLast
-                ? `
+            ${isLast
+          ? `
             <div class="footer-area">
                 <div class="totals-section">
                     <div class="total-row subt">
@@ -790,8 +781,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
             </div>`
-                : ""
-            }
+          : ""
+        }
             </div>
             <div class="page-num" style="position:absolute; bottom:24px; right:60px; font-size:10px; color:#94a3b8;">${i + 1} / ${totalPages}</div>
             <div class="bottom-accent"></div>
@@ -867,9 +858,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
             <div class="content">
-            ${
-              i === 0
-                ? `
+            ${i === 0
+          ? `
             <div class="header">
                 <div class="brand">
                     <div class="zap-icon">
@@ -914,8 +904,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="project-text">${data.object}</div>
                 </div>
             </div>`
-                : '<div style="height:40px"></div>'
-            }
+          : '<div style="height:40px"></div>'
+        }
 
             <div class="table-container">
                 <div class="table-head">
@@ -927,8 +917,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </div>
                 <div class="table-body">
                     ${pageItems
-                      .map(
-                        (item) => `
+          .map(
+            (item) => `
                     <div class="table-row">
                         <div class="col-desc">
                             <div class="item-name">${item.designation}</div>
@@ -938,14 +928,13 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                         <div class="col-price">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</div>
                         <div class="col-total">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</div>
                     </div>`,
-                      )
-                      .join("")}
+          )
+          .join("")}
                 </div>
             </div>
 
-            ${
-              isLast
-                ? `
+            ${isLast
+          ? `
             <div class="footer">
                 <div class="signature-block">
                     <label>${dict.authorizedSignature}</label>
@@ -966,8 +955,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
             </div>`
-                : ""
-            }
+          : ""
+        }
             </div>
             <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#a1a1aa;">${i + 1} / ${totalPages}</div>
         </div>`;

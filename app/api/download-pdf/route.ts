@@ -16,26 +16,27 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json();
-    const validateData = invoiceSchema.safeParse(data);
 
-    // Validate input data
-    if (!validateData.success) {
-      console.error("Zod Validation Error:", validateData.error.format());
-      return new Response(
-        JSON.stringify({
-          message: "Invalid input data.",
-          errors: validateData.error.errors,
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+    // Safety guards since Zod was removed
+    if (!data.reference) {
+      return new Response(JSON.stringify({ message: "Missing document reference." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (!data.items || !Array.isArray(data.items)) {
+      return new Response(JSON.stringify({ message: "Invalid or missing items list." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    const validatedInvoice = validateData.data;
+    const validatedInvoice = data;
 
     // Verify user authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      return new Response(JSON.stringify({ message: "Unauthorized: Missing Authorization header." }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -47,11 +48,11 @@ export async function POST(req: Request) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
       if (!decoded || !decoded.id) {
-        throw new Error("Invalid token payload");
+        throw new Error("Token verification failed: Missing user ID.");
       }
       userId = decoded.id;
     } catch (err) {
-      return new Response(JSON.stringify({ message: "Invalid token" }), {
+      return new Response(JSON.stringify({ message: "Invalid or expired token.", error: (err as Error).message }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -59,8 +60,9 @@ export async function POST(req: Request) {
 
     const html = invoiceTemplate({
       ...validatedInvoice,
-      currencyCode: validatedInvoice.currencyCode,
-      language: validatedInvoice.language,
+      currencyCode: validatedInvoice.currencyCode || "XOF",
+      language: validatedInvoice.language || "fr",
+      type: validatedInvoice.type || "invoice",
     });
 
     // Generate a unique temporary directory for this browser instance to avoid locking issues
@@ -130,7 +132,7 @@ export async function POST(req: Request) {
             connect: { id: userId },
           },
           items: {
-            create: validatedInvoice.items.map((item: InvoiceItemProps) => ({
+            create: validatedInvoice.items.map((item: any) => ({
               designation: item.designation,
               unit: item.unit,
               quantity: item.quantity,
@@ -143,7 +145,8 @@ export async function POST(req: Request) {
 
       if (
         createdInvoice &&
-        createdInvoice.createdAt.getTime() < Date.now() - 1000
+        createdInvoice.createdAt &&
+        (createdInvoice.createdAt?.getTime() || 0) < Date.now() - 1000
       ) {
         // It was an update (roughly).
         try {
@@ -162,12 +165,12 @@ export async function POST(req: Request) {
               })),
             }),
           ]);
-        } catch {
-          // Silenced
+        } catch (dbErr) {
+          console.error("Persistence Transaction Error:", dbErr);
         }
       }
-    } catch {
-      // Silenced
+    } catch (dbErr) {
+      console.error("Persistence Upsert Error:", dbErr);
     }
 
     return new Response(Buffer.from(pdf), {
@@ -177,6 +180,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
+    console.error("PDF API Fatal Error:", error);
     // Ensure browser is closed if an error occurs
     if (browser) {
       await browser.close();

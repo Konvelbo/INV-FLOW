@@ -1,56 +1,60 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface TrendItem {
+  label: string;
+  value?: string | number;
+  up?: boolean;
+  color?: string; // Optional custom color class
+}
+
 interface StatsCardProps {
   title: string;
   value: string;
   trend?: string;
   trendUp?: boolean;
+  trends?: TrendItem[]; // New prop for multiple trends
   icon: LucideIcon;
   variant?: "blue" | "indigo" | "emerald" | "amber" | "slate";
   className?: string;
+  subtitle?: string;
 }
 
 const variants = {
   blue: {
     bg: "bg-blue-500/5",
-    border: "border-blue-500/20",
-    hover: "hover:border-blue-500/40",
+    border: "border-blue-500/10",
+    hover: "hover:border-blue-500/30",
     iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-400",
-    glow: "group-hover:shadow-[0_0_30px_-10px_rgba(59,130,246,0.3)]",
+    iconColor: "text-blue-500",
   },
   indigo: {
     bg: "bg-indigo-500/5",
-    border: "border-indigo-500/20",
-    hover: "hover:border-indigo-500/40",
+    border: "border-indigo-500/10",
+    hover: "hover:border-indigo-500/30",
     iconBg: "bg-indigo-500/10",
-    iconColor: "text-indigo-400",
-    glow: "group-hover:shadow-[0_0_30px_-10px_rgba(99,102,241,0.3)]",
+    iconColor: "text-indigo-500",
   },
   emerald: {
     bg: "bg-emerald-500/5",
-    border: "border-emerald-500/20",
-    hover: "hover:border-emerald-500/40",
+    border: "border-emerald-500/10",
+    hover: "hover:border-emerald-500/30",
     iconBg: "bg-emerald-500/10",
-    iconColor: "text-emerald-400",
-    glow: "group-hover:shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]",
+    iconColor: "text-emerald-500",
   },
   amber: {
     bg: "bg-amber-500/5",
-    border: "border-amber-500/20",
-    hover: "hover:border-amber-500/40",
+    border: "border-amber-500/10",
+    hover: "hover:border-amber-500/30",
     iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-400",
-    glow: "group-hover:shadow-[0_0_30px_-10px_rgba(245,158,11,0.3)]",
+    iconColor: "text-amber-500",
   },
   slate: {
     bg: "bg-slate-500/5",
-    border: "border-slate-500/20",
-    hover: "hover:border-slate-500/40",
+    border: "border-slate-500/10",
+    hover: "hover:border-slate-500/30",
     iconBg: "bg-slate-500/10",
-    iconColor: "text-slate-400",
-    glow: "group-hover:shadow-[0_0_30px_-10px_rgba(100,116,139,0.3)]",
+    iconColor: "text-slate-500",
   },
 };
 
@@ -59,62 +63,78 @@ export function StatsCard({
   value,
   trend,
   trendUp,
+  trends,
   icon: Icon,
   variant = "blue",
   className,
+  subtitle,
 }: StatsCardProps) {
   const v = variants[variant];
 
   return (
     <div
       className={cn(
-        "xl:min-w-85 group relative p-6 rounded-2xl bg-card border border-border/50 backdrop-blur-xl transition-all duration-500",
-        v.hover,
-        v.glow,
-        "hover:-translate-y-1 hover:bg-card/80",
+        "group relative p-6 rounded-3xl bg-card border border-border/50 transition-all duration-300",
+        "hover:shadow-2xl hover:shadow-black/5 hover:border-border",
         className,
       )}
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="space-y-1.5">
+          <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
+            {title}
+          </h3>
+          <div className="flex items-baseline gap-2">
+            <div className="text-3xl font-black text-foreground tracking-tighter">
+              {value}
+            </div>
+            {subtitle && (
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                {subtitle}
+              </span>
+            )}
+          </div>
+        </div>
         <div
           className={cn(
-            "p-3 rounded-xl transition-all duration-300 group-hover:scale-110",
-            v.iconBg,
+            "p-3 rounded-2xl transition-all duration-500 group-hover:rotate-6",
+            v.bg,
             v.iconColor,
           )}
         >
-          <Icon className="w-6 h-6" />
+          <Icon className="w-5 h-5" />
         </div>
-        {trend && (
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-4">
+        {trends ? (
+          trends.map((t, i) => (
+            <div
+              key={i}
+              className={cn(
+                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-colors",
+                t.color ? t.color : (t.up
+                  ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
+                  : "bg-red-500/5 text-red-500 border-red-500/10"
+                )
+              )}
+            >
+              {t.label} {t.value !== undefined && <span className="opacity-50">|</span>} {t.value}
+            </div>
+          ))
+        ) : trend ? (
           <div
             className={cn(
-              "px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border backdrop-blur-sm",
+              "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border",
               trendUp
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                : "bg-red-500/10 text-red-400 border-red-500/20",
+                ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
+                : "bg-red-500/5 text-red-500 border-red-500/10",
             )}
           >
             {trend}
           </div>
-        )}
+        ) : null}
       </div>
-
-      <div className="space-y-2">
-        <h3 className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.2em]">
-          {title}
-        </h3>
-        <div className="text-2xl font-bold text-foreground tracking-tight font-mono">
-          {value}
-        </div>
-      </div>
-
-      {/* Subtle bottom gradient sweep */}
-      <div
-        className={cn(
-          "absolute bottom-0 left-0 right-0 h-[2px] bg-linear-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-500 rounded-full mx-6",
-          v.iconColor,
-        )}
-      />
     </div>
   );
 }

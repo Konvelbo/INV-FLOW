@@ -2,7 +2,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function InvoiceLoading() {
   return (
-    <div className="min-h-screen min-w-full bg-background/50 flex flex-col items-center py-12 pb-32 animate-in fade-in duration-700">
+    <div className="min-h-screen min-w-full bg-background/50 flex flex-col items-center py-12 pb-32 pt-28 md:pt-28 lg:pt-28 animate-in fade-in duration-700">
       {/* Header Skeleton */}
       <div className="w-full max-w-8xl px-8 mb-16 flex justify-between items-center">
         <div className="flex items-center gap-8">

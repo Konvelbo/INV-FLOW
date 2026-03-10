@@ -25,6 +25,7 @@ export async function POST(req: Request) {
 
     const isExistUserEmail = await prisma.user.findUnique({
       where: { email: email },
+      include: { companies: true },
     });
 
     if (!isExistUserEmail) {
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
         name: isExistUserEmail.name,
         email: isExistUserEmail.email,
         avatar: isExistUserEmail.avatar,
+        companies: isExistUserEmail.companies,
       };
       return NextResponse.json(
         { user, message: "Connexion réussie" },

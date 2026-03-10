@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 // import { format } from "date-fns";
+import toast from "react-hot-toast";
 import {
   Trash2,
   Eye,
@@ -14,8 +15,11 @@ import {
   DollarSign,
   Package,
   User,
+  Mail,
+  Send,
 } from "lucide-react";
 import { useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -36,6 +40,14 @@ export default function HistoryPage() {
   const router = useRouter();
   const { currency, clearInvoiceData } = useInvoice();
   const { addNotification } = useNotifications();
+  const { t, language } = useLanguage();
+
+  // Send Email State
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [selectedInvoiceForEmail, setSelectedInvoiceForEmail] =
+    useState<any>(null);
+  const [targetEmail, setTargetEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   useEffect(() => {
     fetchInvoices();
@@ -56,7 +68,7 @@ export default function HistoryPage() {
       });
       setInvoices(res.data);
     } catch (err) {
-      setError("Failed to load invoices");
+      setError(t("authError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -64,7 +76,7 @@ export default function HistoryPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this invoice?")) return;
+    if (!confirm(t("deleteStructureWarning"))) return;
 
     try {
       const userStr = localStorage.getItem("user");
@@ -83,7 +95,7 @@ export default function HistoryPage() {
         type: "invoice",
       });
     } catch {
-      alert("Failed to delete invoice");
+      toast.error(t("authError"));
     }
   };
 
@@ -113,7 +125,48 @@ export default function HistoryPage() {
         type: "invoice",
       });
     } catch {
-      alert("Failed to update status");
+      toast.error(t("authError"));
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!targetEmail || !selectedInvoiceForEmail) return;
+    setIsSendingEmail(true);
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
+
+      const res = await axios.post(
+        "/api/invoices/send",
+        {
+          invoiceId: selectedInvoiceForEmail.id,
+          email: targetEmail,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (res.status === 200) {
+        toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
+        addNotification({
+          user: "Système",
+          action: "a envoyé",
+          target: `la facture ${selectedInvoiceForEmail.reference} par e-mail`,
+          type: "invoice",
+        });
+        setIsEmailModalOpen(false);
+        setTargetEmail("");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        err.response?.data?.message ||
+          t("emailSendError") ||
+          "Erreur lors de l'envoi de l'e-mail",
+      );
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -122,7 +175,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 relative overflow-hidden font-sans pb-20">
+    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative overflow-hidden font-sans pb-20">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
@@ -135,15 +188,14 @@ export default function HistoryPage() {
             <div className="flex items-center gap-3">
               <div className="h-1.5 w-10 bg-primary rounded-full" />
               <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em]">
-                Archives Financières
+                {t("financialArchives")}
               </span>
             </div>
             <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent font-sans">
-              Historique
+              {t("history")}
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl font-sans">
-              Gérez et visualisez l&apos;intégralité de vos flux de facturation
-              archivés.
+              {t("historyDesc")}
             </p>
           </div>
           <Button
@@ -153,7 +205,7 @@ export default function HistoryPage() {
             }}
             className="px-8 py-4 text-xs font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em] h-auto"
           >
-            Nouvelle Facture
+            {t("newInvoice")}
           </Button>
         </div>
 
@@ -169,7 +221,7 @@ export default function HistoryPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Rechercher par référence..."
+              placeholder={t("searchRef")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50 font-sans"
@@ -195,7 +247,7 @@ export default function HistoryPage() {
               />
             </div>
             <span className="text-muted-foreground/50 font-black text-[10px] uppercase">
-              to
+              {t("of")}
             </span>
             <div className="relative">
               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -219,7 +271,7 @@ export default function HistoryPage() {
               }}
               className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
             >
-              Réinitialiser
+              {t("reset")}
             </Button>
           )}
         </div>
@@ -227,9 +279,13 @@ export default function HistoryPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {invoices
             .filter((invoice) => {
-              const matchesSearch = (invoice.reference || "")
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase());
+              const matchesSearch =
+                (invoice.reference || "")
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase()) ||
+                (invoice.clientName || "")
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase());
 
               const invoiceDate = new Date(invoice.createdAt);
               const start = startDate ? new Date(startDate) : null;
@@ -271,7 +327,7 @@ export default function HistoryPage() {
                       <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-2">
                         <Calendar className="w-3 h-3 text-primary" />
                         {new Date(invoice.createdAt).toLocaleDateString(
-                          "fr-FR",
+                          language === "fr" ? "fr-FR" : "en-US",
                           {
                             dateStyle: "medium",
                           },
@@ -299,7 +355,7 @@ export default function HistoryPage() {
                             : "bg-muted-foreground/30",
                         )}
                       />
-                      {invoice.isScaled ? "Scalé" : "Standard"}
+                      {invoice.isScaled ? t("scaled") : t("standard")}
                     </div>
                   </div>
                 </CardHeader>
@@ -309,7 +365,9 @@ export default function HistoryPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <User className="w-4 h-4" />
-                        <span className="font-medium font-sans">Client</span>
+                        <span className="font-medium font-sans">
+                          {t("client")}
+                        </span>
                       </div>
                       <span className="font-bold text-foreground font-sans truncate max-w-[150px]">
                         {invoice.clientName}
@@ -319,10 +377,12 @@ export default function HistoryPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <Package className="w-4 h-4" />
-                        <span className="font-medium font-sans">Volume</span>
+                        <span className="font-medium font-sans">
+                          {t("volume")}
+                        </span>
                       </div>
                       <span className="font-bold text-foreground font-mono">
-                        {invoice.totalMaterial || 0} mat.
+                        {invoice.totalMaterial || 0} {t("mat")}
                       </span>
                     </div>
 
@@ -330,7 +390,7 @@ export default function HistoryPage() {
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <DollarSign className="w-4 h-4 text-primary" />
                         <span className="font-black text-[10px] uppercase tracking-widest">
-                          Total
+                          {t("total_stat")}
                         </span>
                       </div>
                       <span className="text-xl font-black text-primary font-mono tracking-tighter">
@@ -347,7 +407,7 @@ export default function HistoryPage() {
                       onClick={() => router.push(`/invoice?id=${invoice.id}`)}
                     >
                       <Eye className="w-4 h-4 mr-2 transition-transform group-hover/btn:scale-110" />
-                      Détails
+                      {t("details")}
                     </Button>
                     <Button
                       variant="destructive"
@@ -360,6 +420,21 @@ export default function HistoryPage() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-12 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white border border-blue-500/20 transition-all cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Pre-fill email if we have it from client relation
+                        setTargetEmail(invoice.client?.email || "");
+                        setSelectedInvoiceForEmail(invoice);
+                        setIsEmailModalOpen(true);
+                      }}
+                      title={t("sent")}
+                    >
+                      <Mail className="w-4 h-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -371,22 +446,73 @@ export default function HistoryPage() {
                 <Package className="w-12 h-12 text-primary opacity-50" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-3 font-sans">
-                Aucun enregistrement
+                {t("noRecord")}
               </h3>
               <p className="text-muted-foreground mb-10 max-w-sm mx-auto font-sans">
-                Votre archive est vide. Commencez par générer votre première
-                architecture de facturation.
+                {t("emptyArchiveDesc")}
               </p>
               <Button
                 onClick={() => router.push("/invoice")}
                 className="px-10 py-5 text-sm font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest h-auto"
               >
-                Initialiser un Flux
+                {t("initializeFlux")}
               </Button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Email Modal */}
+      {isEmailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-card w-full max-w-md rounded-2xl border border-border/50 shadow-2xl p-6 animate-fade-in-up">
+            <h3 className="text-xl font-bold mb-2">
+              {t("sendInvoiceEmail") || "Envoyer la facture par e-mail"}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              {t("sendInvoiceEmailDesc") || "Envoyez"}{" "}
+              {selectedInvoiceForEmail?.reference}{" "}
+              {t("toClientSecurely") || "à votre client via un lien sécurisé."}
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 block">
+                  {t("clientEmailAddress") || "Adresse e-mail du client"}
+                </label>
+                <input
+                  type="email"
+                  value={targetEmail}
+                  onChange={(e) => setTargetEmail(e.target.value)}
+                  className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
+                  placeholder="client@exemple.com"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  onClick={() => setIsEmailModalOpen(false)}
+                  disabled={isSendingEmail}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  className="flex-1 rounded-xl gap-2"
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail || !targetEmail}
+                >
+                  {isSendingEmail ? (
+                    <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {t("send")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

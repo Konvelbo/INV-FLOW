@@ -12,20 +12,25 @@
 }
 
 .scrollbar-none {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .scrollbar-none::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
 }
 
 .h-150 {
-    height: 37.5rem; /* 600px */
+    height: 37.5rem;
+    /* 600px */
 }
 
 .min-h-450 {
-    min-height: 112.5rem; /* 1800px approx, to avoid layout shift as requested by user */
+    min-height: 112.5rem;
+    /* 1800px approx, to avoid layout shift as requested by user */
 }
 
 #canvas {
@@ -170,7 +175,8 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-    table-layout: fixed; /* forces columns to respect widths and wrap content */
+    table-layout: fixed;
+    /* forces columns to respect widths and wrap content */
     word-break: break-word;
 }
 
@@ -185,7 +191,8 @@ td {
     font-size: 12px;
     overflow-wrap: anywhere;
     word-break: break-word;
-    white-space: normal; /* allow wrapping */
+    white-space: normal;
+    /* allow wrapping */
     vertical-align: middle;
 }
 
@@ -209,18 +216,22 @@ td {
 #canvas table td:nth-child(1) {
     width: 40%;
 }
+
 #canvas table th:nth-child(2),
 #canvas table td:nth-child(2) {
     width: 12%;
 }
+
 #canvas table th:nth-child(3),
 #canvas table td:nth-child(3) {
     width: 12%;
 }
+
 #canvas table th:nth-child(4),
 #canvas table td:nth-child(4) {
     width: 18%;
 }
+
 #canvas table th:nth-child(5),
 #canvas table td:nth-child(5) {
     width: 18%;
@@ -229,7 +240,8 @@ td {
 /* inputs inside table should not cause overflow */
 #canvas table input[type="text"] {
     width: 100%;
-    min-width: 0; /* prevent overflowing parent */
+    min-width: 0;
+    /* prevent overflowing parent */
     box-sizing: border-box;
 }
 
@@ -263,9 +275,12 @@ td {
 }
 
 .totals td {
-    font-weight: bold; /* Ajout de la taille de police */
-    padding: 8px; /* Un peu plus d'espace pour la lisibilité */
-    border: 1px solid #ccc; /* Optionnel : pour bien voir les colonnes pendant le test */
+    font-weight: bold;
+    /* Ajout de la taille de police */
+    padding: 8px;
+    /* Un peu plus d'espace pour la lisibilité */
+    border: 1px solid #ccc;
+    /* Optionnel : pour bien voir les colonnes pendant le test */
 }
 
 /* On cible spécifiquement la 1ère colonne */
@@ -275,10 +290,12 @@ td {
 
 /* On cible spécifiquement la 2ème colonne (les valeurs) */
 .totals tr td:nth-child(2) {
-    font-size: 15px; /* Ajout de la taille de police */
+    font-size: 15px;
+    /* Ajout de la taille de police */
     width: 50% !important;
     text-align: right;
-    word-break: break-all; /* Empêche le texte de déborder si la valeur est trop longue */
+    word-break: break-all;
+    /* Empêche le texte de déborder si la valeur est trop longue */
 }
 
 .signature {
@@ -291,6 +308,7 @@ td {
 .zoom-control {
     display: inline-block;
 }
+
 .zoom-main {
     background: #111827;
     color: #fff;
@@ -301,6 +319,7 @@ td {
     box-shadow: none;
     font-size: 13px;
 }
+
 .zoom-popover {
     display: flex;
     gap: 6px;
@@ -315,6 +334,7 @@ td {
     pointer-events: none;
     box-shadow: rgba(0, 0, 0, 0.08) 0 4px 12px;
 }
+
 /* .zoom-control:hover .zoom-popover {
   opacity: 1;
   transform: translateX(-50%) translateY(0) scale(1);
@@ -325,6 +345,7 @@ td {
     transform: translateX(-50%) translateY(0) scale(1);
     pointer-events: auto;
 }
+
 .zoom-btn {
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
@@ -334,21 +355,25 @@ td {
     padding: 6px 8px;
     font-weight: bold;
 }
+
 /* .zoom-btn:hover {
   transform: translateY(-2px);
 } */
 
 :root {
-    --background: #020617; /* Slate 950 for a deeper obsidian feel */
+    --background: #020617;
+    /* Slate 950 for a deeper obsidian feel */
     --foreground: #f8fafc;
     --radius: 0.75rem;
     --card: rgba(15, 23, 42, 0.6);
     --card-foreground: #f8fafc;
     --popover: #0f172a;
     --popover-foreground: #f8fafc;
-    --primary: #10b981; /* Emerald 500 */
+    --primary: #10b981;
+    /* Emerald 500 */
     --primary-foreground: #020617;
-    --secondary: #6366f1; /* Indigo 500 */
+    --secondary: #6366f1;
+    /* Indigo 500 */
     --secondary-foreground: #ffffff;
     --muted: #475569;
     --muted-foreground: #94a3b8;
@@ -538,6 +563,7 @@ td {
     * {
         @apply border-border outline-ring/50;
     }
+
     body {
         @apply bg-background text-foreground;
         letter-spacing: var(--tracking-normal);
@@ -556,6 +582,7 @@ td {
 .delete {
     transition: all 0.3s ease;
 }
+
 .uploade {
     transition: all 0.3s ease;
 }
@@ -585,10 +612,12 @@ td {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
 }
+
 .animate-fade-in {
     animation: fadeIn 1s ease-out forwards;
 }
@@ -598,11 +627,13 @@ td {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
+
 .animate-fade-in-up {
     animation: fadeInUp 1s ease-out forwards;
 }
@@ -612,11 +643,13 @@ td {
         opacity: 0;
         transform: translateX(-50px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
     }
 }
+
 .animate-slide-in-left {
     animation: slideInLeft 1s ease-out forwards;
 }
@@ -626,11 +659,13 @@ td {
         opacity: 0;
         transform: translateX(50px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
     }
 }
+
 .animate-slide-in-right {
     animation: slideInRight 1s ease-out forwards;
 }
@@ -639,20 +674,24 @@ td {
 .delay-100 {
     animation-delay: 0.1s;
 }
+
 .delay-200 {
     animation-delay: 0.2s;
 }
 
 #signup {
-    background-color: rgba(0, 0, 0, 0.4); /* Fond blanc très transparent */
-    backdrop-filter: blur(15px) saturate(180%); /* Flou + boost de saturation */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Fond blanc très transparent */
+    backdrop-filter: blur(15px) saturate(180%);
+    /* Flou + boost de saturation */
     -webkit-backdrop-filter: blur(15px) saturate(180%);
     overflow: hidden;
 }
 
 #signup_card {
     position: relative;
-    background-color: #000; /* Plus de transparence */
+    background-color: #000;
+    /* Plus de transparence */
     border: none;
     overflow: hidden;
     z-index: 0;
@@ -678,15 +717,13 @@ td {
         100% 100%,
         0 100%;
     /* Ton dégradé RGB */
-    background-image: conic-gradient(
-        from 0deg,
-        #ff0000,
-        #00ff00,
-        #00ffff,
-        #0000ff,
-        #ff00ff,
-        #ff0000
-    );
+    background-image: conic-gradient(from 0deg,
+            #ff0000,
+            #00ff00,
+            #00ffff,
+            #0000ff,
+            #ff00ff,
+            #ff0000);
     animation: rotate 4s linear infinite;
 }
 
@@ -695,12 +732,15 @@ td {
     content: "";
     position: absolute;
     z-index: -1;
-    left: 3px; /* Épaisseur de ta bordure */
+    left: 3px;
+    /* Épaisseur de ta bordure */
     top: 3px;
     width: calc(100% - 6px);
     height: calc(100% - 6px);
-    background: #0a0a0a; /* La couleur de fond de ta carte opaque */
-    border-radius: 12px; /* Ajuste selon le radius de ta Card */
+    background: #0a0a0a;
+    /* La couleur de fond de ta carte opaque */
+    border-radius: 12px;
+    /* Ajuste selon le radius de ta Card */
 }
 
 @keyframes rotate {
@@ -713,6 +753,7 @@ td {
 #signup_card {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
+
 #signup_btn:hover {
     background-color: none;
 }
@@ -768,6 +809,7 @@ td {
     right: calc(100% + 10px);
     transform: translateX(20px) scale(0.8);
 }
+
 .fab-item-left:hover {
     scale: 1.1;
     filter: drop-shadow(-20px 5px 5px rgba(225, 225, 225, 0.3));
@@ -777,6 +819,7 @@ td {
     bottom: calc(100% + 10px);
     transform: translateY(20px) scale(0.8);
 }
+
 .fab-item-up:hover {
     scale: 1.1;
     filter: drop-shadow(4px -5px 5px rgba(225, 225, 225, 0.3));
@@ -819,9 +862,11 @@ td {
 .fab-container:hover .fab-glow {
     opacity: 0.2;
 }
+
 #sidebare-link {
     transition: all 0.3s ease;
 }
+
 #sidebare-link:hover {
     scale: 1.1;
 }
@@ -829,6 +874,7 @@ td {
 #floatLink {
     transition: all 0.3s ease;
 }
+
 #floatLink:hover,
 #floatLink:focus {
     color: var(--color-neutral-900);

@@ -2,7 +2,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function HistoryLoading() {
   return (
-    <div className="min-h-screen min-w-full bg-background/50 p-6 md:p-10 lg:p-12 space-y-12 animate-in fade-in duration-500">
+    <div className="min-h-screen min-w-full bg-background/50 p-6 md:p-10 lg:p-12 pt-28 md:pt-28 lg:pt-28 space-y-12 animate-in fade-in duration-500">
       {/* Header Skeleton */}
       <div className="max-w-8xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">

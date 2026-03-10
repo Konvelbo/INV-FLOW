@@ -77,7 +77,7 @@ export async function GET(req: Request) {
     }
 
     scaledInvoices.forEach((inv) => {
-      const d = new Date(inv.createdAt);
+      const d = inv.createdAt ? new Date(inv.createdAt) : new Date();
       const monthName = months[d.getMonth()];
       const monthStat = chartData.find((m) => m.name === monthName);
       if (monthStat) {
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
 
     // Get 4 most recent invoices
     const recentInvoices = [...invoices]
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       .slice(0, 5)
       .map((inv) => ({
         id: inv.id,
@@ -112,7 +112,7 @@ export async function GET(req: Request) {
     const currentYear = now.getFullYear();
 
     const currentMonthInvoices = invoices.filter((inv) => {
-      const d = new Date(inv.createdAt);
+      const d = inv.createdAt ? new Date(inv.createdAt) : new Date();
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     });
 

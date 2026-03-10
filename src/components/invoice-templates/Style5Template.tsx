@@ -33,7 +33,7 @@ export default function Style5Template({
     setItemsArr,
     currency,
   } = useInvoice();
-  const { dict } = useLanguage();
+  const { language, dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -44,7 +44,7 @@ export default function Style5Template({
   });
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: currency || "XOF",
       minimumFractionDigits: 2,
@@ -179,7 +179,7 @@ export default function Style5Template({
                 />
               </div>
               <div>
-                {new Date().toLocaleDateString("en-US", {
+                {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -193,7 +193,7 @@ export default function Style5Template({
             <div className="flex gap-12">
               <div className="w-1/2">
                 <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3 block">
-                  From
+                  {dict.from}
                 </label>
                 <div className="font-bold text-zinc-900 mb-1">Company Inc.</div>
                 <div className="text-sm text-zinc-500">
@@ -211,26 +211,26 @@ export default function Style5Template({
                 <OptimizedInput
                   value={clientName}
                   onValueChange={setClientName}
-                  placeholder="Client Name"
+                  placeholder={dict.client}
                   className="bg-transparent font-bold text-zinc-900 w-full mb-1 p-0 h-auto border-none focus:ring-0"
                 />
                 <OptimizedInput
                   value={clientAddress}
                   onValueChange={setClientAddress}
-                  placeholder="Client Address"
+                  placeholder={dict.address}
                   className="bg-transparent text-sm text-zinc-500 w-full p-0 h-auto border-none focus:ring-0"
                 />
                 <div className="flex gap-2">
                   <OptimizedInput
                     value={clientContact}
                     onValueChange={setClientContact}
-                    placeholder="Contact"
+                    placeholder={dict.contact}
                     className="bg-transparent text-sm text-zinc-500 w-full p-0 h-auto border-none focus:ring-0"
                   />
                   <OptimizedInput
                     value={clientPOBox}
                     onValueChange={setClientPOBox}
-                    placeholder="Zip"
+                    placeholder={dict.poBox}
                     className="bg-transparent text-sm text-zinc-500 w-24 p-0 h-auto border-none focus:ring-0"
                   />
                 </div>
@@ -243,7 +243,7 @@ export default function Style5Template({
               <OptimizedInput
                 value={object}
                 onValueChange={setObject}
-                placeholder="Description of the project or services..."
+                placeholder={dict.object}
                 className="bg-transparent text-zinc-700 w-full font-medium wrap-break-word whitespace-pre-wrap"
               />
             </div>
@@ -330,7 +330,7 @@ export default function Style5Template({
                     onValueChange={(val) =>
                       setNewItem({ ...newItem, designation: val })
                     }
-                    placeholder="Add line item..."
+                    placeholder={dict.add}
                     className="w-full bg-transparent text-sm text-zinc-500"
                   />
                 </div>
@@ -393,7 +393,7 @@ export default function Style5Template({
                 <OptimizedInput
                   value={managerName}
                   onValueChange={setManagerName}
-                  placeholder="Sign here"
+                  placeholder={dict.managerName}
                   className="bg-transparent text-xl font-handwriting text-zinc-800 w-full border-b border-zinc-200 pb-2"
                 />
               </div>

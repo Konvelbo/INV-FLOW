@@ -5,7 +5,7 @@ import { ChatInterface } from "@/src/components/ai/ChatInterface";
 
 export default function AIAdvisorPage() {
   return (
-    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 relative overflow-hidden pb-20">
+    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 pt-32 md:pt-32 lg:pt-32 relative overflow-hidden pb-20">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />

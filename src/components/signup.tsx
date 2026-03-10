@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/src/context/LanguageContext";
 // import { User, Mail, Lock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export default function SignUp({
@@ -24,7 +25,8 @@ export default function SignUp({
   onVisibility: (value: boolean) => void;
 }) {
   const router = useRouter();
-  const isLogin = choice === "Connexion";
+  const { t } = useLanguage();
+  const isLogin = choice === "Connexion" || choice === t("loginAction");
   const schema = isLogin ? LoginSchema : authSchema;
 
   const {
@@ -44,22 +46,46 @@ export default function SignUp({
 
   const onSubmit = async (data: AuthFormData) => {
     try {
-      if (choice === "Creer votre compte") {
+      if (choice === "Creer votre compte" || choice === t("createAccount")) {
         const response = await axios.post("/api/user/register", data);
         if (response.status === 200) {
-          toast.success("Compte créé avec succès !");
-          setSignUpChoise("Connexion");
+          toast.success(t("accountCreated"));
+          setSignUpChoise(t("loginAction"));
           reset();
         } else if (response.status === 400) {
           return toast.error(`${response.status} ${response.data.message}`);
         }
+      } else if (choice === "Mot de passe oublié ?" || choice === t("forgotPassword")) {
+        const response = await axios.post("/api/user/forgot-password", { email: data.email });
+        if (response.status === 200) {
+          toast.success(t("otpSent"));
+          setSignUpChoise(t("verifyOtp"));
+        }
+      } else if (choice === "Vérification OTP" || choice === t("verifyOtp")) {
+        const response = await axios.post("/api/user/reset-password", {
+          email: data.email,
+          otp: data.otp,
+          newPassword: data.password
+        });
+        if (response.status === 200) {
+          toast.success(t("passwordChanged"));
+          setSignUpChoise(t("loginAction"));
+          reset();
+        }
       } else {
         const response = await axios.post("/api/user/login", data);
         if (response.status === 200) {
-          toast.success(`${response.status} ${response.data.message}`);
+          toast.success(t("loginSuccess"));
           if (response?.data?.user?.token) {
             localStorage.setItem("user", JSON.stringify(response.data.user));
-            router.push("/dashboard");
+
+            // Redirect to settings if no companies
+            if (!response.data.user.companies || response.data.user.companies.length === 0) {
+              toast(t("noCompanyRedirection"), { icon: '🏢' });
+              router.push("/settings");
+            } else {
+              router.push("/dashboard");
+            }
           }
           reset();
         }
@@ -69,7 +95,7 @@ export default function SignUp({
       if (axios.isAxiosError(error) && error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Une erreur est survenue");
+        toast.error(t("authError"));
       }
     }
   };
@@ -96,7 +122,7 @@ export default function SignUp({
         <CardHeader className="flex flex-col space-y-2 pb-8 text-center">
           <div className="w-16 h-1 bg-linear-to-r from-transparent via-primary to-transparent opacity-50 mb-6 mx-auto rounded-full" />
           <h1 className="text-4xl font-bold tracking-tighter text-foreground font-sans">
-            Bienvenue
+            {t("welcome")}
           </h1>
           <p className="text-sm text-muted-foreground font-medium uppercase tracking-[0.2em]">
             {choice}
@@ -111,12 +137,12 @@ export default function SignUp({
                   htmlFor="name"
                   className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
                 >
-                  Nom Complet
+                  {t("fullName")}
                 </Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Jean Dupont"
+                  placeholder={t("fullNamePlaceholder")}
                   className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
                   {...register("name")}
                 />
@@ -133,12 +159,12 @@ export default function SignUp({
                 htmlFor="email"
                 className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
               >
-                Adresse Email
+                {t("emailAddress")}
               </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="nom@exemple.com"
+                placeholder={t("emailPlaceholder")}
                 className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
                 {...register("email")}
               />
@@ -149,47 +175,62 @@ export default function SignUp({
               )}
             </div>
 
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="password"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
-              >
-                Mot de Passe
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
-                {...register("password")}
-              />
-              {errors.password && (
-                <span className="text-destructive text-[10px] font-bold uppercase tracking-wide ml-1">
-                  {errors.password.message}
-                </span>
-              )}
-            </div>
-
-            {choice === "Creer votre compte" && (
+            {choice !== t("verifyOtp") && (
               <div className="space-y-2.5">
                 <Label
-                  htmlFor="confirmPassword"
+                  htmlFor="password"
                   className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
                 >
-                  Confirmation
+                  {t("password")}
                 </Label>
                 <Input
-                  id="confirmPassword"
+                  id="password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("passwordPlaceholder")}
                   className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
-                  {...register("confirmPassword")}
+                  {...register("password")}
                 />
-                {errors.confirmPassword && (
+                {errors.password && (
                   <span className="text-destructive text-[10px] font-bold uppercase tracking-wide ml-1">
-                    {errors.confirmPassword.message}
+                    {errors.password.message}
                   </span>
                 )}
+              </div>
+            )}
+
+            {(choice === "Vérification OTP" || choice === t("verifyOtp")) && (
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="otp"
+                  className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
+                >
+                  Code OTP
+                </Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="123456"
+                  className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans text-center text-xl tracking-[0.5em]"
+                  {...register("otp" as any)}
+                />
+              </div>
+            )}
+
+            {(choice === "Vérification OTP" || choice === t("verifyOtp")) && (
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
+                >
+                  {t("newPassword")}
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder={t("passwordPlaceholder")}
+                  className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
+                  {...register("password")}
+                />
               </div>
             )}
           </CardContent>
@@ -199,29 +240,46 @@ export default function SignUp({
               className="w-full h-14 text-xs font-black uppercase tracking-[0.3em] rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all duration-300"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Initialisation..." : choice}
+              {isSubmitting ? t("initializing") : choice}
             </Button>
 
-            {choice === "Connexion" ? (
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                Pas encore de compte ?{" "}
+            {isLogin ? (
+              <div className="space-y-4">
                 <button
                   type="button"
-                  onClick={() => setSignUpChoise("Creer votre compte")}
-                  className="text-primary font-black hover:text-primary/80 transition-colors ml-1"
+                  onClick={() => setSignUpChoise(t("forgotPassword"))}
+                  className="text-[10px] text-primary font-black uppercase tracking-widest hover:text-primary/80 transition-colors"
                 >
-                  S&apos;inscrire
+                  {t("forgotPassword")}
                 </button>
-              </p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                  {t("noAccount")}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setSignUpChoise(t("createAccount"))}
+                    className="text-primary font-black hover:text-primary/80 transition-colors ml-1"
+                  >
+                    {t("signUp")}
+                  </button>
+                </p>
+              </div>
+            ) : choice === t("forgotPassword") ? (
+              <button
+                type="button"
+                onClick={() => setSignUpChoise(t("loginAction"))}
+                className="text-[10px] text-primary font-black uppercase tracking-widest"
+              >
+                {t("loginAction")}
+              </button>
             ) : (
               <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                Déjà inscrit ?{" "}
+                {t("alreadyRegistered")}{" "}
                 <button
                   type="button"
-                  onClick={() => setSignUpChoise("Connexion")}
+                  onClick={() => setSignUpChoise(t("loginAction"))}
                   className="text-primary font-black hover:text-primary/80 transition-colors ml-1"
                 >
-                  Se connecter
+                  {t("loginAction")}
                 </button>
               </p>
             )}

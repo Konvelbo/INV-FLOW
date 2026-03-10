@@ -1,303 +1,154 @@
-"use strict";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { revalidatePath } from "next/cache";
+import { verifyToken } from "@/lib/auth";
+import { updateClientFinancials } from "@/lib/client-utils";
 
-export async function GET(
-  req: Request,
-  props: { params: Promise<{ id: string }> },
-) {
-  const params = await props.params;
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    let userId: string;
-
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-      userId = decoded.id;
-    } catch (err) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
+    const { id } = await params;
+    const userId = verifyToken(req);
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: params.id,
-        userId: userId,
-      },
+      where: { id: id, userId },
       include: {
         items: true,
-      },
-    });
-
-    if (!invoice) {
-      return NextResponse.json(
-        { message: "Invoice not found" },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json(invoice, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching invoice:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
-  }
-}
-
-export async function DELETE(
-  req: Request,
-  props: { params: Promise<{ id: string }> },
-) {
-  const params = await props.params;
-  try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    let userId: string;
-
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-      userId = decoded.id;
-    } catch (err) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
-
-    // First check if invoice exists and belongs to user
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: params.id,
-        author: {
-          id: userId,
-        },
-      },
-    });
-
-    if (!invoice) {
-      return NextResponse.json(
-        { message: "Invoice not found" },
-        { status: 404 },
-      );
-    }
-
-    // Delete items first (if cascade delete isn't set up, but usually relation handles it or we do it manually)
-    // Prisma cascading deletes require explicit config in schema or manual deletion.
-    // Let's assume manual deletion for safety or relying on Prisma relation actions if configured.
-    // Based on schema, we have `items InvoiceItem[]`.
-    // Let's delete items first to be safe.
-    await prisma.invoiceItem.deleteMany({
-      where: {
-        invoiceId: params.id,
-      },
-    });
-
-    await prisma.invoice.delete({
-      where: {
-        id: params.id,
-      },
-    });
-
-    // Send Push Notification
-    try {
-      const subscriptions = await prisma.pushSubscription.findMany({
-        where: { userId },
-      });
-
-      const { sendPushNotification } = await import("@/lib/push");
-      for (const sub of subscriptions) {
-        sendPushNotification(sub, {
-          title: "Facture Supprimée",
-          body: `Facture supprimée : ${invoice.reference}`,
-          url: "/dashboard",
-        });
+        client: true,
+        company: true,
       }
-    } catch (pushErr) {
-      // Silently fail push
-    }
+    });
 
-    revalidatePath("/dashboard");
-    return NextResponse.json(
-      { message: "Invoice deleted successfully" },
-      { status: 200 },
-    );
+    if (!invoice) return NextResponse.json({ message: "Invoice not found" }, { status: 404 });
+
+    return NextResponse.json(invoice);
   } catch (error) {
-    console.error("Error deleting invoice:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "Error fetching invoice", error }, { status: 500 });
   }
 }
-export async function PUT(
-  req: Request,
-  props: { params: Promise<{ id: string }> },
-) {
-  const params = await props.params;
+
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    let userId: string;
-
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-      userId = decoded.id;
-    } catch (err) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
+    const { id } = await params;
+    const userId = verifyToken(req);
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const data = await req.json();
 
-    // Verify invoice ownership
-    const existingInvoice = await prisma.invoice.findFirst({
-      where: {
-        id: params.id,
-        author: { id: userId },
-      },
+    // Get current invoice to handle client change
+    const currentInvoice = await prisma.invoice.findUnique({
+      where: { id: id, userId },
+      select: { clientId: true }
     });
 
-    if (!existingInvoice) {
-      return NextResponse.json(
-        { message: "Invoice not found or unauthorized" },
-        { status: 404 },
-      );
-    }
-
-    // Delete existing items
-    await prisma.invoiceItem.deleteMany({
-      where: { invoiceId: params.id },
-    });
-
-    // Update invoice and create new items
+    // Standard pattern: Update invoice and replace items
     const updatedInvoice = await prisma.invoice.update({
-      where: { id: params.id },
+      where: { id: id, userId },
       data: {
         reference: data.reference,
+        type: data.type,
+        status: data.status,
         city: data.city,
         clientName: data.clientName,
+        object: data.object,
         clientAddress: data.clientAddress,
         clientContact: data.clientContact,
         clientPOBox: data.clientPOBox,
-        object: data.object,
         managerName: data.managerName,
-        totalHT: parseFloat(data.totalHT),
-        totalMaterial: parseFloat(data.totalMaterial),
+        clientId: data.clientId || null,
+        companyId: data.companyId || null,
+        totalHT: data.totalHT,
+        totalMaterial: data.totalMaterial,
         amountWords: data.amountWords,
+        taxAmount: data.taxAmount,
+        totalTTC: data.totalTTC,
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        isRecurring: data.isRecurring,
+        recurrenceFreq: data.recurrenceFreq,
+        isScaled: data.status === "paid" ? true : data.isScaled,
+        style: data.style,
         items: {
+          deleteMany: {}, // Delete all existing items
           create: data.items.map((item: any) => ({
             designation: item.designation,
-            unit: item.unit,
-            quantity: parseFloat(item.quantity),
-            unitPrice: parseFloat(item.unitPrice),
-            totalPrice: parseFloat(item.totalPrice),
+            unit: item.unit || "U",
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            productId: item.productId || null,
           })),
         },
       },
-      include: {
-        items: true,
-      },
+      include: { items: true }
     });
 
-    revalidatePath("/dashboard");
-
-    // Send Push Notification
-    try {
-      const subscriptions = await prisma.pushSubscription.findMany({
-        where: { userId },
-      });
-
-      const { sendPushNotification } = await import("@/lib/push");
-      for (const sub of subscriptions) {
-        sendPushNotification(sub, {
-          title: "Facture Modifiée",
-          body: `Facture mise à jour : ${updatedInvoice.reference}`,
-          url: "/dashboard",
-        });
-      }
-    } catch (pushErr) {
-      // Silently fail push
+    if (updatedInvoice.clientId) {
+      await updateClientFinancials(updatedInvoice.clientId);
+    }
+    // Also update old client if it changed
+    if (currentInvoice?.clientId && currentInvoice.clientId !== updatedInvoice.clientId) {
+      await updateClientFinancials(currentInvoice.clientId);
     }
 
-    return NextResponse.json(updatedInvoice, { status: 200 });
+    return NextResponse.json(updatedInvoice);
   } catch (error) {
     console.error("Error updating invoice:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "Error updating invoice", error: (error as Error).message }, { status: 500 });
   }
 }
-export async function PATCH(
-  req: Request,
-  props: { params: Promise<{ id: string }> },
-) {
-  const params = await props.params;
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const { id } = await params;
+    const userId = verifyToken(req);
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const token = authHeader.split(" ")[1];
-    let userId: string;
+    const data = await req.json();
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-      userId = decoded.id;
-    } catch (err) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
-
-    const { isScaled } = await req.json();
-
-    const updated = await prisma.invoice.update({
-      where: {
-        id: params.id,
-        userId: userId,
-      },
+    // Support partial updates for status and isScaled
+    const updatedInvoice = await prisma.invoice.update({
+      where: { id: id, userId },
       data: {
-        isScaled: isScaled,
-      },
+        status: data.status !== undefined ? data.status : undefined,
+        isScaled: data.status === "paid" ? true : (data.isScaled !== undefined ? data.isScaled : undefined),
+      }
     });
 
-    // Send Push Notification
-    try {
-      const subscriptions = await prisma.pushSubscription.findMany({
-        where: { userId },
-      });
-
-      const { sendPushNotification } = await import("@/lib/push");
-      for (const sub of subscriptions) {
-        sendPushNotification(sub, {
-          title: "Statut Facture Mis à Jour",
-          body: `La facture ${updated.reference} est désormais ${isScaled ? "Scalée" : "Standard"}`,
-          url: "/dashboard",
-        });
-      }
-    } catch (pushErr) {
-      // Silently fail push
+    if (updatedInvoice.clientId) {
+      await updateClientFinancials(updatedInvoice.clientId);
     }
 
-    revalidatePath("/dashboard");
-    return NextResponse.json(updated, { status: 200 });
+    return NextResponse.json(updatedInvoice);
   } catch (error) {
-    console.error("Error toggling isScaled:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+    console.error("Error patching invoice:", error);
+    return NextResponse.json({ message: "Error patching invoice", error: (error as Error).message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const userId = verifyToken(req);
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    const invoiceToDelete = await prisma.invoice.findUnique({
+      where: { id: id, userId },
+      select: { clientId: true }
+    });
+
+    const deleteResult = await prisma.invoice.deleteMany({
+      where: { id: id, userId },
+    });
+
+    if (invoiceToDelete?.clientId) {
+      await updateClientFinancials(invoiceToDelete.clientId);
+    }
+
+    if (deleteResult.count === 0) return NextResponse.json({ message: "Invoice not found or unauthorized" }, { status: 404 });
+
+    return NextResponse.json({ message: "Invoice deleted successfully" });
+  } catch (error) {
+    return NextResponse.json({ message: "Error deleting invoice", error }, { status: 500 });
+  }
+}
+
+

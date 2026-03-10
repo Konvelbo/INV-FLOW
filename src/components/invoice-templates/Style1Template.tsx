@@ -34,7 +34,7 @@ export default function Style1Template({
     setItemsArr,
     currency,
   } = useInvoice();
-  const { dict } = useLanguage();
+  const { dict, language } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -45,7 +45,7 @@ export default function Style1Template({
   });
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: currency || "XOF",
       minimumFractionDigits: 2,
@@ -172,7 +172,10 @@ export default function Style1Template({
                 className="bg-transparent border-b border-slate-700 text-white text-right w-32 focus:border-white"
               />
               <span className="text-slate-400">
-                , {new Date().toLocaleDateString("fr-FR")}
+                ,{" "}
+                {new Date().toLocaleDateString(
+                  language === "fr" ? "fr-FR" : "en-US",
+                )}
               </span>
             </div>
           </div>
@@ -219,12 +222,12 @@ export default function Style1Template({
             </h3>
             <div className="bg-slate-50 p-6 rounded-lg">
               <label className="block text-xs font-semibold text-slate-500 mb-1">
-                Object / Description
+                {dict.object} / {dict.description}
               </label>
               <OptimizedInput
                 value={object}
                 onValueChange={setObject}
-                placeholder="Project description or service details..."
+                placeholder={dict.object}
                 className="w-full text-slate-800 font-medium"
               />
             </div>
@@ -265,7 +268,7 @@ export default function Style1Template({
                       onValueChange={(val) =>
                         updateItem(item.id, "designation", val)
                       }
-                      placeholder="Item description"
+                      placeholder={dict.description}
                       className="w-full font-medium text-slate-700"
                     />
                     <button
@@ -323,7 +326,7 @@ export default function Style1Template({
                       onValueChange={(val) =>
                         setNewItem({ ...newItem, designation: val })
                       }
-                      placeholder="Add new item..."
+                      placeholder={dict.add}
                       className="w-full text-slate-500 italic bg-transparent"
                     />
                   </div>
@@ -382,7 +385,7 @@ export default function Style1Template({
             <OptimizedInput
               value={managerName}
               onValueChange={setManagerName}
-              placeholder="Manager Name"
+              placeholder={dict.managerName}
               className="font-script text-2xl text-slate-800 w-full max-w-[250px] border-b border-slate-200 pb-2"
             />
           </div>

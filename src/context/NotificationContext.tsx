@@ -121,8 +121,26 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const addNotification = useCallback(
     (notif: Omit<Notification, "id" | "timestamp" | "unread">) => {
+      let finalUser = notif.user;
+
+      // Si le nom est "Système", on essaie de récupérer le vrai nom de l'utilisateur
+      if (finalUser === "Système" || finalUser === "System") {
+        try {
+          const userStr = localStorage.getItem("user");
+          if (userStr) {
+            const userData = JSON.parse(userStr);
+            if (userData.name) {
+              finalUser = userData.name;
+            }
+          }
+        } catch (e) {
+          // Fallback to original "Système" if error
+        }
+      }
+
       const newNotif: Notification = {
         ...notif,
+        user: finalUser,
         id: Math.random().toString(36).substring(7),
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",

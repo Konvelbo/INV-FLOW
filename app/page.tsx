@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FileText, TrendingUp, Brain } from "lucide-react";
+import { ArrowRight, FileText, TrendingUp, Brain, Users, Mail, Bell, LayoutDashboard, ShieldCheck } from "lucide-react";
 import Logo from "@/src/components/navbar-components/logo";
 import { SparklesText } from "@/src/components/ui/sparkles-text";
 import { TypingText } from "@/src/components/ui/typing-text";
@@ -10,11 +10,13 @@ import { Button } from "@/src/components/ui/button";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useInvoice } from "@/src/context/InvoiceContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function Home() {
   const [signUpChoise, setSignUpChoise] = useState<string>("");
   const [visibility, setVisibility] = useState<boolean>(false);
   const { clearInvoiceData } = useInvoice();
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [storage, setStorage] = useState<{
     name: string;
@@ -75,7 +77,7 @@ export default function Home() {
                 }}
                 className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer uppercase tracking-widest"
               >
-                Connexion
+                {t("login")}
               </span>
               <Button
                 onClick={() => {
@@ -84,7 +86,7 @@ export default function Home() {
                 }}
                 className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
               >
-                Démarrer
+                {t("startBtn")}
               </Button>
             </div>
           ) : (
@@ -93,7 +95,7 @@ export default function Home() {
               onClick={() => clearInvoiceData()}
               className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
             >
-              Lancez-vous
+              {t("getStarted")}
             </Link>
           )}
         </div>
@@ -104,23 +106,22 @@ export default function Home() {
         <div className="container max-w-5xl mx-auto space-y-12 animate-fade-in-up text-center">
           <div className="inline-flex items-center px-6 py-2.5 space-x-3 text-[10px] font-black text-primary bg-primary/10 border border-primary/20 rounded-full backdrop-blur-md uppercase tracking-[0.4em] shadow-lg shadow-primary/5">
             <span className="flex w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span>v3.0 Intelligence Operationnelle</span>
+            <span>{t("topBadge")}</span>
           </div>
 
           <h1 className="flex flex-col items-center justify-center text-7xl md:text-9xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-white to-slate-500 leading-none">
             <span className="opacity-40">NEXT-GEN</span>
             <SparklesText className="text-white text-9xl md:text-[10.5rem] -mt-6">
-              ESSOR
+              {t("appName")}
             </SparklesText>
           </h1>
 
           <div className="max-w-3xl mx-auto space-y-6">
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed font-sans font-light">
-              L&apos;infrastructure de facturation intelligente qui transforme
-              vos données en levier de croissance exponentielle.
+              {t("heroSubtitle")}
             </p>
             <TypingText
-              text="Analyse prédictive. Conformité automatisée. Vision 360°."
+              text={t("heroTypingText")}
               speed={60}
               showCursor={true}
               className="text-primary font-bold text-lg md:text-xl tracking-wide"
@@ -133,7 +134,7 @@ export default function Home() {
                 href="/dashboard"
                 className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em]"
               >
-                Tableau de Bord
+                {t("dashboard")}
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
               </Link>
             ) : (
@@ -144,7 +145,7 @@ export default function Home() {
                 }}
                 className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em] h-auto"
               >
-                Inscrivez-vous Gratuitement
+                {t("signUpFree")}
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
               </Button>
             )}
@@ -153,7 +154,7 @@ export default function Home() {
               href="#ai-intelligence"
               className="inline-flex items-center justify-center px-12 py-6 text-xs font-bold text-muted-foreground transition-all rounded-2xl border border-border/50 hover:text-foreground hover:bg-white/5 uppercase tracking-[0.2em]"
             >
-              Voir la Technologie
+              {t("seeTech")}
             </Link>
           </div>
         </div>
@@ -169,66 +170,98 @@ export default function Home() {
         <div className="container px-6 mx-auto">
           <div className="text-center mb-24 max-w-4xl mx-auto space-y-6">
             <div className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-              L&apos;Ecosystème
+              {t("ecosystemBadge")}
             </div>
             <h2 className="text-5xl md:text-7xl font-black bg-linear-to-b from-white to-slate-500 bg-clip-text text-transparent tracking-tighter leading-tight">
-              PUISSANCE & PRÉCISION
+              {t("ecosystemTitle")}
             </h2>
             <p className="text-muted-foreground text-lg md:text-xl font-sans max-w-2xl mx-auto italic">
-              Conçu pour les entreprises qui ne font aucun compromis entre
-              rapidité opérationnelle et rigueur comptable.
+              {t("ecosystemDesc")}
             </p>
           </div>
 
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {/* Feature 1 */}
+            {/* Feature 1: Advanced Billing */}
             <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all" />
-              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary/20 transition-all duration-500 group-hover:rotate-6 shadow-inner shadow-white/5">
-                <FileText className="w-10 h-10 text-primary" />
+              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary/20 transition-all duration-500 group-hover:rotate-6 shadow-inner shadow-white/5 text-primary">
+                <FileText className="w-10 h-10" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-4 font-sans tracking-tight">
-                Ingénierie de Facturation
+                {t("feature1Title")}
               </h3>
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
-                Générez des factures professionnelles conformes aux standards
-                internationaux en moins de 30 secondes. Notre moteur dynamique
-                gère les taxes, les remises et les mentions légales
-                automatiquement.
+                {t("feature1Desc")}
               </p>
             </div>
 
-            {/* Feature 2: High-Performance Data */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-secondary/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-secondary/10 transition-all" />
-              <div className="w-20 h-20 rounded-3xl bg-secondary/10 flex items-center justify-center mb-8 group-hover:bg-secondary/20 transition-all duration-500 group-hover:-rotate-6 shadow-inner shadow-white/5">
-                <TrendingUp className="w-10 h-10 text-secondary" />
+            {/* Feature 2: Strategic Dashboard */}
+            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-blue-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-blue-400/10 transition-all" />
+              <div className="w-20 h-20 rounded-3xl bg-blue-400/10 flex items-center justify-center mb-8 group-hover:bg-blue-400/20 transition-all duration-500 group-hover:-rotate-6 shadow-inner shadow-white/5 text-blue-400">
+                <LayoutDashboard className="w-10 h-10" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-4 font-sans tracking-tight">
-                Flux de Trésorerie
+                {t("feature2Title")}
               </h3>
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
-                Visualisez votre santé financière en temps réel. Des graphiques
-                haute performance analysent vos revenus HT, vos marges et vos
-                tendances de paiement pour une visibilité sans faille sur votre
-                cash-flow.
+                {t("feature2Desc")}
               </p>
             </div>
 
-            {/* Feature 3: Security & Backup */}
+            {/* Feature 3: CRM & Client Management */}
+            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-orange-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-orange-400/10 transition-all" />
+              <div className="w-20 h-20 rounded-3xl bg-orange-400/10 flex items-center justify-center mb-8 group-hover:bg-orange-400/20 transition-all duration-500 group-hover:scale-110 shadow-inner shadow-white/5 text-orange-400">
+                <Users className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-4 font-sans tracking-tight">
+                {t("feature3Title")}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
+                {t("feature3Desc")}
+              </p>
+            </div>
+
+            {/* Feature 4: Planning & Alerts */}
+            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-red-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-red-400/10 transition-all" />
+              <div className="w-20 h-20 rounded-3xl bg-red-400/10 flex items-center justify-center mb-8 group-hover:bg-red-400/20 transition-all duration-500 group-hover:rotate-12 shadow-inner shadow-white/5 text-red-400">
+                <Bell className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-4 font-sans tracking-tight">
+                {t("feature4Title")}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
+                {t("feature4Desc")}
+              </p>
+            </div>
+
+            {/* Feature 5: Intelligence Pulse™ */}
             <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-emerald-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all" />
-              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary/20 transition-all duration-500 group-hover:scale-110 shadow-inner shadow-white/5">
-                <TrendingUp className="w-10 h-10 text-primary rotate-45" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-emerald-400/10 transition-all" />
+              <div className="w-20 h-20 rounded-3xl bg-emerald-400/10 flex items-center justify-center mb-8 group-hover:bg-emerald-400/20 transition-all duration-500 group-hover:-rotate-12 shadow-inner shadow-white/5 text-emerald-400">
+                <Brain className="w-10 h-10" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-4 font-sans tracking-tight">
-                Archive immuable
+                {t("feature5Title")}
               </h3>
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
-                Retrouvez chaque transaction dans un historique sécurisé et
-                catégorisé. Notre système de stockage à haute disponibilité
-                garantit que vos données financières sont toujours accessibles
-                et inaltérables.
+                {t("feature5Desc")}
+              </p>
+            </div>
+
+            {/* Feature 6: Security & Archives */}
+            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-indigo-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-indigo-400/10 transition-all" />
+              <div className="w-20 h-20 rounded-3xl bg-indigo-400/10 flex items-center justify-center mb-8 group-hover:bg-indigo-400/20 transition-all duration-500 group-hover:scale-110 shadow-inner shadow-white/5 text-indigo-400">
+                <ShieldCheck className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-4 font-sans tracking-tight">
+                {t("feature6Title")}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
+                {t("feature6Desc")}
               </p>
             </div>
           </div>
@@ -248,37 +281,33 @@ export default function Home() {
               <div className="space-y-8">
                 <div className="inline-flex items-center px-4 py-2 space-x-2 text-[10px] font-black text-primary bg-primary/10 border border-primary/20 rounded-full uppercase tracking-widest">
                   <Brain className="w-4 h-4" />
-                  <span>Module IA Pulse™</span>
+                  <span>{t("pulseModule")}</span>
                 </div>
 
                 <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight">
-                  SUIVI ÉCONOMIQUE <br />
+                  {t("aiSectionTitle")} <br />
                   <span className="text-primary">
-                    PAR INTELLIGENCE ARTIFICIELLE
+                    {t("aiSectionSubtitle")}
                   </span>
                 </h2>
 
                 <p className="text-lg text-muted-foreground font-sans leading-relaxed">
-                  Notre IA ne se contente pas de stocker vos chiffres, elle les
-                  comprend. Grâce à l&apos;analyse sémantique et prédictive,{" "}
-                  <strong>Pulse™</strong> identifie les variations de revenus,
-                  détecte les anomalies de facturation et suggère des
-                  optimisations stratégiques en temps réel.
+                  {t("aiSectionDesc")}
                 </p>
 
                 <div className="grid gap-6">
                   {[
                     {
-                      title: "Prévision de Trésorerie",
-                      desc: "Prédit vos rentrées d'argent à 30/60/90 jours avec une précision de 98%.",
+                      title: "Comptes-rendus Automatisés",
+                      desc: "Génère des rapports détaillés sur vos revenus mensuels et votre rentabilité.",
                     },
                     {
-                      title: "Détection d'Anomalies",
-                      desc: "Alerte instantanément en cas d'écarts de prix ou de doublons de facturation.",
+                      title: "Assistant Q&A Interactif",
+                      desc: "Posez des questions sur vos données financières et obtenez des réponses instantanées.",
                     },
                     {
                       title: "Score de Santé Financière",
-                      desc: "Un indicateur dynamique basé sur 15 paramètres économiques clés.",
+                      desc: "Un indicateur dynamique basé sur vos flux de trésorerie et vos engagements.",
                     },
                   ].map((item, idx) => (
                     <div
@@ -329,7 +358,7 @@ export default function Home() {
                           98.4%
                         </span>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold mt-1">
-                          Ai Confidence Index
+                          {t("aiConfidence")}
                         </p>
                       </div>
                     </div>
@@ -347,13 +376,13 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
             <div className="max-w-2xl space-y-4">
               <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase leading-none">
-                LE WORKFLOW <br />
+                {t("workflowTitle")} <br />
                 <span className="text-muted-foreground/30">
-                  D&apos;ACCÉLÉRATION
+                  {t("workflowSubtitle")}
                 </span>
               </h2>
               <p className="text-muted-foreground text-lg font-medium">
-                Une transition fluide de la donnée brute à la vision économique.
+                {t("workflowDesc")}
               </p>
             </div>
             <div className="h-1 w-32 bg-primary rounded-full mb-4 hidden md:block" />
@@ -363,23 +392,23 @@ export default function Home() {
             {[
               {
                 icon: FileText,
-                label: "CAPTATION",
-                desc: "Création instantanée de factures intelligentes.",
+                label: t("step1Label"),
+                desc: t("step1Desc"),
               },
               {
                 icon: TrendingUp,
-                label: "ANALYSE",
-                desc: "Traitement des flux financiers en temps réel.",
+                label: t("step2Label"),
+                desc: t("step2Desc"),
               },
               {
                 icon: Brain,
-                label: "INSIGHT",
-                desc: "Génération d'analyses stratégiques par l'IA.",
+                label: t("step3Label"),
+                desc: t("step3Desc"),
               },
               {
                 icon: ArrowRight,
-                label: "SCALABILITÉ",
-                desc: "Croissance pilotée par les données.",
+                label: t("step4Label"),
+                desc: t("step4Desc"),
               },
             ].map((step, idx) => (
               <div key={idx} className="space-y-6 group">
@@ -420,12 +449,11 @@ export default function Home() {
 
             <div className="relative z-10 max-w-4xl mx-auto space-y-12">
               <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.9] uppercase drop-shadow-2xl">
-                FORCEZ LE DESTIN <br />
-                FINANCIER
+                {t("ctaTitle")} <br />
+                {t("ctaTitleHighlight")}
               </h2>
               <p className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto font-medium font-sans italic">
-                Ne vous contentez pas de gérer. Dominez vos flux avec
-                l&apos;architecture ESSOR.
+                {t("ctaSubtitle")}
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -437,7 +465,7 @@ export default function Home() {
                     }}
                     className="inline-flex items-center justify-center px-16 py-8 text-sm font-black text-primary bg-white rounded-[2rem] hover:bg-white/90 transition-all transform hover:scale-105 shadow-2xl shadow-black/30 uppercase tracking-[0.3em] h-auto"
                   >
-                    Démarrer Maintenant
+                    {t("startNow")}
                     <ArrowRight className="w-5 h-5 ml-4" />
                   </Button>
                 ) : (
@@ -467,26 +495,24 @@ export default function Home() {
               </span>
             </div>
             <p className="text-xs max-w-xs text-center md:text-left leading-relaxed font-medium">
-              Architecture logicielle haute performance pour la gestion
-              financière moderne. Propulsé par Pulse™ IA.
+              {t("footerDesc")}
             </p>
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-4">
             <div className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
               <Link href="#" className="hover:text-primary transition-colors">
-                Termes
+                {t("terms")}
               </Link>
               <Link href="#" className="hover:text-primary transition-colors">
-                Confidentialité
+                {t("privacy")}
               </Link>
               <Link href="#" className="hover:text-primary transition-colors">
-                API
+                {t("api")}
               </Link>
             </div>
             <p className="font-bold tracking-tight text-[11px] opacity-40">
-              &copy; {new Date().getFullYear()} ESSOR ARCHITECTURE. TOUS DROITS
-              RÉSERVÉS.
+              &copy; {new Date().getFullYear()} {t("footerRights")}
             </p>
           </div>
         </div>

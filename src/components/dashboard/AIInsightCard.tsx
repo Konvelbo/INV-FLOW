@@ -35,10 +35,19 @@ export function AIInsightCard({ stats }: { stats?: DashboardStats }) {
   useEffect(() => {
     if (!stats) return;
 
+    let computedGrowth = 0;
+    if (stats.chartData && stats.chartData.length >= 2) {
+      const lastMonthRev = stats.chartData[stats.chartData.length - 1].Revenus || 0;
+      const prevMonthRev = stats.chartData[stats.chartData.length - 2].Revenus || 0;
+      if (prevMonthRev > 0) {
+        computedGrowth = ((lastMonthRev - prevMonthRev) / prevMonthRev) * 100;
+      }
+    }
+
     const currentGrowthType =
-      Number(stats.growth) > 10
+      computedGrowth > 10
         ? "up"
-        : Number(stats.growth) < 0
+        : computedGrowth < 0
           ? "down"
           : null;
 
@@ -71,34 +80,43 @@ export function AIInsightCard({ stats }: { stats?: DashboardStats }) {
     const dynamicInsights: Insight[] = [];
 
     if (stats) {
-      if (Number(stats.growth) > 10) {
+      let computedGrowth = 0;
+      if (stats.chartData && stats.chartData.length >= 2) {
+        const lastMonthRev = stats.chartData[stats.chartData.length - 1].Revenus || 0;
+        const prevMonthRev = stats.chartData[stats.chartData.length - 2].Revenus || 0;
+        if (prevMonthRev > 0) {
+          computedGrowth = ((lastMonthRev - prevMonthRev) / prevMonthRev) * 100;
+        }
+      }
+
+      if (computedGrowth > 10) {
         dynamicInsights.push({
           id: "growth_up",
           type: "opportunity",
           title: t("exceptionalGrowth"),
           description: t("growth_insight_desc").replace(
             "{growth}",
-            String(stats.growth),
+            computedGrowth.toFixed(1),
           ),
         });
-      } else if (Number(stats.growth) < 0) {
+      } else if (computedGrowth < 0) {
         dynamicInsights.push({
           id: "growth_down",
           type: "warning",
           title: t("revenueVigilance"),
           description: t("decline_insight_desc").replace(
             "{growth}",
-            String(Math.abs(Number(stats.growth))),
+            Math.abs(computedGrowth).toFixed(1),
           ),
         });
       }
 
-      if (stats.invoiceCount > 5) {
+      if (stats.activeClientsCount > 5) {
         dynamicInsights.push({
           id: "volume",
           type: "tip",
           title: t("automationAdvice"),
-          description: t("volume_insight_desc"),
+          description: t("volume_insight_desc"), // Or some specific advice for clients
         });
       }
     }

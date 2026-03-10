@@ -9,7 +9,9 @@ import {
   ListTodo,
 } from "lucide-react";
 import LineChart2 from "@/src/components/line-chart-2";
+import { TrendingDown } from "lucide-react";
 import { RecentInvoices } from "@/src/components/dashboard/RecentInvoices";
+
 import { InvoiceCalendar } from "@/src/components/dashboard/InvoiceCalendar";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useInvoiceState } from "@/src/context/InvoiceContext";
@@ -43,15 +45,21 @@ export default function Dashboard() {
 
   const fetchStats = async (token: string) => {
     try {
-      const response = await fetch(`/api/dashboard/stats?t=${Date.now()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
+      const [resMetrics, resCharts] = await Promise.all([
+        fetch(`/api/dashboard/metrics?t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }),
+        fetch(`/api/dashboard/charts?t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }),
+      ]);
+
+      if (resMetrics.ok && resCharts.ok) {
+        const dataMetrics = await resMetrics.json();
+        const dataCharts = await resCharts.json();
+        setStats({ ...dataMetrics, ...dataCharts });
       }
     } catch (error) {
       console.error("Failed to fetch stats", error);
@@ -131,7 +139,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-full min-w-full bg-background text-foreground p-5 md:p-5 lg:p-16 relative pb-20">
+    <div className="h-full w-full bg-background text-foreground p-5 md:p-5 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative overflow-y-auto scrollbar-hide">
       {/* Background Decorative Elements - Refined Mesh Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[60px] animate-pulse" />
@@ -145,7 +153,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <div className="h-1.5 w-10 bg-primary rounded-full" />
               <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em]">
-                Finances Hub
+                {t("financesHub")}
               </span>
             </div>
             <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent font-sans">
@@ -168,52 +176,65 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-100">
           <StatsCard
-            title={t("scaledRevenue")}
-            value={formatCurrency(stats?.totalRevenue || 0)}
-            trend={`${stats?.growth || 0}% ${t("perMonth")}`}
-            trendUp={Number(stats?.growth) >= 0}
+            title={t("monthlyRevenues") || "Revenu du mois"}
+            value={(() => {
+              const today = new Date();
+              const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+              const isEndOfMonth = today.getDate() >= lastDay - 1; // Last 2 days
+              return isEndOfMonth ? formatCurrency(stats?.revenuesScaledThisMonth || 0) : "--";
+            })()}
+            trend={
+              stats?.revenuesScaledLastMonth > 0
+                ? `${stats.revenuesScaledThisMonth >= stats.revenuesScaledLastMonth ? "+" : ""}${(((stats.revenuesScaledThisMonth - stats.revenuesScaledLastMonth) / stats.revenuesScaledLastMonth) * 100).toFixed(1)}%`
+                : undefined
+            }
+            trendUp={
+              stats?.revenuesScaledThisMonth >= (stats?.revenuesScaledLastMonth || 0)
+            }
             icon={DollarSign}
             variant="blue"
           />
           <StatsCard
-            title={t("billedMaterial")}
-            value={`${stats?.totalMaterial || 0}`}
-            trend={t("units")}
+            title={t("scaledRevenue") || "Total en attente"}
+            value={formatCurrency(stats?.revenuesScaledAllTime || 0)}
+            trend={`${stats?.countScaledAllTime || 0} ${t("invoice")}`}
+            trendUp={true}
+            icon={TrendingUp}
+            variant="emerald"
+          />
+          <StatsCard
+            title={t("unpaidInvoices") || "Total en retard"}
+            value={formatCurrency(stats?.revenuesNonScaledAllTime || 0)}
+            trend={`${stats?.countNonScaledAllTime || 0} ${t("invoice")}`}
+            trendUp={false}
+            icon={TrendingDown}
+            variant="amber"
+          />
+          <StatsCard
+            title={t("monthlyExpenses") || "Dépenses (Mois)"}
+            value={formatCurrency(stats?.expensesThisMonth || 0)}
+            trend={`${stats?.expensesCountThisMonth || 0} ${t("expenses")}`}
+            trendUp={false}
+            icon={Wallet}
+            variant="amber"
+          />
+          <StatsCard
+            title={t("activeClients") || "Clients Actifs"}
+            value={String(stats?.activeClientsCount || 0)}
+            trend={t("total_stat")}
             trendUp={true}
             icon={Package}
             variant="indigo"
           />
           <StatsCard
-            title={t("productivity")}
-            value={`${productivityStats.percentage}%`}
-            trend={t("planning")}
-            trendUp={productivityStats.percentage >= 50}
-            icon={TrendingUp}
-            variant="emerald"
-          />
-          <StatsCard
-            title={t("validatedInvoices")}
-            value={String(stats?.invoiceCount || 0)}
-            trend={t("total_stat")}
-            trendUp={true}
-            icon={Package}
-            variant="slate"
-          />
-          <StatsCard
             title={t("tasks")}
             value={String(productivityStats.total)}
-            trend={`${productivityStats.completed} ${t("done_stat")}`}
-            trendUp={productivityStats.completed > 0}
+            trends={[
+              { label: t("done_stat"), value: productivityStats.completed, up: true },
+              { label: "Non faites", value: productivityStats.total - productivityStats.completed, up: false }
+            ]}
             icon={ListTodo}
-            variant="blue"
-          />
-          <StatsCard
-            title={t("pending")}
-            value={String(stats?.pendingCount || 0)}
-            trend={formatCurrency(stats?.pendingRevenue || 0)}
-            trendUp={false}
-            icon={Wallet}
-            variant="amber"
+            variant="slate"
           />
         </div>
 
@@ -323,9 +344,53 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Right Column - Recent Invoices */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Recent Invoices & Unpaid & Products */}
+          <div className="lg:col-span-1 space-y-8">
             <RecentInvoices invoices={stats?.recentInvoices || []} />
+
+            {stats?.recentProducts && (
+              <Card className="border border-border/40 shadow-2xl bg-card/60 backdrop-blur-xl shrink-0 overflow-hidden flex flex-col h-full rounded-2xl max-h-[600px]">
+                <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-muted/10">
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    <Package className="w-4 h-4 text-primary" />
+                    {t("recentInvoices")}
+                  </h3>
+                  <span className="text-[10px] font-black uppercase text-muted-foreground bg-muted/30 px-2 py-1 rounded">
+                    20 {t("total_stat")}
+                  </span>
+                </div>
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar">
+                  {stats.recentProducts.length > 0 ? (
+                    stats.recentProducts.map((product: any) => (
+                      <div
+                        key={product.id}
+                        className="flex justify-between items-center group bg-background/40 hover:bg-muted/10 p-3 rounded-lg border border-transparent hover:border-border/30 transition-all cursor-default"
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm font-bold text-foreground truncate max-w-[160px] group-hover:text-primary transition-colors">
+                            {product.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {product.type === "service"
+                              ? t("service") || "Service"
+                              : t("catalog") || "Produit"}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="block text-xs font-bold font-mono text-foreground">
+                            {formatCurrency(product.price)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      {t("noRecord")}.
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </div>

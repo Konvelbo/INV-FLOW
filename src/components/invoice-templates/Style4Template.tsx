@@ -34,7 +34,7 @@ export default function Style4Template({
     setItemsArr,
     currency,
   } = useInvoice();
-  const { dict } = useLanguage();
+  const { language, dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -45,7 +45,7 @@ export default function Style4Template({
   });
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: currency || "XOF",
       minimumFractionDigits: 2,
@@ -173,11 +173,14 @@ export default function Style4Template({
                   className="text-right w-48 bg-transparent"
                 />
                 <div>
-                  {new Date().toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {new Date().toLocaleDateString(
+                    language === "fr" ? "fr-FR" : "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  )}
                 </div>
               </div>
             </div>
@@ -192,25 +195,25 @@ export default function Style4Template({
               <OptimizedInput
                 value={clientName}
                 onValueChange={setClientName}
-                placeholder="Client Name"
+                placeholder={dict.client}
                 className="text-xl font-serif text-[#1e293b] w-full mb-1"
               />
               <OptimizedInput
                 value={clientAddress}
                 onValueChange={setClientAddress}
-                placeholder="Address Line 1"
+                placeholder={dict.address}
                 className="text-sm text-slate-500 w-full"
               />
               <OptimizedInput
                 value={clientContact}
                 onValueChange={setClientContact}
-                placeholder="Contact Info"
+                placeholder={dict.contact}
                 className="text-sm text-slate-500 w-full"
               />
               <OptimizedInput
                 value={clientPOBox}
                 onValueChange={setClientPOBox}
-                placeholder="Zip Code"
+                placeholder={dict.poBox}
                 className="text-sm text-slate-500 w-24"
               />
             </div>
@@ -221,7 +224,7 @@ export default function Style4Template({
               <OptimizedInput
                 value={object}
                 onValueChange={setObject}
-                placeholder="Description of services or project..."
+                placeholder={dict.object}
                 className="text-md text-slate-700 w-full h-24 resize-none bg-slate-50 p-3 rounded-md"
               />
             </div>
@@ -315,7 +318,7 @@ export default function Style4Template({
                       onValueChange={(val) =>
                         setNewItem({ ...newItem, designation: val })
                       }
-                      placeholder="Add item..."
+                      placeholder={dict.add}
                       className="w-full bg-transparent text-sm"
                     />
                   </td>
@@ -398,7 +401,7 @@ export default function Style4Template({
               <OptimizedInput
                 value={managerName}
                 onValueChange={setManagerName}
-                placeholder="Sign here"
+                placeholder={dict.managerName}
                 className="text-center font-cursive text-2xl text-[#1e293b] w-full mb-2"
               />
               <div className="border-t border-slate-300 pt-2 text-xs uppercase tracking-widest text-slate-400">

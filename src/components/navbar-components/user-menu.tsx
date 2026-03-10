@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Settings,
   Languages,
+  Building2,
 } from "lucide-react";
 
 import {
@@ -205,6 +206,32 @@ export default function UserMenu() {
               />
               <span className="font-sans font-medium text-sm">
                 Tableau de Bord
+              </span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => router.push("/clients")}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer"
+            >
+              <User
+                size={18}
+                className="text-muted-foreground group-hover:text-primary transition-colors"
+              />
+              <span className="font-sans font-medium text-sm text-foreground">
+                {dict.clients || "Clients"}
+              </span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => router.push("/companies")}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer"
+            >
+              <Building2
+                size={18}
+                className="text-muted-foreground group-hover:text-primary transition-colors"
+              />
+              <span className="font-sans font-medium text-sm text-foreground">
+                {dict.companies || "Entreprises"}
               </span>
             </DropdownMenuItem>
 

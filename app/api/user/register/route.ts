@@ -41,9 +41,28 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
       },
+      include: {
+        companies: true,
+      }
     });
 
     const { password: newPassword, ...rest } = user;
+
+    // Send Welcome Email
+    try {
+      const { WelcomeEmail } = await import("@/src/components/emails/WelcomeEmail");
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY!);
+
+      await resend.emails.send({
+        from: "ProFacture <onboarding@resend.dev>",
+        to: [email],
+        subject: "Bienvenue sur ESSOR !",
+        react: WelcomeEmail({ userName: name }),
+      });
+    } catch (emailErr) {
+      console.error("Failed to send welcome email:", emailErr);
+    }
 
     const token = createToken(user.id);
 

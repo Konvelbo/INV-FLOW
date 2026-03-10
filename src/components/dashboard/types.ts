@@ -15,15 +15,21 @@ export interface RecentInvoice {
 }
 
 export interface DashboardStats {
-  totalRevenue: number;
-  totalMaterial: number;
-  pendingRevenue: number;
-  pendingCount: number;
-  chartData: Array<{ name: string; revenue: number }>;
-  growth: string | number;
-  performance: string;
-  invoiceCount: number;
+  revenuesThisMonth: number;
+  revenuesThisYear: number;
+  unpaidInvoicesTotal: number;
+  activeClientsCount: number;
+  expensesThisMonth: number;
+  profitThisMonth: number;
+  profitThisYear: number;
+  chartData: Array<{ name: string; Revenus: number; Dépenses: number; Profit: number }>;
   recentInvoices: RecentInvoice[];
+  unpaidInvoices: RecentInvoice[];
+  unpaidInvoicesCount: number;
+  revenuesScaledThisMonth: number;
+  revenuesScaledThisYear: number;
+  lastScaledInvoiceAmount: number;
+  secondLastScaledInvoiceAmount: number;
   currency?: string;
 }
 

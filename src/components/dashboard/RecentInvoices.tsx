@@ -94,11 +94,10 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
                 </div>
                 <Badge
                   variant="outline"
-                  className={`text-[9px] px-2 py-0 h-4 border-0 font-bold uppercase tracking-widest ${
-                    invoice.isScaled
-                      ? "bg-primary/10 text-primary border-primary/20"
-                      : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                  }`}
+                  className={`text-[9px] px-2 py-0 h-4 border-0 font-bold uppercase tracking-widest ${invoice.isScaled
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    }`}
                 >
                   {invoice.isScaled ? t("scaled_badge") : t("waiting_badge")}
                 </Badge>

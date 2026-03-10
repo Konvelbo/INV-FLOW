@@ -219,11 +219,11 @@ export default function DefaultTemplate({
               </div>
             </div>
             <h1 className="w-1/2">
-              Client:
+              {dict.client}:
               <OptimizedInput
                 value={clientName}
                 onValueChange={setClientName}
-                placeholder="Client Name"
+                placeholder={dict.client}
                 className="w-full pl-2 border-b"
               />
             </h1>
@@ -271,7 +271,7 @@ export default function DefaultTemplate({
                     value={item.unit}
                     onValueChange={(val) => updateItem(item.id, "unit", val)}
                     placeholder={dict.unit}
-                    // className="border-none outline-none w-15"
+                  // className="border-none outline-none w-15"
                   />
                 </td>
 
@@ -282,7 +282,7 @@ export default function DefaultTemplate({
                       updateItem(item.id, "quantity", Number(val))
                     }
                     placeholder={dict.quantity}
-                    // className="border-none outline-none w-20"
+                  // className="border-none outline-none w-20"
                   />
                 </td>
                 <td>
@@ -292,7 +292,7 @@ export default function DefaultTemplate({
                       updateItem(item.id, "unitPrice", Number(val))
                     }
                     placeholder={dict.unitPrice}
-                    // className="border-none outline-none w-40"
+                  // className="border-none outline-none w-40"
                   />
                 </td>
                 <td>
@@ -320,7 +320,7 @@ export default function DefaultTemplate({
                   value={newItem.unit}
                   onValueChange={(val) => setNewItem({ ...newItem, unit: val })}
                   placeholder={dict.unit}
-                  // className="border-none outline-none w-15"
+                // className="border-none outline-none w-15"
                 />
               </td>
               <td>
@@ -335,7 +335,7 @@ export default function DefaultTemplate({
                     }));
                   }}
                   placeholder={dict.quantity}
-                  // className="border-none outline-none w-20"
+                // className="border-none outline-none w-20"
                 />
               </td>
               <td>
@@ -350,7 +350,7 @@ export default function DefaultTemplate({
                     }));
                   }}
                   placeholder={dict.unitPrice}
-                  // className="border-none outline-none w-40"
+                // className="border-none outline-none w-40"
                 />
               </td>
               <td>

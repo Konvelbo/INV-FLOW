@@ -34,7 +34,7 @@ export default function Style3Template({
     setItemsArr,
     currency,
   } = useInvoice();
-  const { dict } = useLanguage();
+  const { language, dict } = useLanguage();
 
   const [newItem, setNewItem] = useState({
     designation: "",
@@ -45,7 +45,7 @@ export default function Style3Template({
   });
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: currency || "XOF",
       minimumFractionDigits: 2,
@@ -164,7 +164,7 @@ export default function Style3Template({
                   className="bg-transparent w-32 border-b border-dashed border-gray-300 focus:border-purple-400"
                 />
                 <div className="text-sm mt-1">
-                  {new Date().toLocaleDateString()}
+                  {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US")}
                 </div>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function Style3Template({
                 <OptimizedInput
                   value={reference}
                   onValueChange={setReference}
-                  placeholder="REF"
+                  placeholder={dict.reference}
                   className="text-right font-mono text-xl w-32 bg-transparent text-gray-700 font-bold"
                 />
               </div>
@@ -193,13 +193,13 @@ export default function Style3Template({
               <OptimizedInput
                 value={clientName}
                 onValueChange={setClientName}
-                placeholder="Client Name"
+                placeholder={dict.client}
                 className="text-2xl font-bold text-gray-800 w-full mb-1 bg-transparent"
               />
               <OptimizedInput
                 value={clientAddress}
                 onValueChange={setClientAddress}
-                placeholder="Address"
+                placeholder={dict.address}
                 className="text-gray-500 w-full text-sm bg-transparent"
               />
               <div className="flex gap-2 mt-2">
@@ -212,7 +212,7 @@ export default function Style3Template({
                 <OptimizedInput
                   value={clientContact}
                   onValueChange={setClientContact}
-                  placeholder="Contact"
+                  placeholder={dict.contact}
                   className="text-gray-500 w-full text-sm bg-white rounded px-2"
                 />
               </div>
@@ -224,7 +224,7 @@ export default function Style3Template({
               <OptimizedInput
                 value={object}
                 onValueChange={setObject}
-                placeholder="Brief description of the work..."
+                placeholder={dict.object}
                 className="text-lg text-gray-700 italic w-full bg-transparent"
               />
             </div>
@@ -254,7 +254,7 @@ export default function Style3Template({
                       className="font-semibold text-gray-800 w-full bg-transparent"
                     />
                     <div className="text-xs text-gray-400 mt-1 flex gap-2">
-                      <span>Price:</span>
+                      <span>{dict.price}:</span>
                       <OptimizedInput
                         value={item.unitPrice}
                         onValueChange={(val) =>
@@ -307,7 +307,7 @@ export default function Style3Template({
                     onValueChange={(val) =>
                       setNewItem({ ...newItem, designation: val })
                     }
-                    placeholder="Add item..."
+                    placeholder={dict.add}
                     className="bg-transparent text-gray-500 w-full"
                   />
                 </div>
@@ -345,7 +345,7 @@ export default function Style3Template({
                         totalPrice: prev.quantity * p,
                       }));
                     }}
-                    placeholder="Price"
+                    placeholder={dict.price}
                     className="text-right w-20 ml-auto bg-transparent tabular-nums"
                   />
                   <div className="text-xs text-gray-400 pr-2">
@@ -384,7 +384,7 @@ export default function Style3Template({
               <OptimizedInput
                 value={managerName}
                 onValueChange={setManagerName}
-                placeholder="Manager Signature"
+                placeholder={dict.managerName}
                 className="text-center font-handwriting text-2xl text-purple-800 w-64 mx-auto border-b border-purple-200 pb-2"
               />
               <div className="text-xs text-gray-400 uppercase tracking-widest mt-2">

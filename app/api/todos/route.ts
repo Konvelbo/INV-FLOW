@@ -81,6 +81,7 @@ export async function POST(req: Request) {
         category: data.category || "work",
         startTime: data.startTime ? new Date(data.startTime) : null,
         endTime: data.endTime ? new Date(data.endTime) : null,
+        reminderAt: data.reminderAt ? new Date(data.reminderAt) : null,
         completed: data.status === "done",
         user: {
           connect: { id: userId },
