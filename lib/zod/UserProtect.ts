@@ -21,6 +21,7 @@ export const authSchema = z
       .min(6, "Le mot de passe doit faire au moins 6 caractères")
       .max(40, "Le mot de passe ne doit pas exéder 40 caractères"),
     confirmPassword: z.string().optional(),
+    otp: z.string().optional(),
   })
   .refine(
     (data) => {

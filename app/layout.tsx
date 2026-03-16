@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+// Removed failing Google Font imports to unblock build
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { InvoiceProvider } from "@/src/context/InvoiceContext";
@@ -8,15 +8,9 @@ import { Toaster } from "react-hot-toast";
 import CanvasProvider from "@/src/context/canvasContext";
 import { NotificationProvider } from "@/src/context/NotificationContext";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-});
+// Fallback variables for system fonts
+const jakarta = { variable: "font-jakarta" };
+const jetbrains = { variable: "font-jetbrains" };
 
 export const metadata: Metadata = {
   title: "INV-FLOW | Invoice Management",

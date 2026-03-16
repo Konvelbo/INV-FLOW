@@ -2,6 +2,7 @@ import { AppSidebar } from "@/src/components/app-sidebare";
 import { FloatingNavDemo } from "@/src/components/floatingNav";
 import Navbare from "@/src/components/Navbare";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
+import { PageTransition } from "@/src/components/PageTransition";
 
 export default function InvoiceLayout({
   children,
@@ -11,7 +12,9 @@ export default function InvoiceLayout({
   return (
     <div className="flex flex-col min-w-full min-h-screen overflow-x-hidden">
       <FloatingNavDemo />
-      <div className="flex overflow-x-hidden w-full">{children}</div>
+      <div className="flex overflow-x-hidden w-full">
+        <PageTransition>{children}</PageTransition>
+      </div>
     </div>
   );
 }

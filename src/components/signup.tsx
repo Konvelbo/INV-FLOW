@@ -41,6 +41,7 @@ export default function SignUp({
       email: "",
       password: "",
       confirmPassword: "",
+      otp: "",
     },
   });
 

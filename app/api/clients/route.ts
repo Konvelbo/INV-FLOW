@@ -65,6 +65,8 @@ export async function POST(req: Request) {
                 status: data.status || "actif",
                 preferredPaymentMethod: data.preferredPaymentMethod || undefined,
                 notes: data.notes || undefined,
+                zipCode: data.zipCode || undefined,
+                taxId: data.taxId || undefined,
                 companyId: data.companyId || undefined,
                 user: { connect: { id: userId } },
             },

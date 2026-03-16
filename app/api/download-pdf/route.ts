@@ -5,10 +5,10 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { invoiceSchema } from "@/lib/zod/invoice.schema";
 
 // We need to import 'path' and 'os' and 'fs' but we can use a random path in /tmp or similar
-const puppeteer = require("puppeteer");
-const os = require("os");
-const path = require("path");
-const fs = require("fs");
+import puppeteer from "puppeteer";
+import os from "os";
+import path from "path";
+import fs from "fs";
 
 export async function POST(req: Request) {
   let browser;
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     );
 
     browser = await puppeteer.launch({
-      headless: "new", // Use new headless mode
+      headless: true, // Use headless mode
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",

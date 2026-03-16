@@ -16,7 +16,7 @@ export function InteractivePulse({ stats }: { stats?: DashboardStats }) {
 
   // Constants
   const REVENUE_GOAL = 50000; // Monthly goal
-  const currentRevenue = stats?.totalRevenue || 0;
+  const currentRevenue = stats?.revenuesThisMonth || 0;
 
   useEffect(() => {
     // Calculate progress and level based on revenue

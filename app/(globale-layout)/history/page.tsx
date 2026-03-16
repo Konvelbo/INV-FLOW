@@ -1,7 +1,7 @@
 "use strict";
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 // import { format } from "date-fns";
@@ -49,11 +49,7 @@ export default function HistoryPage() {
   const [targetEmail, setTargetEmail] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
-  useEffect(() => {
-    fetchInvoices();
-  }, []);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     try {
       const userStr = localStorage.getItem("user");
       const token = userStr ? JSON.parse(userStr).token : null;
@@ -73,7 +69,11 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, t]);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   const handleDelete = async (id: string) => {
     if (!confirm(t("deleteStructureWarning"))) return;
@@ -173,11 +173,15 @@ export default function HistoryPage() {
 
   const handleClientLogic = async (id: string) => {
     try {
-      const clients = await axios.post(`/api/client/${id}`, {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
+      if (!token) return;
+
+      await axios.post(`/api/client/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (err: any) {
-      //Error gestion
+      console.error(err);
     }
   };
 

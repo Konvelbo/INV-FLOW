@@ -84,6 +84,8 @@ model Client {
   status                 String? @default("actif") // actif, inactif, prospect
   preferredPaymentMethod String? // cash ou virement
   notes                  String?
+  zipCode                String?
+  taxId                  String?
 
   // Financial info (auto-managed)
   totalSpent         Float? @default(0)

@@ -32,19 +32,27 @@ export interface DashboardStats {
   unpaidInvoices: RecentInvoice[];
   unpaidInvoicesCount: number;
   revenuesScaledThisMonth: number;
+  revenuesScaledLastMonth: number;
   revenuesScaledThisYear: number;
+  revenuesScaledAllTime: number;
+  countScaledAllTime: number;
+  revenuesNonScaledAllTime: number;
+  countNonScaledAllTime: number;
+  expensesCountThisMonth: number;
   lastScaledInvoiceAmount: number;
   secondLastScaledInvoiceAmount: number;
-  recentProducts: string[];
+  recentProducts: any[];
   currency?: string;
 }
 
 export interface Todo {
   id: string;
   title: string;
+  description?: string | null;
   status: "todo" | "in_progress" | "done";
   startTime?: string | null;
   endTime?: string | null;
+  reminderAt?: string | Date | null;
   priority?: "low" | "medium" | "high";
   category?: string;
 }

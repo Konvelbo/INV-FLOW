@@ -111,7 +111,7 @@ function Invoice() {
     if (invoiceId) {
       fetchInvoiceData(invoiceId);
     }
-  }, [invoiceId, setInvoiceData]);
+  }, [invoiceId, setInvoiceData, t]);
 
   const handleGeneratePDF = async () => {
     setLoading(true);

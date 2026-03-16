@@ -61,7 +61,7 @@ export async function GET(req: Request) {
                     // Remove recurring logic from the duplication
                     isRecurring: false,
                     style: invoice.style,
-                    user: { connect: { id: invoice.userId } },
+                    userId: invoice.userId,
                     items: {
                         create: invoice.items.map(item => ({
                             designation: item.designation,
@@ -78,7 +78,7 @@ export async function GET(req: Request) {
             generatedInvoices.push(newInvoice);
 
             // Update the original invoice's next issue date based on frequency
-            let nextDate = new Date(invoice.nextIssueDate!);
+            const nextDate = new Date(invoice.nextIssueDate!);
             if (invoice.recurrenceFreq === 'daily') nextDate.setDate(nextDate.getDate() + 1);
             else if (invoice.recurrenceFreq === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
             else if (invoice.recurrenceFreq === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);

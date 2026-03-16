@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   const [todos, setTodos] = useState<Todo[]>([]);
 
-  const fetchStats = async (token: string) => {
+  const fetchStats = useCallback(async (token: string) => {
     try {
       const [resMetrics, resCharts] = await Promise.all([
         fetch(`/api/dashboard/metrics?t=${Date.now()}`, {
@@ -65,9 +65,9 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Failed to fetch stats", error);
     }
-  };
+  }, []);
 
-  const fetchTodos = async (token: string) => {
+  const fetchTodos = useCallback(async (token: string) => {
     try {
       const response = await fetch("/api/todos", {
         headers: {
@@ -81,7 +81,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Dashboard failed to fetch tasks", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     // Only fetch if we have a user token and stats are not yet loaded
@@ -92,7 +92,7 @@ export default function Dashboard() {
       };
       initDashboard();
     }
-  }, [user?.token, !!stats]);
+  }, [user?.token, stats, fetchStats, fetchTodos]);
 
   const productivityStats = useMemo(() => {
     const total = todos.length;

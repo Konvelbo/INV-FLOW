@@ -57,6 +57,10 @@ interface TooltipProps {
     dataKey: string;
     value: number;
     color: string;
+    payload: {
+      month: string;
+      [key: string]: any;
+    };
   }>;
   label?: string;
 }

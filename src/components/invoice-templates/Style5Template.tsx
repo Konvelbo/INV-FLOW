@@ -1,4 +1,4 @@
-import { Ref, useState, useCallback, useMemo } from "react";
+import { Ref, useState, useCallback, useMemo, ReactNode } from "react";
 import { InvoiceItemWithId, useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
@@ -179,11 +179,14 @@ export default function Style5Template({
                 />
               </div>
               <div>
-                {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                {new Date().toLocaleDateString(
+                  language === "fr" ? "fr-FR" : "en-US",
+                  {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  },
+                )}
               </div>
             </div>
           </div>

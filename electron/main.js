@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const {
   app,
   BrowserWindow,
@@ -9,13 +10,18 @@ const path = require("path");
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
+    minWidth: 1000,
+    minHeight: 700,
+    titleBarStyle: "hiddenInset", // For Mac native look, though we might need a custom titlebar for Windows
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"), // Si vous en avez un
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
+      spellcheck: true,
     },
+    backgroundColor: "#000000", // Match app background for smoother startup
   });
   win.setMenuBarVisibility(false);
 

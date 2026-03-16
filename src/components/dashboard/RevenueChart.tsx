@@ -10,6 +10,15 @@ export function RevenueChart() {
   const { t, language } = useLanguage();
   const locale = language === "fr" ? fr : enUS;
 
+  const months = useMemo(
+    () =>
+      Array.from({ length: 12 }).map((_, i) => {
+        const monthDate = setMonth(new Date(), i);
+        return format(monthDate, "MMM", { locale });
+      }),
+    [locale],
+  );
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -46,14 +55,7 @@ export function RevenueChart() {
       </div>
 
       <div className="flex justify-between mt-4 text-xs text-slate-500 font-medium w-full">
-        {useMemo(
-          () =>
-            Array.from({ length: 12 }).map((_, i) => {
-              const monthDate = setMonth(new Date(), i);
-              return format(monthDate, "MMM", { locale });
-            }),
-          [locale],
-        ).map((month, idx) => (
+        {months.map((month, idx) => (
           <span key={idx} className="flex-1 text-center truncate px-0.5">
             {month}
           </span>

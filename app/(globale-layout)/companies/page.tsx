@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useLanguage } from "@/src/context/LanguageContext";
 import {
   Card,
@@ -673,15 +674,16 @@ export default function SettingsPage() {
 
                     <div className="space-y-3 md:col-span-2 pt-6">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
-                        Logo de l'entreprise
+                        Logo de l&apos;entreprise
                       </Label>
                       <div className="flex items-center gap-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
                         <div className="size-20 rounded-xl bg-slate-900 border border-white/10 overflow-hidden flex items-center justify-center flex-shrink-0">
                           {formData.logoUrl ? (
-                            <img
+                            <Image
                               src={formData.logoUrl}
                               alt="Logo preview"
-                              className="size-full object-contain"
+                              fill
+                              className="object-contain"
                             />
                           ) : (
                             <Building2 className="size-8 text-slate-700" />
@@ -742,10 +744,11 @@ export default function SettingsPage() {
                     <div className="flex justify-between items-start mb-6">
                       <div className="size-20 rounded-2xl bg-primary/5 border border-primary/10 p-4 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-105 transition-transform duration-300">
                         {company.logoUrl ? (
-                          <img
+                          <Image
                             src={company.logoUrl}
                             alt={company.name}
-                            className="size-full object-contain"
+                            fill
+                            className="object-contain"
                           />
                         ) : (
                           <Building2 className="size-10 text-primary/40" />

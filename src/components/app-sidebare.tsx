@@ -29,7 +29,7 @@ import React from "react";
 
 export const AppSidebar = React.memo(function AppSidebar() {
   const { clearInvoiceData } = useInvoiceActions();
-  const { dict } = useLanguage();
+  const { dict, t } = useLanguage();
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";

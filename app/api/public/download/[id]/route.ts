@@ -1,10 +1,10 @@
 import { invoiceTemplate } from "@/lib/invoice-pdf";
 import { prisma } from "@/lib/prisma";
 
-const puppeteer = require("puppeteer");
-const os = require("os");
-const path = require("path");
-const fs = require("fs");
+import puppeteer from "puppeteer";
+import os from "os";
+import path from "path";
+import fs from "fs";
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
     let browser;
@@ -48,7 +48,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
             }))
         };
 
-        const html = invoiceTemplate(invoiceData);
+        const html = invoiceTemplate(invoiceData as any);
 
         uniqueUserDataDir = path.join(
             os.tmpdir(),
@@ -56,7 +56,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
         );
 
         browser = await puppeteer.launch({
-            headless: "new",
+            headless: true,
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",

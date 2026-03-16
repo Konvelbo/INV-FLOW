@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const userId = verifyToken(req);
         if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const company = await prisma.company.findFirst({
-            where: { id: params.id, userId },
+            where: { id, userId },
         });
 
         if (!company) return NextResponse.json({ message: "Company not found" }, { status: 404 });
@@ -19,15 +20,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const userId = verifyToken(req);
         if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const data = await req.json();
 
         const company = await prisma.company.updateMany({
-            where: { id: params.id, userId },
+            where: { id, userId },
             data: {
                 name: data.name,
                 legalName: data.legalName,
@@ -54,20 +56,21 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (company.count === 0) return NextResponse.json({ message: "Company not found or unauthorized" }, { status: 404 });
 
         // Fetch the updated company
-        const updatedCompany = await prisma.company.findUnique({ where: { id: params.id } });
+        const updatedCompany = await prisma.company.findUnique({ where: { id } });
         return NextResponse.json(updatedCompany);
     } catch (error) {
         return NextResponse.json({ message: "Error updating company", error }, { status: 500 });
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const userId = verifyToken(req);
         if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const deleteResult = await prisma.company.deleteMany({
-            where: { id: params.id, userId },
+            where: { id, userId },
         });
 
         if (deleteResult.count === 0) return NextResponse.json({ message: "Company not found or unauthorized" }, { status: 404 });

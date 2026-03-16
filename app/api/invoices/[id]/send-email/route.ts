@@ -5,8 +5,9 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const userId = verifyToken(req);
         if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
@@ -18,7 +19,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         }
 
         const invoice = await prisma.invoice.findFirst({
-            where: { id: params.id, userId },
+            where: { id, userId },
         });
 
         if (!invoice) return NextResponse.json({ message: "Invoice not found" }, { status: 404 });

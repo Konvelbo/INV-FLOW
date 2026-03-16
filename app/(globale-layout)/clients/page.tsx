@@ -52,6 +52,8 @@ interface Client {
   status: string | null;
   preferredPaymentMethod: string | null;
   notes: string | null;
+  zipCode: string | null;
+  taxId: string | null;
   totalSpent?: number;
   paidInvoicesCount?: number;
   unpaidInvoicesCount?: number;
@@ -86,6 +88,8 @@ export default function ClientsPage({
     status: "actif",
     preferredPaymentMethod: "cash",
     notes: "",
+    zipCode: "",
+    taxId: "",
   });
 
   const fetchClients = useCallback(async () => {
@@ -186,6 +190,8 @@ export default function ClientsPage({
       status: client.status || "actif",
       preferredPaymentMethod: client.preferredPaymentMethod || "cash",
       notes: client.notes || "",
+      zipCode: client.zipCode || "",
+      taxId: client.taxId || "",
     });
     setIsDialogOpen(true);
   };
@@ -208,6 +214,8 @@ export default function ClientsPage({
       status: "actif",
       preferredPaymentMethod: "cash",
       notes: "",
+      zipCode: "",
+      taxId: "",
     });
   };
 

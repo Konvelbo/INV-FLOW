@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const puppeteer = require("puppeteer");
 // Note: You'll need to adjust the import path for invoiceTemplate or move the template generator to a shared location/electron folder
 // const { invoiceTemplate } = require("../lib/invoice-pdf");

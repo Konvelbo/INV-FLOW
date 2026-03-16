@@ -36,7 +36,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ type: st
         if (companyId) whereClause.companyId = companyId;
 
         let dataToExport = [];
-        let filename = `${type}_export.csv`;
+        const filename = `${type}_export.csv`;
 
         switch (type) {
             case "invoices":

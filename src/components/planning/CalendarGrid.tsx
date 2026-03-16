@@ -15,16 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/src/context/LanguageContext";
 
-interface Todo {
-  id: string;
-  title: string;
-  completed: boolean;
-  status: string;
-  priority: string;
-  category: string;
-  startTime: string | null;
-  endTime: string | null;
-}
+import { Todo } from "@/src/components/dashboard/types";
 
 interface CalendarGridProps {
   currentMonth: Date;
@@ -62,7 +53,7 @@ export const CalendarGrid = memo(function CalendarGrid({
     t("sun"),
   ];
 
-  const getPriorityColor = (p: string) => {
+  const getPriorityColor = (p?: string) => {
     switch (p) {
       case "high":
         return "bg-rose-500/10 border-rose-500/20 text-rose-600";
@@ -112,7 +103,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                     className={cn(
                       "inline-flex items-center justify-center size-8 text-sm font-bold rounded-full transition-transform group-hover/cell:scale-110",
                       isToday(day) &&
-                        "bg-primary text-primary-foreground shadow-lg shadow-primary/30",
+                      "bg-primary text-primary-foreground shadow-lg shadow-primary/30",
                       !isToday(day) && isCurrentMonth && "text-foreground",
                       !isCurrentMonth && "text-muted-foreground",
                     )}
@@ -141,7 +132,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                           ? "bg-muted text-muted-foreground/60 line-through opacity-50"
                           : getPriorityColor(todo.priority),
                         conflicts.has(todo.id) &&
-                          "border-rose-500 border-2 animate-pulse",
+                        "border-rose-500 border-2 animate-pulse",
                       )}
                     >
                       <div className="flex items-center gap-1">

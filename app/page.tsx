@@ -496,7 +496,7 @@ export default function Home() {
           <div className="flex flex-col items-center md:items-start gap-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Logo />
+                <Logo logoUrl={"/black-caractere-non-black.png"} w={45} h={45} />
               </div>
               <span className="font-black tracking-[0.5em] uppercase text-sm text-foreground">
                 ESSOR

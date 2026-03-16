@@ -13,6 +13,7 @@ import { useNotifications } from "@/src/context/NotificationContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
+import { Todo } from "@/src/components/dashboard/types";
 import {
   ChevronLeft,
   ChevronRight,
@@ -35,18 +36,7 @@ import {
 } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 
-interface Todo {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  status: "todo" | "in_progress" | "done";
-  priority: "low" | "medium" | "high";
-  category: string;
-  startTime: string | null;
-  endTime: string | null;
-  reminderAt: string | null;
-}
+// Todo interface removed (imported from types)
 
 export default function PlanningPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -240,10 +230,9 @@ export default function PlanningPage() {
     setIsModalOpen(true);
   }, []);
 
+  const startTime = editingTodo?.startTime;
   const handleSuggestSlot = useCallback(() => {
-    const d = editingTodo?.startTime
-      ? new Date(editingTodo.startTime)
-      : new Date();
+    const d = startTime ? new Date(startTime) : new Date();
     const slot = findFreeSlot(d);
     if (slot) {
       const startStr = format(slot, "yyyy-MM-dd'T'HH:mm");
@@ -254,7 +243,7 @@ export default function PlanningPage() {
       return { start: startStr, end: endStr };
     }
     return null;
-  }, [editingTodo?.startTime, findFreeSlot]);
+  }, [startTime, findFreeSlot]);
 
   return (
     <div className="flex flex-col min-h-full min-w-full pt-5 md:pt-5 lg:pt-16 pt-28 md:pt-28 lg:pt-28 bg-background font-sans">

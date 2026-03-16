@@ -21,7 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         // Mark as paid
         await prisma.invoice.update({
-            where: { id: params.id },
+            where: { id: id },
             data: {
                 status: "paid",
                 paidAmount: data.amount || invoice.totalTTC || invoice.totalHT,

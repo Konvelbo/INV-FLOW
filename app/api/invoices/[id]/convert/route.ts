@@ -11,13 +11,14 @@ async function generateInvoiceNumber(userId: string) {
     return lastInvoice && lastInvoice.invoiceNumber ? lastInvoice.invoiceNumber + 1 : 1;
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const userId = verifyToken(req);
         if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const invoice = await prisma.invoice.findFirst({
-            where: { id: params.id, userId },
+            where: { id, userId },
             include: { items: true }
         });
 
@@ -31,7 +32,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         // Usually, we just update the type and status, or clone it.
         // We will update the existing record to become an "invoice" and mark it as "pending"
         const updatedInvoice = await prisma.invoice.update({
-            where: { id: params.id },
+            where: { id: id },
             data: {
                 type: "invoice",
                 status: "pending",

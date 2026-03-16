@@ -8,7 +8,7 @@ export default async function notFound() {
       <InfoIcon />
       <AlertTitle>Invoice Error</AlertTitle>
       <Link href="/" className="text-primary hover:underline">
-        Retour à l'accueil
+        Retour à l&apos;accueil
       </Link>
     </Alert>
   );
