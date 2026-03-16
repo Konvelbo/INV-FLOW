@@ -1,11 +1,15 @@
 import * as z from "zod";
 
 export const UserSchema = z.object({
-  name: z.string().min(10, "Le nom doit contenir au moins 2 caractères"),
+  name: z
+    .string()
+    .min(10, "Le nom doit contenir au moins 2 caractères")
+    .max(40, "Le nom ne doit pas exéder 40 caractères"),
   email: z.string().email("Format d'email invalide"),
   password: z
     .string()
-    .min(6, "Le mot de passe doit faire au moins 6 caractères"),
+    .min(6, "Le mot de passe doit faire au moins 6 caractères")
+    .max(40, "Le mot de passe ne doit pas exéder 40 caractères"),
 });
 
 export const authSchema = z
@@ -14,7 +18,8 @@ export const authSchema = z
     email: z.string().email("Format d'email invalide"),
     password: z
       .string()
-      .min(6, "Le mot de passe doit faire au moins 6 caractères"),
+      .min(6, "Le mot de passe doit faire au moins 6 caractères")
+      .max(40, "Le mot de passe ne doit pas exéder 40 caractères"),
     confirmPassword: z.string().optional(),
   })
   .refine(
@@ -40,7 +45,8 @@ export const LoginSchema = z.object({
   email: z.string().email("Format d'email invalide"),
   password: z
     .string()
-    .min(6, "Le mot de passe doit faire au moins 6 caractères"),
+    .min(6, "Le mot de passe doit faire au moins 6 caractères")
+    .max(40, "Le nom ne doit pas exéder 40 caractères"),
 });
 
 export type LoginFormData = z.infer<typeof LoginSchema>;

@@ -22,7 +22,12 @@ export interface DashboardStats {
   expensesThisMonth: number;
   profitThisMonth: number;
   profitThisYear: number;
-  chartData: Array<{ name: string; Revenus: number; Dépenses: number; Profit: number }>;
+  chartData: Array<{
+    name: string;
+    Revenus: number;
+    Dépenses: number;
+    Profit: number;
+  }>;
   recentInvoices: RecentInvoice[];
   unpaidInvoices: RecentInvoice[];
   unpaidInvoicesCount: number;
@@ -30,6 +35,7 @@ export interface DashboardStats {
   revenuesScaledThisYear: number;
   lastScaledInvoiceAmount: number;
   secondLastScaledInvoiceAmount: number;
+  recentProducts: string[];
   currency?: string;
 }
 

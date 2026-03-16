@@ -51,7 +51,8 @@ export const FloatingNav = ({
   useEffect(() => {
     // Check if page is scrollable
     const checkScrollable = () => {
-      const isScrollable = document.documentElement.scrollHeight > window.innerHeight;
+      const isScrollable =
+        document.documentElement.scrollHeight > window.innerHeight;
       if (!isScrollable) {
         setVisible(true);
       }
@@ -121,7 +122,9 @@ export const FloatingNav = ({
           {/* Divider */}
           <div className="h-5 w-px bg-neutral-200 dark:bg-white/10" />
           <div className="flex space-x-2">
-            <NotificationMenu />
+            <div id="NotificationBell" className="animate-pulse">
+              <NotificationMenu />
+            </div>
             <UserMenu />
           </div>
         </div>

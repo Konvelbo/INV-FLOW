@@ -23,15 +23,15 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== "undefined") {
-      const savedLang = localStorage.getItem("app_language") as Language;
-      if (savedLang && (savedLang === "fr" || savedLang === "en")) {
-        return savedLang;
-      }
+  const [language, setLanguageState] = useState<Language>("fr");
+
+  useEffect(() => {
+    // Load saved language on mount to avoid hydration mismatch
+    const savedLang = localStorage.getItem("app_language") as Language;
+    if (savedLang && (savedLang === "fr" || savedLang === "en")) {
+      setLanguageState(savedLang);
     }
-    return "fr";
-  });
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -45,7 +45,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   const t = useCallback(
     (key: TranslationKey): string => {
-      return translations[language][key] || translations["fr"][key] || key;
+      const currentDict = translations[language] as any;
+      const frDict = translations["fr"] as any;
+      return currentDict[key] || frDict[key] || key;
     },
     [language],
   );

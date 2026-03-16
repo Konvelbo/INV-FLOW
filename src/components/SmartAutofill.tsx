@@ -7,6 +7,7 @@ import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Search, Users, Package, Plus, ChevronRight, X, Sparkles } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 interface Client {
     id: string;
@@ -27,8 +28,9 @@ interface Product {
 export default function SmartAutofill() {
     const {
         setClientName, setClientAddress, setClientContact, setClientPOBox,
-        itemsArr, setItemsArr
+        itemsArr, setItemsArr, setClientId
     } = useInvoice();
+    const { t } = useLanguage();
 
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"clients" | "products">("clients");
@@ -73,6 +75,7 @@ export default function SmartAutofill() {
         setClientAddress(client.address || "");
         setClientContact(client.phone || client.email || "");
         setClientPOBox("");
+        setClientId(client.id);
         setIsOpen(false);
     };
 
@@ -80,7 +83,7 @@ export default function SmartAutofill() {
         const newItem = {
             id: uuidv4(),
             designation: product.name,
-            unit: product.type === "service" ? "Prestation" : "Unité",
+            unit: product.type === "service" ? t("servicePrestation") : t("unitPriceShort"),
             quantity: 1,
             unitPrice: product.price,
             totalPrice: product.price * 1
@@ -99,7 +102,7 @@ export default function SmartAutofill() {
                 className="fixed right-6 top-32 z-50 rounded-full h-14 px-6 shadow-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-2 animate-bounce-slow border-2 border-indigo-400/30"
             >
                 <Sparkles className="w-5 h-5 text-amber-300" />
-                Assistant Remplissage Rapide
+                {t("quickAssistant")}
             </Button>
         );
     }
@@ -109,7 +112,7 @@ export default function SmartAutofill() {
             <div className="bg-indigo-600 p-4 text-white flex items-center justify-between">
                 <div className="flex items-center gap-2 font-bold">
                     <Sparkles className="w-4 h-4 text-amber-300" />
-                    <span>Assistant Rapide</span>
+                    <span>{t("quickAssistantShort")}</span>
                 </div>
                 <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20 rounded-full" onClick={() => setIsOpen(false)}>
                     <X className="w-4 h-4" />
@@ -121,13 +124,13 @@ export default function SmartAutofill() {
                     className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${activeTab === "clients" ? "border-indigo-600 text-indigo-600" : "border-transparent text-muted-foreground hover:bg-muted/50"}`}
                     onClick={() => { setActiveTab("clients"); setSearch(""); }}
                 >
-                    <Users className="w-4 h-4" /> Clients
+                    <Users className="w-4 h-4" /> {t("clients")}
                 </button>
                 <button
                     className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${activeTab === "products" ? "border-indigo-600 text-indigo-600" : "border-transparent text-muted-foreground hover:bg-muted/50"}`}
                     onClick={() => { setActiveTab("products"); setSearch(""); }}
                 >
-                    <Package className="w-4 h-4" /> Catalogue
+                    <Package className="w-4 h-4" /> {t("catalog")}
                 </button>
             </div>
 
@@ -136,7 +139,7 @@ export default function SmartAutofill() {
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                         autoFocus
-                        placeholder={`Rechercher un ${activeTab === "clients" ? "client" : "article"}...`}
+                        placeholder={t("searchQuickAssistant").replace("{type}", activeTab === "clients" ? t("client") : t("article"))}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-9 bg-background h-9 text-sm rounded-xl"
@@ -154,11 +157,11 @@ export default function SmartAutofill() {
                         <button key={c.id} onClick={() => fillClient(c)} className="w-full text-left p-3 rounded-xl hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-colors group flex items-center justify-between">
                             <div>
                                 <p className="font-bold text-sm text-foreground group-hover:text-indigo-900">{c.name}</p>
-                                <p className="text-xs text-muted-foreground truncate max-w-[200px]">{c.email || c.phone || "Sans contact"}</p>
+                                <p className="text-xs text-muted-foreground truncate max-w-[200px]">{c.email || c.phone || t("noContact")}</p>
                             </div>
                             <ChevronRight className="w-4 h-4 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
-                    )) : <div className="p-8 text-center text-xs text-muted-foreground">Aucun client trouvé</div>
+                    )) : <div className="p-8 text-center text-xs text-muted-foreground">{t("noClientFound")}</div>
                 ) : (
                     filteredProducts.length > 0 ? filteredProducts.map(p => (
                         <button key={p.id} onClick={() => addProduct(p)} className="w-full text-left p-3 rounded-xl hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-colors group flex items-center justify-between">
@@ -170,7 +173,7 @@ export default function SmartAutofill() {
                                 <Plus className="w-3.5 h-3.5" />
                             </div>
                         </button>
-                    )) : <div className="p-8 text-center text-xs text-muted-foreground">Aucun article trouvé</div>
+                    )) : <div className="p-8 text-center text-xs text-muted-foreground">{t("noItemFound")}</div>
                 )}
             </div>
         </div>

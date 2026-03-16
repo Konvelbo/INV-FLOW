@@ -154,6 +154,7 @@ export default function HistoryPage() {
           action: "a envoyé",
           target: `la facture ${selectedInvoiceForEmail.reference} par e-mail`,
           type: "invoice",
+          silent: true,
         });
         setIsEmailModalOpen(false);
         setTargetEmail("");
@@ -162,11 +163,21 @@ export default function HistoryPage() {
       console.error(err);
       toast.error(
         err.response?.data?.message ||
-          t("emailSendError") ||
-          "Erreur lors de l'envoi de l'e-mail",
+        t("emailSendError") ||
+        "Erreur lors de l'envoi de l'e-mail",
       );
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const handleClientLogic = async (id: string) => {
+    try {
+      const clients = await axios.post(`/api/client/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err: any) {
+      //Error gestion
     }
   };
 
@@ -322,7 +333,7 @@ export default function HistoryPage() {
                         </span>
                       </div>
                       <CardTitle className="text-xl font-bold font-mono text-foreground tracking-tighter">
-                        {invoice.reference}
+                        {invoice.invoiceNumber ? `#${invoice.invoiceNumber} - ` : ""}{invoice.reference}
                       </CardTitle>
                       <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-2">
                         <Calendar className="w-3 h-3 text-primary" />

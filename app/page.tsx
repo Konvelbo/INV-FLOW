@@ -1,7 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FileText, TrendingUp, Brain, Users, Mail, Bell, LayoutDashboard, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  TrendingUp,
+  Brain,
+  Users,
+  Mail,
+  Bell,
+  LayoutDashboard,
+  ShieldCheck,
+} from "lucide-react";
 import Logo from "@/src/components/navbar-components/logo";
 import { SparklesText } from "@/src/components/ui/sparkles-text";
 import { TypingText } from "@/src/components/ui/typing-text";
@@ -72,7 +82,7 @@ export default function Home() {
               <span
                 id="landing_page_conBtn"
                 onClick={() => {
-                  setSignUpChoise("Connexion");
+                  setSignUpChoise(t("loginAction"));
                   setVisibility(true);
                 }}
                 className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer uppercase tracking-widest"
@@ -81,7 +91,7 @@ export default function Home() {
               </span>
               <Button
                 onClick={() => {
-                  setSignUpChoise("Creer votre compte");
+                  setSignUpChoise(t("createAccount"));
                   setVisibility(true);
                 }}
                 className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
@@ -140,7 +150,7 @@ export default function Home() {
             ) : (
               <Button
                 onClick={() => {
-                  setSignUpChoise("Creer votre compte");
+                  setSignUpChoise(t("createAccount"));
                   setVisibility(true);
                 }}
                 className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em] h-auto"
@@ -286,9 +296,7 @@ export default function Home() {
 
                 <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight">
                   {t("aiSectionTitle")} <br />
-                  <span className="text-primary">
-                    {t("aiSectionSubtitle")}
-                  </span>
+                  <span className="text-primary">{t("aiSectionSubtitle")}</span>
                 </h2>
 
                 <p className="text-lg text-muted-foreground font-sans leading-relaxed">
@@ -298,16 +306,16 @@ export default function Home() {
                 <div className="grid gap-6">
                   {[
                     {
-                      title: "Comptes-rendus Automatisés",
-                      desc: "Génère des rapports détaillés sur vos revenus mensuels et votre rentabilité.",
+                      title: t("automatedReportsTitle"),
+                      desc: t("automatedReportsDesc"),
                     },
                     {
-                      title: "Assistant Q&A Interactif",
-                      desc: "Posez des questions sur vos données financières et obtenez des réponses instantanées.",
+                      title: t("interactiveAssistantTitle"),
+                      desc: t("interactiveAssistantDesc"),
                     },
                     {
-                      title: "Score de Santé Financière",
-                      desc: "Un indicateur dynamique basé sur vos flux de trésorerie et vos engagements.",
+                      title: t("financialHealthTitle"),
+                      desc: t("financialHealthDesc"),
                     },
                   ].map((item, idx) => (
                     <div
@@ -460,7 +468,7 @@ export default function Home() {
                 {!storage ? (
                   <Button
                     onClick={() => {
-                      setSignUpChoise("Creer votre compte");
+                      setSignUpChoise(t("createAccount"));
                       setVisibility(true);
                     }}
                     className="inline-flex items-center justify-center px-16 py-8 text-sm font-black text-primary bg-white rounded-[2rem] hover:bg-white/90 transition-all transform hover:scale-105 shadow-2xl shadow-black/30 uppercase tracking-[0.3em] h-auto"
@@ -473,7 +481,7 @@ export default function Home() {
                     href="/dashboard"
                     className="inline-flex items-center justify-center px-16 py-8 text-sm font-black text-primary bg-white rounded-[2rem] hover:bg-white/90 transition-all transform hover:scale-105 shadow-2xl shadow-black/30 uppercase tracking-[0.3em] h-auto"
                   >
-                    Démarrer Maintenant
+                    {t("startNow")}
                   </Link>
                 )}
               </div>

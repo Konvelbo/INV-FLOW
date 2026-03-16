@@ -7,6 +7,7 @@ interface InvoiceEmailProps {
     downloadLink: string;
     senderName: string;
     amount?: string;
+    lang?: 'fr' | 'en';
 }
 
 export const InvoiceEmail = ({
@@ -15,33 +16,46 @@ export const InvoiceEmail = ({
     downloadLink,
     senderName,
     amount,
+    lang = 'fr',
 }: InvoiceEmailProps) => {
+    const isEn = lang === 'en';
+    
     return (
         <Html>
             <Head />
-            <Preview>Nouvelle facture {invoiceReference} de {senderName}</Preview>
+            <Preview>
+                {isEn 
+                    ? `New invoice ${invoiceReference} from ${senderName}` 
+                    : `Nouvelle facture ${invoiceReference} de ${senderName}`}
+            </Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section style={header}>
-                        <Text style={headerTitle}>Facture {invoiceReference}</Text>
+                        <Text style={headerTitle}>
+                            {isEn ? `Invoice ${invoiceReference}` : `Facture ${invoiceReference}`}
+                        </Text>
                     </Section>
                     <Section style={content}>
-                        <Text style={text}>Bonjour {clientName},</Text>
+                        <Text style={text}>{isEn ? `Hello ${clientName},` : `Bonjour ${clientName},`}</Text>
                         <Text style={text}>
-                            Veuillez trouver ci-joint le lien de téléchargement pour votre facture <strong>{invoiceReference}</strong> émise par <strong>{senderName}</strong>.
+                            {isEn
+                                ? <>Please find attached the download link for your invoice <strong>{invoiceReference}</strong> issued by <strong>{senderName}</strong>.</>
+                                : <>Veuillez trouver ci-joint le lien de téléchargement pour votre facture <strong>{invoiceReference}</strong> émise par <strong>{senderName}</strong>.</>}
                         </Text>
                         {amount && (
                             <Text style={text}>
-                                Montant total : <strong>{amount}</strong>
+                                {isEn ? "Total amount: " : "Montant total : "}<strong>{amount}</strong>
                             </Text>
                         )}
                         <Section style={buttonContainer}>
                             <Button style={button} href={downloadLink}>
-                                Télécharger la facture
+                                {isEn ? "Download Invoice" : "Télécharger la facture"}
                             </Button>
                         </Section>
                         <Text style={text}>
-                            Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
+                            {isEn
+                                ? "If the button doesn't work, copy and paste this link into your browser:"
+                                : "Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :"}
                             <br />
                             <a href={downloadLink} style={link}>{downloadLink}</a>
                         </Text>
@@ -49,7 +63,9 @@ export const InvoiceEmail = ({
                     <Hr style={hr} />
                     <Section style={footer}>
                         <Text style={footerText}>
-                            Cet e-mail a été envoyé automatiquement. Merci de votre confiance !
+                            {isEn
+                                ? "This email was sent automatically. Thank you for your trust!"
+                                : "Cet e-mail a été envoyé automatiquement. Merci de votre confiance !"}
                         </Text>
                     </Section>
                 </Container>

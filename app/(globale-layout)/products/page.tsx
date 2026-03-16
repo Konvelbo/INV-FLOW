@@ -22,6 +22,7 @@ import {
   Percent,
   DollarSign,
   Download,
+  Zap,
 } from "lucide-react";
 import {
   Dialog,
@@ -114,21 +115,21 @@ export default function ProductsPage({
       });
 
       if (res.ok) {
-        toast.success(editingId ? "Article modifié" : "Article ajouté");
+        toast.success(editingId ? t("itemUpdated") : t("itemAdded"));
         setIsDialogOpen(false);
         resetForm();
         fetchProducts();
       } else {
-        toast.error("Erreur lors de la sauvegarde");
+        toast.error(t("saveError"));
       }
     } catch (error) {
       console.error("Error saving product", error);
-      toast.error("Erreur inattendue");
+      toast.error(t("unexpectedError"));
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Voulez-vous vraiment supprimer l'article "${name}" ?`))
+    if (!confirm(t("itemDeleteWarning").replace("{name}", name)))
       return;
     try {
       const userStr = localStorage.getItem("user");
@@ -141,7 +142,7 @@ export default function ProductsPage({
       });
 
       if (res.ok) {
-        toast.success("Article supprimé");
+        toast.success(t("itemDeleted"));
         fetchProducts();
       }
     } catch (error) {
@@ -224,15 +225,14 @@ export default function ProductsPage({
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-10 bg-indigo-500 rounded-full" />
                 <span className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.3em]">
-                  Catalogue
+                  {t("catalog")}
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent font-sans">
-                Produits & Services
+                {t("productsServices")}
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl font-sans">
-                Gérez votre catalogue pour accélérer la création de vos factures
-                et devis.
+                {t("catalogDesc")}
               </p>
             </div>
           )}
@@ -245,7 +245,7 @@ export default function ProductsPage({
               onClick={handleExport}
             >
               <Download className="w-4 h-4" />
-              Exporter (CSV)
+              {t("exportCsv")}
             </Button>
             <Dialog
               open={isDialogOpen}
@@ -257,23 +257,22 @@ export default function ProductsPage({
               <DialogTrigger asChild>
                 <Button className="font-bold gap-2">
                   <Plus className="w-4 h-4" />
-                  Nouvel Article
+                  {t("newItem")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px] bg-card border border-border/50 text-foreground backdrop-blur-xl">
                 <DialogHeader>
                   <DialogTitle>
-                    {editingId ? "Modifier l'article" : "Nouvel Article"}
+                    {editingId ? t("editItem") : t("newItem")}
                   </DialogTitle>
                   <DialogDescription>
-                    Ajoutez un article réutilisable pour vos prochaines
-                    factures.
+                    {t("catalogAddDesc")}
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-4 py-4">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="type">Type</Label>
+                      <Label htmlFor="type">{t("type")}</Label>
                       <select
                         id="type"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
@@ -285,12 +284,12 @@ export default function ProductsPage({
                           })
                         }
                       >
-                        <option value="service">Service (Prestation)</option>
-                        <option value="product">Produit (Matériel)</option>
+                        <option value="service">{t("servicePrestation")}</option>
+                        <option value="product">{t("productMaterial")}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nom de l'article *</Label>
+                      <Label htmlFor="name">{t("itemNameLabel")} *</Label>
                       <Input
                         id="name"
                         value={formData.name}
@@ -303,7 +302,7 @@ export default function ProductsPage({
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="description">
-                        Description (Optionnel)
+                        {t("optionalDescription")}
                       </Label>
                       <Input
                         id="description"
@@ -319,7 +318,7 @@ export default function ProductsPage({
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="price">Prix Unitaire (HT) *</Label>
+                        <Label htmlFor="price">{t("unitPriceHt")} *</Label>
                         <div className="relative">
                           <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
@@ -340,7 +339,7 @@ export default function ProductsPage({
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="taxRate">TVA (%)</Label>
+                        <Label htmlFor="taxRate">{t("taxRateLabel")}</Label>
                         <div className="relative">
                           <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
@@ -365,8 +364,8 @@ export default function ProductsPage({
                   <DialogFooter className="pt-4">
                     <Button type="submit" className="w-full font-bold">
                       {editingId
-                        ? "Enregistrer les modifications"
-                        : "Ajouter au catalogue"}
+                        ? t("saveChanges")
+                        : t("addToCatalog")}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -379,7 +378,7 @@ export default function ProductsPage({
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher un produit/service..."
+              placeholder={t("searchCatalog")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 bg-card border-border/50"
@@ -406,70 +405,93 @@ export default function ProductsPage({
             filteredProducts.map((product) => (
               <Card
                 key={product.id}
-                className="group bg-card border border-border/40 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
+                className="group relative bg-card/60 backdrop-blur-xl border border-border/40 shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30 transition-all duration-500 rounded-3xl overflow-hidden flex flex-col h-full animate-fade-in-up"
               >
-                <CardHeader className="p-6 pb-4 flex-1">
-                  <div className="flex justify-between items-start mb-4">
-                    <div
-                      className={cn(
-                        "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border",
+                {/* Visual Accent */}
+                <div className={cn(
+                  "absolute top-0 left-0 w-full h-1.5 transition-opacity duration-500",
+                  product.type === "service" ? "bg-linear-to-r from-blue-500 to-indigo-500" : "bg-linear-to-r from-purple-500 to-pink-500"
+                )} />
+                <CardHeader className="p-7 pb-4">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className={cn(
+                      "p-3 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
+                      product.type === "service"
+                        ? "bg-blue-500/10 text-blue-500 shadow-blue-500/5 border border-blue-500/10"
+                        : "bg-purple-500/10 text-purple-500 shadow-purple-500/5 border border-purple-500/10"
+                    )}>
+                      {product.type === "service" ? <Zap className="w-5 h-5" /> : <Package className="w-5 h-5" />}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <div className={cn(
+                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
                         product.type === "service"
-                          ? "bg-blue-500/5 text-blue-600 border-blue-500/10"
-                          : "bg-purple-500/5 text-purple-600 border-purple-500/10",
-                      )}
-                    >
-                      {product.type === "service" ? "Service" : "Produit"}
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        onClick={() => openEdit(product)}
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        onClick={() => handleDelete(product.id, product.name)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                  <CardTitle className="text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors duration-300">
-                    {product.name}
-                  </CardTitle>
-                  {product.description && (
-                    <CardDescription className="text-xs line-clamp-2 mt-2 font-medium">
-                      {product.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50">
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                        Prix HT
-                      </span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-black text-foreground tracking-tight">
-                          {product.price.toLocaleString()}
-                        </span>
-                        <span className="text-[10px] font-bold text-muted-foreground">
-                          CFA
-                        </span>
+                          ? "bg-blue-500/5 text-blue-500 border-blue-500/10"
+                          : "bg-purple-500/5 text-purple-500 border-purple-500/10",
+                      )}>
+                        {product.type === "service" ? t("service") : t("catalog")}
+                      </div>
+                      <div className="flex opacity-0 group-hover:opacity-100 transition-opacity duration-300 gap-1 mt-[-4px]">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                          onClick={() => openEdit(product)}
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                          onClick={() => handleDelete(product.id, product.name)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="text-right space-y-0.5">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                        TVA
-                      </span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-background border border-border/50">
-                        {product.taxRate}%
-                      </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <CardTitle className="text-xl font-bold text-foreground leading-tight tracking-tight group-hover:text-primary transition-colors duration-300">
+                      {product.name}
+                    </CardTitle>
+                    {product.description && (
+                      <CardDescription className="text-xs line-clamp-2 min-h-[2.5rem] leading-relaxed font-medium opacity-70">
+                        {product.description}
+                      </CardDescription>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-7 pt-0 mt-auto">
+                  <div className="relative p-5 rounded-2xl bg-muted/20 border border-border/40 overflow-hidden group/price">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full -mr-12 -mt-12 transition-all duration-500 group-hover/price:bg-primary/10" />
+
+                    <div className="flex items-end justify-between relative z-10">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block">
+                          {t("unitPriceShort")}
+                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-black text-foreground tracking-tighter">
+                            {product.price.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] font-black text-primary uppercase">
+                            CFA
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block mb-1">
+                          {t("tax")}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-background/50 border border-border/50 text-[10px] font-bold text-foreground">
+                          {product.taxRate}%
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -478,18 +500,19 @@ export default function ProductsPage({
           ) : (
             <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl">
               <Package className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="text-lg">Aucun article dans le catalogue.</p>
+              <p className="text-lg">{t("noCatalogItem")}</p>
               <Button
                 variant="link"
                 onClick={() => setIsDialogOpen(true)}
                 className="mt-2 text-primary gap-1"
               >
-                <Plus className="w-4 h-4" /> Ajouter le premier
+                <Plus className="w-4 h-4" /> {t("addFirstItem")}
               </Button>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
+          )
+          }
+        </div >
+      </div >
+    </div >
   );
 }

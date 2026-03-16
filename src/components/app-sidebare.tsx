@@ -98,7 +98,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
         <SidebarGroup>
           {!isCollapsed && (
             <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-muted-foreground/50">
-              Menu Principal
+              {t("mainMenu")}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>

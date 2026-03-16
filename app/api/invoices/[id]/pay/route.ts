@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { updateClientFinancials } from "@/lib/client-utils";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         // Note: In real production, this would be a webhook called by Mobile Money providers (Orange, MTN, Wave).
         // It would verify a secret signature in the headers.
 
@@ -13,7 +14,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         // if (req.headers.get("x-signature") !== "EXPECTED") return Unauthorized;
 
         const invoice = await prisma.invoice.findUnique({
-            where: { id: params.id },
+            where: { id: id },
         });
 
         if (!invoice) return NextResponse.json({ message: "Invoice not found" }, { status: 404 });

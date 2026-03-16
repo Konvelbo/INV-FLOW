@@ -32,11 +32,12 @@ export async function POST(req: Request) {
             },
         });
 
+        const lang = req.headers.get("x-preferred-language") as 'fr' | 'en' || 'fr';
         await resend.emails.send({
             from: "ProFacture <onboarding@resend.dev>",
             to: [email],
-            subject: "Code de vérification ESSOR",
-            react: OTPEmail({ otp }),
+            subject: lang === 'en' ? "ESSOR verification code" : "Code de vérification ESSOR",
+            react: OTPEmail({ otp, lang }),
         });
 
         return NextResponse.json({ message: "Code envoyé !" });

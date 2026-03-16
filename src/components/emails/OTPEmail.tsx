@@ -3,34 +3,41 @@ import { Html, Head, Preview, Body, Container, Section, Text, Hr } from '@react-
 
 interface OTPEmailProps {
     otp: string;
+    lang?: 'fr' | 'en';
 }
 
-export const OTPEmail = ({ otp }: OTPEmailProps) => {
+export const OTPEmail = ({ otp, lang = 'fr' }: OTPEmailProps) => {
+    const isEn = lang === 'en';
+    
     return (
         <Html>
             <Head />
-            <Preview>Votre code de vérification ESSOR</Preview>
+            <Preview>{isEn ? "Your ESSOR verification code" : "Votre code de vérification ESSOR"}</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section style={header}>
-                        <Text style={headerTitle}>Récupération de mot de passe</Text>
+                        <Text style={headerTitle}>{isEn ? "Password Recovery" : "Récupération de mot de passe"}</Text>
                     </Section>
                     <Section style={content}>
-                        <Text style={text}>Bonjour,</Text>
+                        <Text style={text}>{isEn ? "Hello," : "Bonjour,"}</Text>
                         <Text style={text}>
-                            Vous avez demandé la réinitialisation de votre mot de passe sur ESSOR. Voici votre code de vérification (OTP) :
+                            {isEn 
+                                ? "You requested to reset your password on ESSOR. Here is your verification code (OTP):"
+                                : "Vous avez demandé la réinitialisation de votre mot de passe sur ESSOR. Voici votre code de vérification (OTP) :"}
                         </Text>
                         <Section style={otpContainer}>
                             <Text style={otpText}>{otp}</Text>
                         </Section>
                         <Text style={text}>
-                            Ce code est valable pendant 10 minutes. Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail en toute sécurité.
+                            {isEn
+                                ? "This code is valid for 10 minutes. If you did not make this request, you can safely ignore this email."
+                                : "Ce code est valable pendant 10 minutes. Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail en toute sécurité."}
                         </Text>
                     </Section>
                     <Hr style={hr} />
                     <Section style={footer}>
                         <Text style={footerText}>
-                            ESSOR ARCHITECTURE - Sécurité & Performance.
+                            {isEn ? "ESSOR ARCHITECTURE - Security & Performance." : "ESSOR ARCHITECTURE - Sécurité & Performance."}
                         </Text>
                     </Section>
                 </Container>

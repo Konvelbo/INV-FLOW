@@ -4,12 +4,13 @@ import { AIInsightCard } from "@/src/components/dashboard/AIInsightCard";
 import {
   DollarSign,
   TrendingUp,
+  TrendingDown,
   Wallet,
   Package,
   ListTodo,
+  Users,
 } from "lucide-react";
 import LineChart2 from "@/src/components/line-chart-2";
-import { TrendingDown } from "lucide-react";
 import { RecentInvoices } from "@/src/components/dashboard/RecentInvoices";
 
 import { InvoiceCalendar } from "@/src/components/dashboard/InvoiceCalendar";
@@ -138,8 +139,16 @@ export default function Dashboard() {
     return null; // Let loading.tsx handle the skeleton
   }
 
+  const ProductNum = stats?.recentProducts.map((_, i: number) => {
+    const ii = i + 1;
+    return ii;
+  });
+
   return (
-    <div className="h-full w-full bg-background text-foreground p-5 md:p-5 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative overflow-y-auto scrollbar-hide">
+    <div
+      id="dashboard"
+      className="h-full w-full bg-background text-foreground p-5 md:p-5 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative"
+    >
       {/* Background Decorative Elements - Refined Mesh Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[60px] animate-pulse" />
@@ -176,42 +185,39 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-100">
           <StatsCard
-            title={t("monthlyRevenues") || "Revenu du mois"}
+            title={t("monthlyRevenues")}
             value={(() => {
               const today = new Date();
-              const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+              const lastDay = new Date(
+                today.getFullYear(),
+                today.getMonth() + 1,
+                0,
+              ).getDate();
               const isEndOfMonth = today.getDate() >= lastDay - 1; // Last 2 days
-              return isEndOfMonth ? formatCurrency(stats?.revenuesScaledThisMonth || 0) : "--";
+              return isEndOfMonth
+                ? formatCurrency(stats?.revenuesScaledThisMonth || 0)
+                : "--";
             })()}
-            trend={
-              stats?.revenuesScaledLastMonth > 0
-                ? `${stats.revenuesScaledThisMonth >= stats.revenuesScaledLastMonth ? "+" : ""}${(((stats.revenuesScaledThisMonth - stats.revenuesScaledLastMonth) / stats.revenuesScaledLastMonth) * 100).toFixed(1)}%`
-                : undefined
-            }
+            trend={(() => {
+              if (
+                !stats?.revenuesScaledLastMonth ||
+                stats.revenuesScaledLastMonth === 0
+              )
+                return undefined;
+              const diff =
+                stats.revenuesScaledThisMonth - stats.revenuesScaledLastMonth;
+              const percent = (diff / stats.revenuesScaledLastMonth) * 100;
+              return `${percent >= 0 ? "+" : ""}${percent.toFixed(1)}%`;
+            })()}
             trendUp={
-              stats?.revenuesScaledThisMonth >= (stats?.revenuesScaledLastMonth || 0)
+              (stats?.revenuesScaledThisMonth || 0) >=
+              (stats?.revenuesScaledLastMonth || 0)
             }
             icon={DollarSign}
             variant="blue"
           />
           <StatsCard
-            title={t("scaledRevenue") || "Total en attente"}
-            value={formatCurrency(stats?.revenuesScaledAllTime || 0)}
-            trend={`${stats?.countScaledAllTime || 0} ${t("invoice")}`}
-            trendUp={true}
-            icon={TrendingUp}
-            variant="emerald"
-          />
-          <StatsCard
-            title={t("unpaidInvoices") || "Total en retard"}
-            value={formatCurrency(stats?.revenuesNonScaledAllTime || 0)}
-            trend={`${stats?.countNonScaledAllTime || 0} ${t("invoice")}`}
-            trendUp={false}
-            icon={TrendingDown}
-            variant="amber"
-          />
-          <StatsCard
-            title={t("monthlyExpenses") || "Dépenses (Mois)"}
+            title={t("monthlyExpenses")}
             value={formatCurrency(stats?.expensesThisMonth || 0)}
             trend={`${stats?.expensesCountThisMonth || 0} ${t("expenses")}`}
             trendUp={false}
@@ -219,19 +225,55 @@ export default function Dashboard() {
             variant="amber"
           />
           <StatsCard
-            title={t("activeClients") || "Clients Actifs"}
+            title={t("monthlyProfit")}
+            value={formatCurrency(stats?.profitThisMonth || 0)}
+            trend={
+              stats?.profitThisMonth > 0
+                ? t("positive_stat")
+                : t("negative_stat")
+            }
+            trendUp={stats?.profitThisMonth > 0}
+            icon={TrendingUp}
+            variant="emerald"
+          />
+          <StatsCard
+            title={t("scaledRevenue")}
+            value={formatCurrency(stats?.revenuesScaledAllTime || 0)}
+            trend={`${stats?.countScaledAllTime || 0} ${t("invoice")}`}
+            trendUp={true}
+            icon={TrendingUp}
+            variant="emerald"
+          />
+          <StatsCard
+            title={t("unpaidInvoices")}
+            value={formatCurrency(stats?.revenuesNonScaledAllTime || 0)}
+            trend={`${stats?.countNonScaledAllTime || 0} ${t("invoice")}`}
+            trendUp={false}
+            icon={TrendingDown}
+            variant="amber"
+          />
+          <StatsCard
+            title={t("activeClients")}
             value={String(stats?.activeClientsCount || 0)}
             trend={t("total_stat")}
             trendUp={true}
-            icon={Package}
+            icon={Users}
             variant="indigo"
           />
           <StatsCard
             title={t("tasks")}
             value={String(productivityStats.total)}
             trends={[
-              { label: t("done_stat"), value: productivityStats.completed, up: true },
-              { label: "Non faites", value: productivityStats.total - productivityStats.completed, up: false }
+              {
+                label: t("done_stat"),
+                value: productivityStats.completed,
+                up: true,
+              },
+              {
+                label: t("todo_stat"),
+                value: productivityStats.total - productivityStats.completed,
+                up: false,
+              },
             ]}
             icon={ListTodo}
             variant="slate"
@@ -345,7 +387,7 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column - Recent Invoices & Unpaid & Products */}
-          <div className="lg:col-span-1 space-y-8">
+          <div className="lg:flex flex-col space-y-8">
             <RecentInvoices invoices={stats?.recentInvoices || []} />
 
             {stats?.recentProducts && (
@@ -353,10 +395,12 @@ export default function Dashboard() {
                 <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-muted/10">
                   <h3 className="font-bold text-lg flex items-center gap-2">
                     <Package className="w-4 h-4 text-primary" />
-                    {t("recentInvoices")}
+                    {t("recentProducts")}
                   </h3>
                   <span className="text-[10px] font-black uppercase text-muted-foreground bg-muted/30 px-2 py-1 rounded">
-                    20 {t("total_stat")}
+                    {ProductNum ? <span>{ProductNum} </span> : <span>0</span>}
+                    {"  "}
+                    {t("total_stat")}
                   </span>
                 </div>
                 <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar">
@@ -372,8 +416,8 @@ export default function Dashboard() {
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {product.type === "service"
-                              ? t("service") || "Service"
-                              : t("catalog") || "Produit"}
+                              ? t("service")
+                              : t("catalog")}
                           </span>
                         </div>
                         <div className="text-right">

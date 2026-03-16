@@ -26,11 +26,10 @@ export default function ManagementPage() {
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent font-sans">
-                {t("management") || "Gestion Globale"}
+                {t("management")}
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl font-sans">
-                Gérez vos clients, votre catalogue et vos dépenses en un seul
-                endroit.
+                {t("managementDesc")}
               </p>
             </div>
           </div>
@@ -48,7 +47,7 @@ export default function ManagementPage() {
               className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "products" ? "border-indigo-500 text-indigo-400" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
               <Package className="w-4 h-4" />
-              {t("products") || "Catalogue"}
+              {t("catalog") || "Catalogue"}
             </button>
             <button
               onClick={() => setActiveTab("expenses")}

@@ -30,12 +30,13 @@ export interface Notification {
   timestamp: string;
   unread: boolean;
   type?: "reminder" | "system" | "invoice";
+  silent?: boolean;
 }
 
 interface NotificationContextType {
   notifications: Notification[];
   addNotification: (
-    notification: Omit<Notification, "id" | "timestamp" | "unread">,
+    notification: Omit<Notification, "id" | "timestamp" | "unread"> & { silent?: boolean },
   ) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -120,7 +121,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   }, [notifications, isInitialized]);
 
   const addNotification = useCallback(
-    (notif: Omit<Notification, "id" | "timestamp" | "unread">) => {
+    (notif: Omit<Notification, "id" | "timestamp" | "unread"> & { silent?: boolean }) => {
       let finalUser = notif.user;
 
       // Si le nom est "Système", on essaie de récupérer le vrai nom de l'utilisateur
@@ -161,14 +162,16 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // In-app toast
-      toast.success(`${notif.user}: ${notif.action} ${notif.target}`, {
-        icon: "🔔",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      if (!notif.silent) {
+        toast.success(`${notif.user}: ${notif.action} ${notif.target}`, {
+          icon: "🔔",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+      }
 
       // Browser/Desktop/Electron notification
       if (typeof window !== "undefined") {

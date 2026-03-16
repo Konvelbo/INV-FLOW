@@ -79,6 +79,18 @@ export function StatsCard({
         className,
       )}
     >
+      <div className="w-full flex flex-row-reverse mb-5">
+        <div
+          className={cn(
+            "p-3 rounded-2xl w-13 h-13 flex justify-center items-center transition-all duration-500 group-hover:rotate-6",
+            v.bg,
+            v.iconColor,
+          )}
+        >
+          <Icon className="w-5 h-5" />
+        </div>
+      </div>
+
       <div className="flex items-start justify-between mb-4">
         <div className="space-y-1.5">
           <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
@@ -95,45 +107,39 @@ export function StatsCard({
             )}
           </div>
         </div>
-        <div
-          className={cn(
-            "p-3 rounded-2xl transition-all duration-500 group-hover:rotate-6",
-            v.bg,
-            v.iconColor,
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mt-4">
-        {trends ? (
-          trends.map((t, i) => (
+        <div className="flex flex-row-reverse gap-2 mt-2 mb-3">
+          {trends ? (
+            trends.map((t, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-colors",
+                  t.color
+                    ? t.color
+                    : t.up
+                      ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
+                      : "bg-red-500/5 text-red-500 border-red-500/10",
+                )}
+              >
+                {t.label}{" "}
+                {t.value !== undefined && <span className="opacity-50">|</span>}{" "}
+                {t.value}
+              </div>
+            ))
+          ) : trend ? (
             <div
-              key={i}
               className={cn(
-                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-colors",
-                t.color ? t.color : (t.up
+                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border",
+                trendUp
                   ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
-                  : "bg-red-500/5 text-red-500 border-red-500/10"
-                )
+                  : "bg-red-500/5 text-red-500 border-red-500/10",
               )}
             >
-              {t.label} {t.value !== undefined && <span className="opacity-50">|</span>} {t.value}
+              {trend}
             </div>
-          ))
-        ) : trend ? (
-          <div
-            className={cn(
-              "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border",
-              trendUp
-                ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
-                : "bg-red-500/5 text-red-500 border-red-500/10",
-            )}
-          >
-            {trend}
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   );

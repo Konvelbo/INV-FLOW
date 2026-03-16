@@ -40,6 +40,31 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       select: { clientId: true }
     });
 
+    // 🛠️ AUTOMATIC CLIENT LINKING
+    let finalClientId = data.clientId;
+    if (!finalClientId && data.clientName) {
+      const trimmedName = data.clientName.trim();
+      const existingClient = await prisma.client.findFirst({
+        where: {
+          userId,
+          name: { equals: trimmedName, mode: 'insensitive' }
+        },
+        select: { id: true }
+      });
+      if (existingClient) {
+        finalClientId = existingClient.id;
+      }
+    }
+
+    // 🛠️ TOTALS CALCULATION
+    // Ensure totals are calculated correctly as Numbers
+    const calculatedTotalHT = data.items.reduce((sum: number, item: any) =>
+      sum + (Number(item.totalPrice) || (Number(item.quantity) * Number(item.unitPrice))), 0);
+
+    const totalHT = data.totalHT !== undefined ? Number(data.totalHT) : calculatedTotalHT;
+    const taxAmount = data.taxAmount !== undefined ? Number(data.taxAmount) : 0;
+    const totalTTC = (Number(data.totalTTC) > 0) ? Number(data.totalTTC) : (totalHT + taxAmount);
+
     // Standard pattern: Update invoice and replace items
     const updatedInvoice = await prisma.invoice.update({
       where: { id: id, userId },
@@ -54,13 +79,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         clientContact: data.clientContact,
         clientPOBox: data.clientPOBox,
         managerName: data.managerName,
-        clientId: data.clientId || null,
-        companyId: data.companyId || null,
-        totalHT: data.totalHT,
+        client: finalClientId ? { connect: { id: finalClientId } } : { disconnect: true },
+        company: data.companyId ? { connect: { id: data.companyId } } : { disconnect: true },
+        totalHT: totalHT,
         totalMaterial: data.totalMaterial,
         amountWords: data.amountWords,
-        taxAmount: data.taxAmount,
-        totalTTC: data.totalTTC,
+        taxAmount: taxAmount,
+        totalTTC: totalTTC,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         isRecurring: data.isRecurring,
         recurrenceFreq: data.recurrenceFreq,
@@ -71,9 +96,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           create: data.items.map((item: any) => ({
             designation: item.designation,
             unit: item.unit || "U",
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice,
+            quantity: Number(item.quantity),
+            unitPrice: Number(item.unitPrice),
+            totalPrice: Number(item.totalPrice) || (Number(item.quantity) * Number(item.unitPrice)),
             productId: item.productId || null,
           })),
         },

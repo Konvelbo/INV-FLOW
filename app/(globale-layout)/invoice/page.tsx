@@ -62,6 +62,7 @@ function Invoice() {
     setInvoiceData,
     currency,
     style,
+    clientId,
   } = useInvoice();
 
   const { addNotification } = useNotifications();
@@ -238,6 +239,7 @@ function Invoice() {
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         isRecurring,
         recurrenceFreq: isRecurring ? recurrenceFreq : null,
+        clientId: clientId || null,
       };
 
       // Validate required fields
@@ -277,6 +279,7 @@ function Invoice() {
           action: invoiceId ? "a modifié" : "a créé",
           target: `la facture ${data.reference}`,
           type: "invoice",
+          silent: true,
         });
       }
     } catch (err) {
@@ -489,7 +492,7 @@ function Invoice() {
       <div className="relative z-10 flex-1 w-full max-w-[1300px] mt-5 flex justify-center animate-fade-in-up delay-100 px-8">
         <div className="relative w-full group/canvas">
           {/* Dynamic Ambient Glow */}
-          <div className="absolute -inset-10 bg-linear-to-tr from-primary/15 via-transparent to-secondary/15 rounded-[3rem] blur-[80px] opacity-40 group-hover/canvas:opacity-70 transition duration-1000"></div>
+          <div className="absolute -inset-10 bg-linear-to-tr from-primary/15 via-transparent to-secondary/15 rounded-[3rem] blur-[80px] opacity-40 group-hover/canvas:opacity-70 transition duration-1000 pointer-events-none"></div>
 
           <div className="relative bg-card/30 border border-border/40 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.7)] rounded-3xl overflow-hidden backdrop-blur-3xl p-1">
             <div className="bg-background/80 rounded-[1.4rem] overflow-hidden">

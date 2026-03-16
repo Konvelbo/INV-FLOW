@@ -50,7 +50,7 @@ export default function NotificationMenu() {
           size="icon"
           variant="ghost"
         >
-          <BellIcon aria-hidden="true" size={18} />
+          <BellIcon aria-hidden="true" size={18} color="#000" />
           {unreadCount > 0 && (
             <span className="absolute top-2 right-2 flex size-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>

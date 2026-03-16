@@ -3,39 +3,48 @@ import { Html, Head, Preview, Body, Container, Section, Text, Button, Hr } from 
 
 interface WelcomeEmailProps {
     userName: string;
+    lang?: 'fr' | 'en';
 }
 
-export const WelcomeEmail = ({ userName }: WelcomeEmailProps) => {
+export const WelcomeEmail = ({ userName, lang = 'fr' }: WelcomeEmailProps) => {
+    const isEn = lang === 'en';
+    
     return (
         <Html>
             <Head />
-            <Preview>Bienvenue chez ESSOR, {userName} !</Preview>
+            <Preview>{isEn ? `Welcome to ESSOR, ${userName}!` : `Bienvenue chez ESSOR, ${userName} !`}</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section style={header}>
-                        <Text style={headerTitle}>Bienvenue chez ESSOR</Text>
+                        <Text style={headerTitle}>{isEn ? "Welcome to ESSOR" : "Bienvenue chez ESSOR"}</Text>
                     </Section>
                     <Section style={content}>
-                        <Text style={text}>Bonjour {userName},</Text>
+                        <Text style={text}>{isEn ? `Hello ${userName},` : `Bonjour ${userName},`}</Text>
                         <Text style={text}>
-                            Nous sommes ravis de vous compter parmi nous ! Votre compte a été créé avec succès sur ESSOR ARCHITECTURE.
+                            {isEn 
+                                ? "We're delighted to have you! Your account has been successfully created on ESSOR ARCHITECTURE."
+                                : "Nous sommes ravis de vous compter parmi nous ! Votre compte a été créé avec succès sur ESSOR ARCHITECTURE."}
                         </Text>
                         <Text style={text}>
-                            Vous pouvez désormais gérer vos factures, analyser votre croissance et piloter votre activité avec notre intelligence Pulse™.
+                            {isEn
+                                ? "You can now manage your invoices, analyze your growth, and drive your business with our Pulse™ intelligence."
+                                : "Vous pouvez désormais gérer vos factures, analyser votre croissance et piloter votre activité avec notre intelligence Pulse™."}
                         </Text>
                         <Section style={buttonContainer}>
                             <Button style={button} href={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`}>
-                                Accéder à mon tableau de bord
+                                {isEn ? "Access my dashboard" : "Accéder à mon tableau de bord"}
                             </Button>
                         </Section>
                         <Text style={text}>
-                            Si vous avez des questions, notre équipe est là pour vous accompagner.
+                            {isEn
+                                ? "If you have any questions, our team is here to support you."
+                                : "Si vous avez des questions, notre équipe est là pour vous accompagner."}
                         </Text>
                     </Section>
                     <Hr style={hr} />
                     <Section style={footer}>
                         <Text style={footerText}>
-                            ESSOR ARCHITECTURE - L'excellence opérationnelle.
+                            {isEn ? "ESSOR ARCHITECTURE - Operational Excellence." : "ESSOR ARCHITECTURE - L'excellence opérationnelle."}
                         </Text>
                     </Section>
                 </Container>

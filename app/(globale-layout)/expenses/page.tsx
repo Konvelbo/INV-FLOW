@@ -117,12 +117,12 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
             });
 
             if (res.ok) {
-                toast.success(editingId ? "Dépense modifiée" : "Dépense enregistrée");
+                toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
                 setIsDialogOpen(false);
                 resetForm();
                 fetchExpenses();
             } else {
-                toast.error("Erreur lors de l'enregistrement");
+                toast.error(t("saveErrorExpense"));
             }
         } catch (error) {
             console.error("Error saving expense", error);
@@ -130,7 +130,8 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
     };
 
     const handleDelete = async (id: string, title: string) => {
-        if (!confirm(`Voulez-vous vraiment supprimer la dépense "${title}" ?`)) return;
+        if (!confirm(t("expenseDeleteWarning").replace("{title}", title)))
+            return;
         try {
             const userStr = localStorage.getItem("user");
             if (!userStr) return;
@@ -142,7 +143,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
             });
 
             if (res.ok) {
-                toast.success("Dépense supprimée");
+                toast.success(t("expenseDeleted"));
                 fetchExpenses();
             }
         } catch (error) {
@@ -213,16 +214,16 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                     {!isComponent && (
                         <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                                <div className="h-1.5 w-10 bg-amber-500 rounded-full" />
-                                <span className="text-amber-500 font-black text-[10px] uppercase tracking-[0.3em]">
-                                    Finances
+                                <div className="h-1.5 w-10 bg-rose-500 rounded-full" />
+                                <span className="text-rose-400 font-black text-[10px] uppercase tracking-[0.3em]">
+                                    {t("financesHub")}
                                 </span>
                             </div>
                             <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent font-sans">
-                                Suivi des Dépenses
+                                {t("financesTitle")}
                             </h1>
                             <p className="text-muted-foreground text-lg max-w-xl font-sans">
-                                Analysez et contrôlez vos charges d'exploitation pour optimiser votre profit.
+                                {t("financesDesc")}
                             </p>
                         </div>
                     )}
@@ -231,7 +232,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                     <div className="flex items-center gap-4">
                         <Button variant="outline" className="gap-2 font-bold" onClick={handleExport}>
                             <Download className="w-4 h-4" />
-                            Exporter (CSV)
+                            {t("exportCsv")}
                         </Button>
                         <Dialog open={isDialogOpen} onOpenChange={(open) => {
                             setIsDialogOpen(open);
@@ -240,31 +241,31 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                             <DialogTrigger asChild>
                                 <Button className="font-bold gap-2 bg-amber-600 hover:bg-amber-700 text-white">
                                     <Plus className="w-4 h-4" />
-                                    Saisir une Dépense
+                                    {t("recordExpense")}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[500px] bg-card border border-border/50 text-foreground backdrop-blur-xl">
                                 <DialogHeader>
-                                    <DialogTitle>{editingId ? "Modifier la Dépense" : "Nouvelle Dépense"}</DialogTitle>
+                                    <DialogTitle>{editingId ? t("editExpense") : t("recordExpense")}</DialogTitle>
                                     <DialogDescription>
-                                        Entrez les détails de la charge d'exploitation.
+                                        {t("expenseDetailsDesc")}
                                     </DialogDescription>
                                 </DialogHeader>
                                 <form onSubmit={handleSave} className="space-y-5 py-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="title">Libellé / Titre *</Label>
+                                        <Label htmlFor="title">{t("expenseLabel")} *</Label>
                                         <Input
                                             id="title"
                                             value={formData.title}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                             required
-                                            placeholder="Ex: Abonnement ChatGPT Plus"
+                                            placeholder="Ex: Loyer bureau, Abonnement SaaS..."
                                             className="bg-background shadow-inner"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="amount">Montant *</Label>
+                                            <Label htmlFor="amount">{t("expenseAmount")} *</Label>
                                             <div className="relative">
                                                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                                 <Input
@@ -280,7 +281,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="currency">Devise</Label>
+                                            <Label htmlFor="currency">{t("currencyLabel")}</Label>
                                             <select
                                                 id="currency"
                                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-inner"
@@ -295,7 +296,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="date">Date *</Label>
+                                            <Label htmlFor="date">{t("dateLabel")} *</Label>
                                             <div className="relative">
                                                 <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                                 <Input
@@ -309,36 +310,43 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="category">Catégorie *</Label>
+                                            <Label htmlFor="category">{t("categoryLabel")} *</Label>
                                             <select
                                                 id="category"
                                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-inner"
                                                 value={formData.category}
                                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                             >
-                                                {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                                <option value="Charges d'exploitation">{t("cat_exploitation")}</option>
+                                                <option value="Charges financières">{t("cat_financial")}</option>
+                                                <option value="Charges fiscales et sociales">{t("cat_tax")}</option>
+                                                <option value="Investissements et immobilisations">{t("cat_investment")}</option>
+                                                <option value="Dépenses administratives et juridiques">{t("cat_admin")}</option>
+                                                <option value="Dépenses commerciales">{t("cat_commercial")}</option>
+                                                <option value="Dépenses opérationnelles">{t("cat_operational")}</option>
+                                                <option value="Autre">{t("cat_other")}</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="companyId">Liée à l'entreprise (Optionnel)</Label>
+                                        <Label htmlFor="companyId">{t("linkedToCompany")}</Label>
                                         <select
                                             id="companyId"
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-inner"
                                             value={formData.companyId}
                                             onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
                                         >
-                                            <option value="none">-- Générale / Non spécifique --</option>
+                                            <option value="none">{t("generalNonSpecific")}</option>
                                             {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="description">Description detaillee (Optionnel)</Label>
+                                        <Label htmlFor="description">{t("detailedDescription")}</Label>
                                         <Input
                                             id="description"
                                             value={formData.description}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            placeholder="Ajoutez des détails sur cette dépense..."
+                                            placeholder={t("addDetailsExpense")}
                                             className="bg-background shadow-inner"
                                         />
                                     </div>
@@ -351,13 +359,13 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                             className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                                         />
                                         <Label htmlFor="isDeductible" className="cursor-pointer font-bold">
-                                            {t("isDeductible") || "Déductible fiscalement"}
+                                            {t("isDeductible")}
                                         </Label>
                                     </div>
                                     <DialogFooter className="pt-4 border-t border-border/50">
-                                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Annuler</Button>
+                                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>{t("cancel")}</Button>
                                         <Button type="submit" className="font-bold bg-amber-600 hover:bg-amber-700 text-white">
-                                            {editingId ? "Enregistrer" : "Créer la dépense"}
+                                            {editingId ? t("saveChanges") : t("createExpense")}
                                         </Button>
                                     </DialogFooter>
                                 </form>
@@ -370,14 +378,14 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                     <div className="relative w-full md:max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
-                            placeholder="Rechercher une dépense ou catégorie..."
+                            placeholder={t("searchExpense")}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-10 bg-card border-border/50 shadow-inner"
                         />
                     </div>
                     <div className="px-4 py-2 rounded-xl bg-card border border-border/50 flex flex-col md:flex-row items-center gap-2 md:gap-6 shrink-0 shadow-lg">
-                        <span className="text-sm text-muted-foreground uppercase font-bold tracking-wider">Total</span>
+                        <span className="text-sm text-muted-foreground uppercase font-bold tracking-wider">{t("total")}</span>
                         <span className="text-xl md:text-2xl font-black text-amber-500 font-mono tracking-tight">{totalFiltered.toLocaleString()} XOF</span>
                     </div>
                 </div>
@@ -409,7 +417,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                                 </div>
                                                 {(expense as any).isDeductible && (
                                                     <div className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
-                                                        Déductible
+                                                        {t("deductible")}
                                                     </div>
                                                 )}
                                             </div>
@@ -436,7 +444,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                             <div className="flex items-center justify-between text-xs pb-3 border-b border-border/10">
                                                 <div className="flex items-center gap-2 text-muted-foreground">
                                                     <CalendarIcon className="w-3.5 h-3.5" />
-                                                    <span className="font-bold uppercase tracking-widest text-[10px]">Date</span>
+                                                    <span className="font-bold uppercase tracking-widest text-[10px]">{t("date")}</span>
                                                 </div>
                                                 <span className="font-bold text-foreground">{new Date(expense.date).toLocaleDateString()}</span>
                                             </div>
@@ -444,7 +452,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                                 <div className="flex items-center justify-between text-xs pb-3 border-b border-border/10">
                                                     <div className="flex items-center gap-2 text-muted-foreground">
                                                         <Building className="w-3.5 h-3.5" />
-                                                        <span className="font-bold uppercase tracking-widest text-[10px]">Entreprise</span>
+                                                        <span className="font-bold uppercase tracking-widest text-[10px]">{t("company")}</span>
                                                     </div>
                                                     <span className="font-bold text-foreground truncate max-w-[150px]">{c.name}</span>
                                                 </div>
@@ -452,7 +460,7 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                                         </div>
 
                                         <div className="pt-2">
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Montant</span>
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">{t("amount")}</span>
                                             <div className="flex items-baseline gap-1.5">
                                                 <span className="text-2xl font-black text-foreground tracking-tighter">
                                                     {expense.amount.toLocaleString()}
@@ -467,9 +475,9 @@ export default function ExpensesPage({ isComponent }: { isComponent?: boolean } 
                     ) : (
                         <div className="col-span-full py-24 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-3xl bg-card/20">
                             <Wallet className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                            <p className="text-lg font-medium">Aucune dépense trouvée.</p>
+                            <p className="text-lg font-medium">{t("noExpenseFound")}</p>
                             <Button onClick={() => setIsDialogOpen(true)} className="mt-4 gap-2 font-bold bg-amber-600 hover:bg-amber-700 text-white">
-                                <Plus className="w-4 h-4" /> Ajouter une dépense
+                                <Plus className="w-4 h-4" /> {t("addExpense")}
                             </Button>
                         </div>
                     )}

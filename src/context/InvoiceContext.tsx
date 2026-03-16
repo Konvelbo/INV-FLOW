@@ -40,9 +40,10 @@ export interface InvoiceActionsType {
   setCurrency: (value: string) => void;
   setStyle: (value: string) => void;
   setInvoiceData: (
-    data: Partial<InvoiceStateContextType> & { items?: InvoiceItemWithId[] },
+    data: Partial<InvoiceStateContextType> & { items?: InvoiceItemWithId[]; clientId?: string | null },
   ) => void;
   clearInvoiceData: () => void;
+  setClientId: (value: string | null) => void;
 }
 
 export interface InvoiceStateContextType {
@@ -65,6 +66,7 @@ export interface InvoiceStateContextType {
   itemsArr: InvoiceItemWithId[];
   currency: string;
   style: string;
+  clientId: string | null;
 }
 
 const InvoiceStateContext = createContext<InvoiceStateContextType | undefined>(
@@ -97,6 +99,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     return "XOF";
   });
   const [style, setStyle] = useState<string>("default");
+  const [clientId, setClientId] = useState<string | null>(null);
 
   const setCurrency = useCallback((val: string) => {
     setCurrencyState(val);
@@ -118,7 +121,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   // setInvoiceData no longer needs to set totalHT or totalMaterial
   const setInvoiceData = useCallback(
     (
-      data: Partial<InvoiceStateContextType> & { items?: InvoiceItemWithId[] },
+      data: Partial<InvoiceStateContextType> & { items?: InvoiceItemWithId[]; clientId?: string | null },
     ) => {
       setReference(data.reference || "");
       setCity(data.city || "");
@@ -132,6 +135,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setAmountWords(data.amountWords || "");
       setItemsArr(data.items || []);
       setStyle(data.style || "default");
+      setClientId(data.clientId || null);
     },
     [],
   );
@@ -148,6 +152,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     setAmountWords("");
     setItemsArr([]);
     setStyle("default");
+    setClientId(null);
   }, []);
 
   const stateValue = useMemo(
@@ -171,6 +176,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       itemsArr,
       currency,
       style,
+      clientId,
     }),
     [
       reference,
@@ -192,6 +198,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       itemsArr,
       currency,
       style,
+      clientId,
     ],
   );
 
@@ -216,8 +223,9 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setStyle,
       setInvoiceData,
       clearInvoiceData,
+      setClientId,
     }),
-    [setCurrency, setStyle, setInvoiceData, clearInvoiceData],
+    [setCurrency, setStyle, setInvoiceData, clearInvoiceData, setClientId],
   );
 
   return (

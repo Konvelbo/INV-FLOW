@@ -54,11 +54,12 @@ export async function POST(req: Request) {
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY!);
 
+      const lang = req.headers.get("x-preferred-language") as 'fr' | 'en' || 'fr';
       await resend.emails.send({
         from: "ProFacture <onboarding@resend.dev>",
         to: [email],
-        subject: "Bienvenue sur ESSOR !",
-        react: WelcomeEmail({ userName: name }),
+        subject: lang === 'en' ? "Welcome to ESSOR!" : "Bienvenue sur ESSOR !",
+        react: WelcomeEmail({ userName: name, lang }),
       });
     } catch (emailErr) {
       console.error("Failed to send welcome email:", emailErr);

@@ -55,8 +55,13 @@ export default function SignUp({
         } else if (response.status === 400) {
           return toast.error(`${response.status} ${response.data.message}`);
         }
-      } else if (choice === "Mot de passe oublié ?" || choice === t("forgotPassword")) {
-        const response = await axios.post("/api/user/forgot-password", { email: data.email });
+      } else if (
+        choice === "Mot de passe oublié ?" ||
+        choice === t("forgotPassword")
+      ) {
+        const response = await axios.post("/api/user/forgot-password", {
+          email: data.email,
+        });
         if (response.status === 200) {
           toast.success(t("otpSent"));
           setSignUpChoise(t("verifyOtp"));
@@ -65,7 +70,7 @@ export default function SignUp({
         const response = await axios.post("/api/user/reset-password", {
           email: data.email,
           otp: data.otp,
-          newPassword: data.password
+          newPassword: data.password,
         });
         if (response.status === 200) {
           toast.success(t("passwordChanged"));
@@ -80,8 +85,11 @@ export default function SignUp({
             localStorage.setItem("user", JSON.stringify(response.data.user));
 
             // Redirect to settings if no companies
-            if (!response.data.user.companies || response.data.user.companies.length === 0) {
-              toast(t("noCompanyRedirection"), { icon: '🏢' });
+            if (
+              !response.data.user.companies ||
+              response.data.user.companies.length === 0
+            ) {
+              toast(t("noCompanyRedirection"), { icon: "🏢" });
               router.push("/settings");
             } else {
               router.push("/dashboard");
@@ -193,6 +201,29 @@ export default function SignUp({
                 {errors.password && (
                   <span className="text-destructive text-[10px] font-bold uppercase tracking-wide ml-1">
                     {errors.password.message}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {choice === "Creer votre compte" && (
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
+                >
+                  {t("confirmPassword")}
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="confirmPassword"
+                  placeholder={t("passwordPlaceholder")}
+                  className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
+                  {...register("confirmPassword")}
+                />
+                {errors.confirmPassword && (
+                  <span className="text-destructive text-[10px] font-bold uppercase tracking-wide ml-1">
+                    {errors.confirmPassword.message}
                   </span>
                 )}
               </div>

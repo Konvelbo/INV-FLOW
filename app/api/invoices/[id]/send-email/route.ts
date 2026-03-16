@@ -43,20 +43,26 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             }
         }
 
+        const lang = req.headers.get("x-preferred-language") as 'fr' | 'en' || 'fr';
+        const isEn = lang === 'en';
+        
         const emailResponse = await resend.emails.send({
             from: process.env.EMAIL_FROM || "onboarding@resend.dev",
             to: [to],
-            subject: subject,
+            subject: isEn ? `${isReminder ? 'Reminder: ' : ''}${invoice.type === 'quote' ? 'Quote' : 'Invoice'} - ${invoice.reference}` : `${isReminder ? 'Rappel: ' : ''}${invoice.type === 'quote' ? 'Devis' : 'Facture'} - ${invoice.reference}`,
             html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-          <h2>${isReminder ? 'Rappel: ' : ''}${invoice.type === 'quote' ? 'Devis' : 'Facture'} - ${invoice.reference}</h2>
+          <h2>${isEn ? (isReminder ? 'Reminder: ' : '') + (invoice.type === 'quote' ? 'Quote' : 'Invoice') : (isReminder ? 'Rappel: ' : '') + (invoice.type === 'quote' ? 'Devis' : 'Facture')} - ${invoice.reference}</h2>
           <p>${message.replace(/\n/g, '<br/>')}</p>
           <br/>
-          <p>Cordialement,<br/><strong>${invoice.managerName || 'Votre Entreprise'}</strong></p>
+          <p>${isEn ? 'Best regards,' : 'Cordialement,'}<br/><strong>${invoice.managerName || (isEn ? 'Your Company' : 'Votre Entreprise')}</strong></p>
         </div>
       `,
             attachments: attachments.length > 0 ? attachments : undefined,
         });
+        
+        // Update: usage of InvoiceEmail component would be better, but the client sends a 'message' which is custom.
+        // So we keep the custom message but localize the wrapper.
 
         if (emailResponse.error) {
             console.error(emailResponse.error);

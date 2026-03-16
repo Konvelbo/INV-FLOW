@@ -40,9 +40,13 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json(invoices);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching invoices:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({
+      message: "Internal Server Error",
+      error: error.message,
+      code: error.code
+    }, { status: 500 });
   }
 }
 
@@ -64,6 +68,32 @@ export async function POST(req: Request) {
       invoiceNumber = await generateInvoiceNumber(userId);
     }
 
+    // 🛠️ AUTOMATIC CLIENT LINKING
+    // If clientId is missing but clientName is provided, try to find a matching client
+    let finalClientId = data.clientId;
+    if (!finalClientId && data.clientName) {
+      const trimmedName = data.clientName.trim();
+      const existingClient = await prisma.client.findFirst({
+        where: {
+          userId,
+          name: { equals: trimmedName, mode: 'insensitive' }
+        },
+        select: { id: true }
+      });
+      if (existingClient) {
+        finalClientId = existingClient.id;
+      }
+    }
+
+    // 🛠️ TOTALS CALCULATION
+    // Ensure totals are calculated correctly as Numbers
+    const calculatedTotalHT = data.items.reduce((sum: number, item: any) =>
+      sum + (Number(item.totalPrice) || (Number(item.quantity) * Number(item.unitPrice))), 0);
+
+    const totalHT = Number(data.totalHT) || calculatedTotalHT;
+    const taxAmount = Number(data.taxAmount) || 0;
+    const totalTTC = (Number(data.totalTTC) > 0) ? Number(data.totalTTC) : (totalHT + taxAmount);
+
     const createdInvoice = await prisma.invoice.create({
       data: {
         reference: data.reference,
@@ -77,13 +107,13 @@ export async function POST(req: Request) {
         clientContact: data.clientContact || "",
         clientPOBox: data.clientPOBox || "",
         managerName: data.managerName || "",
-        clientId: data.clientId || undefined,
-        companyId: data.companyId || undefined,
-        totalHT: data.totalHT || 0,
+        client: finalClientId ? { connect: { id: finalClientId } } : undefined,
+        company: data.companyId ? { connect: { id: data.companyId } } : undefined,
+        totalHT: totalHT,
         totalMaterial: data.totalMaterial || 0,
         amountWords: data.amountWords || "",
-        taxAmount: data.taxAmount || 0,
-        totalTTC: data.totalTTC || 0,
+        taxAmount: taxAmount,
+        totalTTC: totalTTC,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         isRecurring: data.isRecurring || false,
         recurrenceFreq: data.recurrenceFreq || undefined,
@@ -96,7 +126,7 @@ export async function POST(req: Request) {
             unit: item.unit || "U",
             quantity: item.quantity,
             unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice,
+            totalPrice: item.totalPrice || (item.quantity * item.unitPrice),
             productId: item.productId || undefined,
           })),
         },
@@ -125,8 +155,8 @@ export async function POST(req: Request) {
       }
     } catch (pushErr) { }
 
-    if (data.clientId) {
-      await updateClientFinancials(data.clientId);
+    if (finalClientId) {
+      await updateClientFinancials(finalClientId);
     }
 
     revalidatePath("/dashboard");
