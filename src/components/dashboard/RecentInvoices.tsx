@@ -7,12 +7,13 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
-import { FileText, User, ArrowRight } from "lucide-react";
+import { FileText, User, ArrowRight, Eye, Download } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { type RecentInvoice } from "./types";
+import { cn } from "@/lib/utils";
 
 export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
   const router = useRouter();
@@ -78,30 +79,51 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
               </div>
             </div>
 
-            <div className="text-right flex flex-col items-end gap-1.5">
+            <div className="text-right flex flex-col items-end gap-1.5 min-w-[120px]">
               <div className="text-sm font-bold text-primary font-mono tracking-tight">
                 {invoice.totalHT.toLocaleString()} {currency}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="text-[10px] text-muted-foreground font-mono bg-slate-900/50 px-2 py-0.5 rounded-md border border-border/50">
-                  {new Date(invoice.createdAt).toLocaleDateString(
-                    language === "fr" ? "fr-FR" : "en-US",
-                    {
-                      day: "2-digit",
-                      month: "2-digit",
-                    },
-                  )}
-                </div>
+              <div className="relative h-6 w-full flex justify-end">
+                {/* Status Badge - Hidden on hover */}
                 <Badge
                   variant="outline"
-                  className={`text-[9px] px-2 py-0 h-4 border-0 font-bold uppercase tracking-widest ${
+                  className={cn(
+                    "text-[9px] px-2 py-0 h-4 border-0 font-bold uppercase tracking-widest transition-opacity duration-300",
+                    "group-hover:opacity-0 pointer-events-none absolute right-0 top-1",
                     invoice.isScaled
                       ? "bg-primary/10 text-primary border-primary/20"
-                      : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                  }`}
+                      : "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                  )}
                 >
                   {invoice.isScaled ? t("scaled_badge") : t("waiting_badge")}
                 </Badge>
+
+                {/* Quick Actions - Visible on hover */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 absolute right-0 top-0 translate-y-1 group-hover:translate-y-0">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 rounded-md hover:bg-primary/20 text-muted-foreground hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/invoice?id=${invoice.id}`);
+                    }}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 rounded-md hover:bg-primary/20 text-muted-foreground hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Logic for download could be added if needed, or just redirect
+                      router.push(`/invoice?id=${invoice.id}`);
+                    }}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

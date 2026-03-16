@@ -1,4 +1,5 @@
 import { Brain, Lightbulb, TrendingUp, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { useEffect, useState, useMemo, useRef } from "react";
 import {
@@ -152,8 +153,9 @@ export function AIInsightCard({ stats }: { stats?: DashboardStats }) {
       <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-secondary/20 transition-colors duration-700" />
 
       <div className="flex items-center gap-4 mb-8 relative z-10">
-        <div className="p-3 rounded-xl bg-linear-to-br from-secondary to-indigo-700 text-white shadow-lg shadow-secondary/20 group-hover:scale-110 transition-transform duration-300">
+        <div className="p-3 rounded-xl bg-linear-to-br from-secondary to-indigo-700 text-white shadow-lg shadow-secondary/20 group-hover:scale-110 transition-transform duration-300 relative">
           <Brain className="w-6 h-6" />
+          <div className="absolute inset-0 bg-white/20 rounded-xl animate-ping opacity-20" />
         </div>
         <h3 className="text-lg font-bold text-foreground font-sans tracking-tight">
           {t("aiBusinessAnalysis").split("IA")[0]}
@@ -165,7 +167,11 @@ export function AIInsightCard({ stats }: { stats?: DashboardStats }) {
         {displayInsights.map((insight) => (
           <div
             key={insight.id}
-            className="p-5 rounded-2xl bg-slate-950/30 border border-white/5 hover:border-secondary/30 transition-all duration-300 group/item"
+            className={cn(
+              "p-5 rounded-2xl bg-slate-950/30 border border-white/5 hover:border-secondary/30 transition-all duration-300 group/item",
+              insight.type === "opportunity" && "hover:bg-primary/5 hover:border-primary/30 shadow-[0_4px_20px_rgba(16,185,129,0.05)]",
+              insight.type === "warning" && "hover:bg-amber-500/5 hover:border-amber-500/30",
+            )}
           >
             <div className="flex items-start gap-4">
               <div className="mt-1 shrink-0">

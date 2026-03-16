@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface TrendItem {
   label: string;
@@ -18,6 +19,7 @@ interface StatsCardProps {
   variant?: "blue" | "indigo" | "emerald" | "amber" | "slate";
   className?: string;
   subtitle?: string;
+  href?: string;
 }
 
 const variants = {
@@ -68,18 +70,41 @@ export function StatsCard({
   variant = "blue",
   className,
   subtitle,
+  href,
 }: StatsCardProps) {
   const v = variants[variant];
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    if (href) router.push(href);
+  };
 
   return (
     <div
+      onClick={handleCardClick}
       className={cn(
-        "group relative p-6 rounded-3xl bg-card border border-border/50 transition-all duration-300",
-        "hover:shadow-2xl hover:shadow-black/5 hover:border-border",
+        "group relative p-6 rounded-3xl bg-card border border-border/50 transition-all duration-500",
+        "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
+        "hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:border-border hover:-translate-y-1.5",
+        href && "cursor-pointer",
         className,
       )}
     >
-      <div className="w-full flex flex-row-reverse mb-5">
+      {/* Sparkline Background Decoration */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 overflow-hidden rounded-b-3xl">
+        <svg
+          viewBox="0 0 100 30"
+          className="w-full h-full preserve-3d"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,25 Q15,5 30,20 T60,10 T90,22 L100,25 L100,30 L0,30 Z"
+            fill="currentColor"
+            className={v.iconColor}
+          />
+        </svg>
+      </div>
+      <div className="w-full justify-between items-center flex flex-row-reverse mb-5">
         <div
           className={cn(
             "p-3 rounded-2xl w-13 h-13 flex justify-center items-center transition-all duration-500 group-hover:rotate-6",
@@ -88,24 +113,6 @@ export function StatsCard({
           )}
         >
           <Icon className="w-5 h-5" />
-        </div>
-      </div>
-
-      <div className="flex items-start justify-between mb-4">
-        <div className="space-y-1.5">
-          <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
-            {title}
-          </h3>
-          <div className="flex items-baseline gap-2">
-            <div className="text-3xl font-black text-foreground tracking-tighter">
-              {value}
-            </div>
-            {subtitle && (
-              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                {subtitle}
-              </span>
-            )}
-          </div>
         </div>
 
         <div className="flex flex-row-reverse gap-2 mt-2 mb-3">
@@ -139,6 +146,24 @@ export function StatsCard({
               {trend}
             </div>
           ) : null}
+        </div>
+      </div>
+
+      <div className="flex items-start justify-between mb-4">
+        <div className="space-y-1.5">
+          <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
+            {title}
+          </h3>
+          <div className="flex items-baseline gap-2">
+            <div className="text-3xl font-black text-foreground tracking-tighter">
+              {value}
+            </div>
+            {subtitle && (
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                {subtitle}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

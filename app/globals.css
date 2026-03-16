@@ -26,8 +26,8 @@ button {
 
 .scrollbar-none::-webkit-scrollbar {
   display: none;
-  /* Chrome, Safari and Opera */
 }
+  /* Chrome, Safari and Opera */
 
 .h-150 {
   height: 37.5rem;

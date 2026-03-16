@@ -199,22 +199,17 @@ export default function Dashboard() {
                 : "--";
             })()}
             trend={(() => {
-              if (
-                !stats?.revenuesScaledLastMonth ||
-                stats.revenuesScaledLastMonth === 0
-              )
-                return undefined;
-              const diff =
-                stats.revenuesScaledThisMonth - stats.revenuesScaledLastMonth;
-              const percent = (diff / stats.revenuesScaledLastMonth) * 100;
+              const current = stats?.revenuesScaledThisMonth || 0;
+              const last = stats?.revenuesScaledLastMonth || 0;
+              if (last === 0) return "+0.0%";
+              const diff = current - last;
+              const percent = (diff / last) * 100;
               return `${percent >= 0 ? "+" : ""}${percent.toFixed(1)}%`;
             })()}
-            trendUp={
-              (stats?.revenuesScaledThisMonth || 0) >=
-              (stats?.revenuesScaledLastMonth || 0)
-            }
+            trendUp={(stats?.revenuesScaledThisMonth || 0) >= (stats?.revenuesScaledLastMonth || 0)}
             icon={DollarSign}
             variant="blue"
+            href="/history"
           />
           <StatsCard
             title={t("monthlyExpenses")}
@@ -223,6 +218,7 @@ export default function Dashboard() {
             trendUp={false}
             icon={Wallet}
             variant="amber"
+            href="/expenses"
           />
           <StatsCard
             title={t("monthlyProfit")}
@@ -243,6 +239,7 @@ export default function Dashboard() {
             trendUp={true}
             icon={TrendingUp}
             variant="emerald"
+            href="/history"
           />
           <StatsCard
             title={t("unpaidInvoices")}
@@ -251,6 +248,7 @@ export default function Dashboard() {
             trendUp={false}
             icon={TrendingDown}
             variant="amber"
+            href="/history"
           />
           <StatsCard
             title={t("activeClients")}
@@ -259,6 +257,7 @@ export default function Dashboard() {
             trendUp={true}
             icon={Users}
             variant="indigo"
+            href="/clients"
           />
           <StatsCard
             title={t("tasks")}
@@ -277,6 +276,7 @@ export default function Dashboard() {
             ]}
             icon={ListTodo}
             variant="slate"
+            href="/planning"
           />
         </div>
 

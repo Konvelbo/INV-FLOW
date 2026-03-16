@@ -7,12 +7,13 @@ import {
     CardTitle,
 } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
-import { FileWarning, User, ArrowRight, CheckCircle2, TrendingUp } from "lucide-react";
+import { FileWarning, User, ArrowRight, CheckCircle2, TrendingUp, Eye } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { type RecentInvoice } from "./types";
+import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import axios from "axios";
 
@@ -100,7 +101,16 @@ export function UnpaidInvoices({
                             <div className="text-sm font-black text-foreground font-mono">
                                 {invoice.totalHT.toLocaleString()} {currency}
                             </div>
-                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                                    onClick={() => router.push(`/invoice?id=${invoice.id}`)}
+                                    title={t("details") || "View"}
+                                >
+                                    <Eye className="w-3.5 h-3.5" />
+                                </Button>
                                 <Button
                                     size="icon"
                                     variant="ghost"
