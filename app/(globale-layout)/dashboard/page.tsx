@@ -147,7 +147,7 @@ export default function Dashboard() {
   return (
     <div
       id="dashboard"
-      className="h-full w-full bg-background text-foreground p-5 md:p-5 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative"
+      className="h-full w-full bg-background text-foreground p-6 md:p-10 lg:p-12 pt-20 relative"
     >
       {/* Background Decorative Elements - Refined Mesh Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
@@ -165,7 +165,7 @@ export default function Dashboard() {
                 {t("financesHub")}
               </span>
             </div>
-            <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent font-sans">
+            <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent font-sans">
               {t("hello")}, {user?.name || t("guest")}
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl font-sans">
@@ -173,7 +173,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-card border border-border/50 backdrop-blur-xl shadow-lg">
+            <div className="flex items-center gap-3 px-5 py-2.5 rounded-lg bg-card border border-border/50 backdrop-blur-xl shadow-lg">
               <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
               <span className="text-foreground text-xs font-bold uppercase tracking-widest">
                 {t("online")}
@@ -309,7 +309,7 @@ export default function Dashboard() {
                 </div>
                 <Progress
                   value={productivityStats.percentage}
-                  className="h-2.5 bg-slate-800"
+                  className="h-2.5 bg-muted/30"
                 />
                 <p className="text-[11px] text-muted-foreground italic tracking-tight leading-relaxed opacity-70">
                   &quot;
@@ -330,7 +330,7 @@ export default function Dashboard() {
                 </div>
                 <Progress
                   value={(productivityStats.productiveHours / 20) * 100}
-                  className="h-2.5 bg-slate-800"
+                  className="h-2.5 bg-muted/30"
                 />
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-secondary animate-pulse" />

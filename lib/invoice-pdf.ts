@@ -176,7 +176,7 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; }
   .page-break { page-break-before: always; }
   .pageNumber { position: absolute; bottom: 30px; right: 30px; }
-  .proforma-line { display: flex; justify-content: space-between; margin-top: 45px; font-weight: bold; font-size: 20px; }
+  .proforma-line { display: flex; justify-content: space-between; margin-top: 80px; font-weight: bold; font-size: 20px; }
   .address-container { border: 1px solid #000; margin-top: 15px; }
   .address-header { display: flex; border-bottom: 1px solid #000; height: 30px; font-size: 14px; }
   .address-title { width: 50%; padding: 6px; font-weight: bold; border-right: 1px solid #000; }
@@ -1008,5 +1008,244 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .total-row { display: flex; justify-content: space-between; font-size: 14px; color: #71717a; margin-bottom: 12px; }
     .total-row.grand { border-top: 1px solid #e4e4e7; padding-top: 16px; margin-top: 16px; color: #18181b; font-weight: 700; font-size: 24px; }
     .grand-val { font-size: 32px; font-weight: 800; word-break: break-all; text-align: right; margin-left: 10px; }
+    </style></head><body>${pagesHtml}</body></html>`;
+}
+
+// ==========================================
+// STYLE 6: IMPACT
+// ==========================================
+function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
+  const { totalht, totalmaterial } = calculateTotals(data.items);
+  const itemsPerPage = 12;
+  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+
+  const pagesHtml = Array.from({ length: totalPages })
+    .map((_, i) => {
+      const pageItems = data.items.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+      const isLast = i === totalPages - 1;
+
+      return `<div class="page ${i > 0 ? "page-break" : ""}">
+            <div class="content" style="padding: 48px; height: 100%; display: flex; flex-direction: column; position: relative; background: #fdfbf7; box-sizing: border-box;">
+                ${i === 0
+          ? `
+                <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                    <div>
+                        <h1 style="font-size: 72px; font-weight: 800; margin: 0; line-height: 1; letter-spacing: -4px;">${lang === "fr" ? "FACTURE" : "INVOICE"}</h1>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <div style="border: 1px solid #000; padding: 4px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;">${dict.invoice} n°${data.reference}</div>
+                            <div style="border: 1px solid #000; padding: 4px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;">${new Date().toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US")}</div>
+                        </div>
+                    </div>
+                    <div style="position: relative; width: 100px; height: 100px;">
+                        <div style="position: absolute; border: 1px dashed #ccc; border-radius: 50%; width: 100%; height: 100%;"></div>
+                        <div style="position: absolute; border: 1px solid #eee; border-radius: 50%; top: 10%; left: 10%; width: 80%; height: 80%;"></div>
+                    </div>
+                </div>
+                <div style="height: 1px; background: #e5e7eb; width: 100%; margin: 30px 0;"></div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px;">
+                    <div style="width: 50%;">
+                        <div style="font-weight: 800; font-size: 20px; margin-bottom: 8px;">Compagnie Essor</div>
+                        <div style="color: #666; line-height: 1.5;">Abidjan, Côte d'Ivoire<br>contact@essor.ci<br>+225 01 02 03 04 05</div>
+                    </div>
+                    <div style="width: 50%; text-align: right;">
+                        <div style="font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${dict.billedTo}</div>
+                        <div style="font-weight: 800; font-size: 20px; margin-bottom: 5px;">${data.clientName}</div>
+                        <div style="color: #666; line-height: 1.5;">${data.clientAddress || ""}<br>${data.clientContact || ""}<br>${data.clientPOBox || ""}</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 30px;">
+                    <div style="font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">${dict.object}</div>
+                    <div style="font-weight: 600; color: #333;">${data.object}</div>
+                </div>`
+          : '<div style="height: 40px;"></div>'
+        }
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead style="background: #000; color: #fff;">
+                        <tr>
+                            <th style="padding: 12px 15px; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase;">${dict.description}</th>
+                            <th style="padding: 12px 15px; text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase;">${dict.price}</th>
+                            <th style="padding: 12px 15px; text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase;">${dict.qty}</th>
+                            <th style="padding: 12px 15px; text-align: right; font-size: 11px; font-weight: 800; text-transform: uppercase;">${dict.total}</th>
+                        </tr>
+                    </thead>
+                    <tbody style="border: 1px solid #eee;">
+                        ${pageItems
+          .map(
+            (item) => `
+                        <tr style="border-bottom: 1px solid #f9f9f9;">
+                            <td style="padding: 15px; font-size: 14px; font-weight: 600; vertical-align: top;">${item.designation}</td>
+                            <td style="padding: 15px; font-size: 14px; text-align: center; vertical-align: top;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
+                            <td style="padding: 15px; font-size: 14px; text-align: center; vertical-align: top;">${item.quantity}</td>
+                            <td style="padding: 15px; font-size: 14px; text-align: right; font-weight: 700; vertical-align: top;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
+                        </tr>`,
+          )
+          .join("")}
+                    </tbody>
+                </table>
+
+                ${isLast
+          ? `
+                <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: flex-end;">
+                    <div style="display: flex; justify-content: space-between; width: 250px; font-size: 14px; margin-bottom: 10px;">
+                        <span style="font-weight: 800; color: #999; text-transform: uppercase;">${dict.subtotal} :</span>
+                        <span style="font-weight: 800;">${formatCurrency(totalht, data.currencyCode, lang)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; width: 250px; font-size: 14px; margin-bottom: 20px;">
+                        <span style="font-weight: 800; color: #999; text-transform: uppercase;">TVA (0%) :</span>
+                        <span style="font-weight: 800;">${formatCurrency(0, data.currencyCode, lang)}</span>
+                    </div>
+                    <div style="background: #000; color: #fff; width: 100%; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 10px;">
+                        <span style="font-weight: 800; font-size: 20px; text-transform: uppercase;">TOTAL :</span>
+                        <span style="font-weight: 900; font-size: 32px;">${formatCurrency(totalht, data.currencyCode, lang)}</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; padding-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="font-size: 11px; color: #ccc; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">MERCI DE VOTRE CONFIANCE</div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 25px;">${dict.manager}</div>
+                        <div style="font-weight: 800; font-size: 24px; border-bottom: 1px solid #eee; padding-bottom: 10px; min-width: 200px;">${data.managerName}</div>
+                    </div>
+                </div>`
+          : ""
+        }
+            </div>
+            <div style="position: absolute; bottom: 24px; right: 48px; font-size: 10px; color: #aaa;">${dict.page} ${i + 1} / ${totalPages}</div>
+        </div>`;
+    })
+    .join("");
+
+  return `<!DOCTYPE html><html><head><style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; }
+    .page-break { page-break-before: always; }
+    </style></head><body>${pagesHtml}</body></html>`;
+}
+
+// ==========================================
+// STYLE 7: SUMMIT
+// ==========================================
+function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
+  const { totalht, totalmaterial } = calculateTotals(data.items);
+  const itemsPerPage = 8;
+  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+
+  const pagesHtml = Array.from({ length: totalPages })
+    .map((_, i) => {
+      const pageItems = data.items.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+      const isLast = i === totalPages - 1;
+
+      return `<div class="page ${i > 0 ? "page-break" : ""}">
+            <div class="content" style="height: 100%; display: flex; flex-direction: column; position: relative; box-sizing: border-box;">
+                <div style="background: #111; color: #fff; height: 100px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px;">
+                    <h1 style="font-size: 42px; font-weight: 900; letter-spacing: 4px; margin: 0;">${lang === "fr" ? "FACTURE" : "INVOICE"}</h1>
+                    <div style="display: flex; gap: 15px;">
+                        <div style="width: 40px; height: 40px; background: #333;"></div>
+                        <div style="width: 40px; height: 40px; background: #333;"></div>
+                    </div>
+                </div>
+
+                <div style="padding: 48px; flex: 1;">
+                ${i === 0
+          ? `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 50px;">
+                        <div style="width: 50%;">
+                            <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 15px;">${lang === "fr" ? "À L'ATTENTION DE" : "INVOICE TO"} :</div>
+                            <div style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">${data.clientName}</div>
+                            <div style="font-size: 14px; color: #666; line-height: 1.5;">${data.clientAddress || ""}<br>${data.clientContact || ""}<br>${data.clientPOBox || ""}</div>
+                        </div>
+                        <div style="width: 50%; text-align: right;">
+                            <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 5px;">${lang === "fr" ? "TOTAL DÛ" : "TOTAL DUE"}</div>
+                            <div style="font-size: 36px; font-weight: 900; margin-bottom: 25px;">${formatCurrency(totalht, data.currencyCode, lang)}</div>
+                            <div style="font-size: 14px; color: #666;">
+                                <div style="margin-bottom: 3px;"><span style="font-weight: 800; color: #333;">${dict.reference} :</span> ${data.reference}</div>
+                                <div><span style="font-weight: 800; color: #333;">${dict.date} :</span> ${new Date().toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    </div>`
+          : '<div style="height: 40px;"></div>'
+        }
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                        <thead style="background: #111; color: #fff;">
+                            <tr>
+                                <th style="padding: 10px 15px; text-align: left; font-size: 12px; font-weight: 800; text-transform: uppercase;">${lang === "fr" ? "PRODUITS" : "PRODUCTS"}</th>
+                                <th style="padding: 10px 15px; text-align: center; font-size: 12px; font-weight: 800; text-transform: uppercase;">${dict.qty}</th>
+                                <th style="padding: 10px 15px; text-align: center; font-size: 12px; font-weight: 800; text-transform: uppercase;">${dict.price}</th>
+                                <th style="padding: 10px 15px; text-align: right; font-size: 12px; font-weight: 800; text-transform: uppercase;">${dict.total}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pageItems
+          .map(
+            (item) => `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 15px; font-size: 14px; font-weight: 800;">${item.designation}</td>
+                                <td style="padding: 15px; font-size: 14px; text-align: center;">${item.quantity}</td>
+                                <td style="padding: 15px; font-size: 14px; text-align: center; color: #666;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
+                                <td style="padding: 15px; font-size: 14px; text-align: right; font-weight: 800;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
+                            </tr>`,
+          )
+          .join("")}
+                        </tbody>
+                    </table>
+
+                    ${isLast
+          ? `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px;">
+                        <div style="width: 50%;">
+                            <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 15px;">${lang === "fr" ? "MODE DE PAIEMENT" : "PAYMENT METHOD"} :</div>
+                            <div style="font-size: 14px; line-height: 1.8;">
+                                <div><span style="color: #999;">${lang === "fr" ? "Banque" : "Bank Name"} :</span> <span style="font-weight: 800; font-style: italic;">Société Générale</span></div>
+                                <div><span style="color: #999;">${lang === "fr" ? "Compte" : "Bank Account"} :</span> <span style="font-weight: 800; font-style: italic; text-decoration: underline;">1234567890</span></div>
+                            </div>
+                        </div>
+                        <div style="width: 40%; background: #f9f9f9; padding: 25px; border: 1px solid #eee;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px;">
+                                <span style="color: #666; text-transform: uppercase;">${dict.subtotal} :</span>
+                                <span style="font-weight: 800;">${formatCurrency(totalht, data.currencyCode, lang)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 15px;">
+                                <span style="color: #666; text-transform: uppercase;">TAX :</span>
+                                <span style="font-weight: 800;">${formatCurrency(0, data.currencyCode, lang)}</span>
+                            </div>
+                            <div style="height: 1px; background: #ddd; margin-bottom: 15px;"></div>
+                            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 900;">
+                                <span>${dict.total} :</span>
+                                <span>${formatCurrency(totalht, data.currencyCode, lang)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="font-size: 28px; font-weight: 900; text-transform: uppercase; margin-bottom: 40px;">${lang === "fr" ? "Merci pour votre achat !" : "Thank you for purchase!"}</div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <div style="text-align: center; width: 200px;">
+                                <div style="font-size: 24px; font-weight: 900; border-bottom: 2px solid #111; padding-bottom: 10px; margin-bottom: 10px;">${data.managerName}</div>
+                                <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase;">${dict.manager}</div>
+                            </div>
+                        </div>
+                    </div>`
+          : ""
+        }
+                </div>
+
+                <div style="height: 60px; background: #111; position: relative; overflow: hidden;">
+                    <div style="position: absolute; left: 40px; bottom: 0; width: 150px; height: 100px; background: #222; transform: rotate(45deg) translateY(50%); border-radius: 10px;"></div>
+                    <div style="position: absolute; left: 80px; bottom: 0; width: 100px; height: 70px; background: #333; transform: rotate(-12deg) translateY(20%); border-radius: 10px;"></div>
+                </div>
+            </div>
+            <div style="position: absolute; bottom: 24px; right: 48px; font-size: 10px; color: #aaa;">${dict.page} ${i + 1} / ${totalPages}</div>
+        </div>`;
+    })
+    .join("");
+
+  return `<!DOCTYPE html><html><head><style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; }
+    .page-break { page-break-before: always; }
     </style></head><body>${pagesHtml}</body></html>`;
 }

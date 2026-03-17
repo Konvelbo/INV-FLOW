@@ -451,7 +451,6 @@ export default function Home() {
       <section className="relative z-10 py-32">
         <div className="container px-6 mx-auto">
           <div className="relative overflow-hidden rounded-[4rem] bg-linear-to-br from-primary via-emerald-700 to-indigo-900 p-12 md:p-24 text-center shadow-[0_50px_100px_-20px_rgba(16,185,129,0.3)]">
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
             <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/10 blur-[100px] rounded-full animate-pulse" />
             <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-black/20 blur-[100px] rounded-full" />
 

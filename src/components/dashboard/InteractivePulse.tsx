@@ -36,7 +36,7 @@ export function InteractivePulse({ stats }: { stats?: DashboardStats }) {
   };
 
   return (
-    <div className="relative p-8 rounded-[2rem] bg-card border border-border/50 backdrop-blur-2xl shadow-2xl overflow-hidden h-full flex flex-col justify-between group">
+    <div className="relative p-8 rounded-lg bg-card border border-border backdrop-blur-2xl shadow-xl overflow-hidden h-full flex flex-col justify-between group">
       {/* Dynamic Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
@@ -147,7 +147,7 @@ export function InteractivePulse({ stats }: { stats?: DashboardStats }) {
 
       {/* Bottom Interface */}
       <div className="relative z-10 space-y-6">
-        <div className="w-full h-3 bg-slate-900/50 rounded-full border border-white/5 overflow-hidden">
+        <div className="w-full h-3 bg-muted/50 rounded-full border border-border/20 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
@@ -162,7 +162,7 @@ export function InteractivePulse({ stats }: { stats?: DashboardStats }) {
           <Button
             onClick={handleBoost}
             disabled={boostActive}
-            className="flex-1 h-14 rounded-2xl bg-primary hover:bg-primary-hover text-primary-foreground font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 group/btn overflow-hidden relative"
+            className="flex-1 h-14 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 group/btn overflow-hidden relative"
           >
             <span className="relative z-10 flex items-center gap-2">
               <Zap className="w-4 h-4 fill-current" />
@@ -171,7 +171,7 @@ export function InteractivePulse({ stats }: { stats?: DashboardStats }) {
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
           </Button>
 
-          <div className="flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all cursor-help relative group/tip">
+          <div className="flex items-center justify-center p-3 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all cursor-help relative group/tip">
             <Target className="w-6 h-6" />
             <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-48 p-3 rounded-xl bg-popover/90 backdrop-blur-md border border-white/10 text-[10px] leading-relaxed opacity-0 invisible group-hover/tip:opacity-100 group-hover/tip:visible transition-all">
               {t("suggestedGoal")}{" "}

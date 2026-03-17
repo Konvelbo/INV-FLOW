@@ -1,7 +1,6 @@
 import { AppSidebar } from "@/src/components/app-sidebare";
-import { FloatingNavDemo } from "@/src/components/floatingNav";
-import Navbare from "@/src/components/Navbare";
-import { SidebarProvider } from "@/src/components/ui/sidebar";
+import Topbar from "@/src/components/Topbar";
+import { SidebarProvider, SidebarInset } from "@/src/components/ui/sidebar";
 import { PageTransition } from "@/src/components/PageTransition";
 
 export default function InvoiceLayout({
@@ -10,11 +9,16 @@ export default function InvoiceLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col min-w-full min-h-screen overflow-x-hidden">
-      <FloatingNavDemo />
-      <div className="flex overflow-x-hidden w-full">
-        <PageTransition>{children}</PageTransition>
-      </div>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <div className="flex flex-col min-h-screen">
+          <Topbar />
+          <main className="flex-1 overflow-x-hidden bg-background">
+            <PageTransition>{children}</PageTransition>
+          </main>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

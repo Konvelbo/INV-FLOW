@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/src/context/LanguageContext";
 import { Toaster } from "react-hot-toast";
 import CanvasProvider from "@/src/context/canvasContext";
 import { NotificationProvider } from "@/src/context/NotificationContext";
+import { ThemeProvider } from "@/src/components/theme-provider";
 
 // Fallback variables for system fonts
 const jakarta = { variable: "font-jakarta" };
@@ -36,7 +37,14 @@ export default function RootLayout({
         <LanguageProvider>
           <NotificationProvider>
             <CanvasProvider>
-              <InvoiceProvider>{children}</InvoiceProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="dark"
+                enableSystem={false}
+                disableTransitionOnChange
+              >
+                <InvoiceProvider>{children}</InvoiceProvider>
+              </ThemeProvider>
             </CanvasProvider>
           </NotificationProvider>
         </LanguageProvider>

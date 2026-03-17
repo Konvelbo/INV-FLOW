@@ -346,7 +346,7 @@ function Invoice() {
   };
 
   return (
-    <div className="min-h-screen min-w-full bg-background pt-28 md:pt-28 lg:pt-28 text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center lg:p-16 py-12 pb-32">
+    <div className="min-h-screen min-w-full bg-background pt-20 text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground relative overflow-hidden flex flex-col items-center p-6 md:p-10 lg:p-12 pb-32">
       {/* Premium Background Aesthetics - Animated Mesh Gradients */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
@@ -358,7 +358,7 @@ function Invoice() {
       {/* Professional Header Section */}
       <div className="relative z-10 w-full max-w-8xl px- mb-16 flex justify-between items-center animate-fade-in-up">
         <div className="flex items-center gap-8">
-          <div className="p-5 bg-card/40 backdrop-blur-2xl rounded-[2rem] border border-border/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] group hover:border-primary/50 transition-all duration-500">
+          <div className="p-5 bg-card/40 backdrop-blur-2xl rounded-lg border border-border/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] group hover:border-primary/50 transition-all duration-500">
             <FileText className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
           </div>
           <div className="space-y-1.5">
@@ -375,7 +375,7 @@ function Invoice() {
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
-          <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-4 group hover:border-white/20 transition-all">
+          <div className="px-6 py-3 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-4 group hover:border-white/20 transition-all">
             <div className="size-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)] animate-pulse" />
             <div className="flex flex-col">
               <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
@@ -492,10 +492,10 @@ function Invoice() {
       <div className="relative z-10 flex-1 w-full max-w-[1300px] mt-5 flex justify-center animate-fade-in-up delay-100 px-8">
         <div className="relative w-full group/canvas">
           {/* Dynamic Ambient Glow */}
-          <div className="absolute -inset-10 bg-linear-to-tr from-primary/15 via-transparent to-secondary/15 rounded-[3rem] blur-[80px] opacity-40 group-hover/canvas:opacity-70 transition duration-1000 pointer-events-none"></div>
+          <div className="absolute -inset-10 bg-linear-to-tr from-primary/15 via-transparent to-secondary/15 rounded-lg blur-[80px] opacity-40 group-hover/canvas:opacity-70 transition duration-1000 pointer-events-none"></div>
 
-          <div className="relative bg-card/30 border border-border/40 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.7)] rounded-3xl overflow-hidden backdrop-blur-3xl p-1">
-            <div className="bg-background/80 rounded-[1.4rem] overflow-hidden">
+          <div className="relative bg-card/30 border border-border/40 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.7)] rounded-lg overflow-hidden backdrop-blur-3xl p-1">
+            <div className="bg-background/80 rounded-lg overflow-hidden">
               <InvoiceCanvas divRef={divRef} />
             </div>
           </div>
@@ -511,7 +511,7 @@ function Invoice() {
               onClick={handleSave}
               disabled={loading}
               className={cn(
-                "h-14 w-14 rounded-2xl shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-emerald-500 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
+                "h-14 w-14 rounded-lg shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-emerald-500 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
                 loading && "opacity-50",
               )}
               title={t("save")}
@@ -526,7 +526,7 @@ function Invoice() {
               onClick={handleGeneratePDF}
               disabled={loading}
               className={cn(
-                "h-14 w-14 rounded-2xl shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
+                "h-14 w-14 rounded-lg shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
                 loading && "opacity-50",
               )}
               title={t("download")}
@@ -537,13 +537,7 @@ function Invoice() {
 
           {/* Send Email Button (Expansion Right or custom placement) */}
           {/* We'll place it as a separate fab item; let's reuse fab-item with a custom class inline if needed, or just add it here */}
-          <div
-            className="fab-item"
-            style={{
-              transform: "translate(70px, -45px)",
-              position: "absolute",
-            }}
-          >
+          <div className="fab-item fab-item-center">
             <Button
               onClick={() => {
                 if (!invoiceId) {
@@ -554,7 +548,7 @@ function Invoice() {
               }}
               disabled={loading}
               className={cn(
-                "h-14 w-14 rounded-2xl shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-violet-600 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
+                "h-14 w-14 rounded-lg shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground cursor-pointer ",
                 loading && "opacity-50",
               )}
               title={t("sendInvoiceEmail")}
@@ -569,7 +563,7 @@ function Invoice() {
             <Button
               disabled={loading}
               className={cn(
-                "h-18 w-18 rounded-[2rem] bg-primary flex items-center justify-center fab-main-btn cursor-pointer",
+                "h-18 w-18 rounded-lg bg-primary flex items-center justify-center fab-main-btn cursor-pointer",
                 loading && "opacity-80 scale-95",
               )}
             >
@@ -593,7 +587,7 @@ function Invoice() {
       {/* Email Modal */}
       {isEmailModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-card w-full max-w-md rounded-2xl border border-border/50 shadow-2xl p-6 animate-fade-in-up">
+          <div className="bg-card w-full max-w-md rounded-lg border border-border/50 shadow-2xl p-6 animate-fade-in-up">
             <h3 className="text-xl font-bold mb-2">{t("sendInvoiceEmail")}</h3>
             <p className="text-sm text-muted-foreground mb-6">
               {t("sendInvoiceEmailDesc")}

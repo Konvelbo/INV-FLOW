@@ -190,7 +190,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative overflow-hidden font-sans pb-20">
+    <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-12 pt-20 relative overflow-hidden font-sans pb-20">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
@@ -231,7 +231,7 @@ export default function HistoryPage() {
         )}
 
         {/* Filters Section */}
-        <div className="bg-card p-8 rounded-[2rem] border border-border/50 backdrop-blur-xl shadow-2xl space-y-6 md:space-y-0 md:flex md:items-center md:gap-6 animate-fade-in-up delay-75">
+        <div className="bg-card p-8 rounded-lg border border-border/50 backdrop-blur-xl shadow-2xl space-y-6 md:space-y-0 md:flex md:items-center md:gap-6 animate-fade-in-up delay-75">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -319,7 +319,7 @@ export default function HistoryPage() {
                 key={invoice.id}
                 onClick={() => router.push(`/invoice?id=${invoice.id}`)}
                 className={cn(
-                  "group relative p-1 rounded-[2rem] bg-card border border-border/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:bg-card/80 shadow-2xl overflow-hidden cursor-pointer",
+                  "group relative p-1 rounded-lg bg-card border border-border/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:bg-card/80 shadow-2xl overflow-hidden cursor-pointer",
                   invoice.isScaled && "border-primary/40 shadow-primary/5",
                 )}
               >
@@ -456,7 +456,7 @@ export default function HistoryPage() {
             ))}
 
           {invoices.length === 0 && !loading && (
-            <div className="col-span-full py-32 text-center bg-card rounded-[2.5rem] border border-border/30 border-dashed backdrop-blur-xl animate-fade-in-up">
+            <div className="col-span-full py-32 text-center bg-card rounded-lg border border-border/30 border-dashed backdrop-blur-xl animate-fade-in-up">
               <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
                 <Package className="w-12 h-12 text-primary opacity-50" />
               </div>

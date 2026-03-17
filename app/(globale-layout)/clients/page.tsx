@@ -14,15 +14,19 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import {
-  Users,
-  Plus,
+  Download,
+  Users2,
+  TrendingUp,
+  ShieldCheck,
+  Building,
   Search,
+  Plus,
+  Users,
   Edit,
   Trash2,
   Mail,
   Phone,
   MapPin,
-  Download,
 } from "lucide-react";
 import {
   Dialog,
@@ -258,36 +262,42 @@ export default function ClientsPage({
           : "min-h-full min-w-full bg-background text-foreground p-5 md:p-10 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative pb-20"
       }
     >
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full animate-pulse delay-700" />
+      </div>
+
       <div
         className={
           isComponent
-            ? "space-y-6 w-full"
+            ? "space-y-6 w-full relative z-10"
             : "max-w-7xl mx-auto space-y-10 relative z-10 w-full"
         }
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up">
           {!isComponent && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-10 bg-emerald-500 rounded-full" />
-                <span className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.3em]">
+                <div className="h-2 w-12 bg-linear-to-r from-emerald-500 to-teal-500 rounded-full" />
+                <span className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.4em]">
                   {t("crm")}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent font-sans">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tighter bg-linear-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans">
                 {t("clients")}
               </h1>
-              <p className="text-muted-foreground text-lg max-w-xl font-sans">
+              <p className="text-muted-foreground text-lg max-w-xl font-medium leading-relaxed opacity-80">
                 {t("crmDesc")}
               </p>
             </div>
           )}
           {isComponent && <div />}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="gap-2 font-bold"
+              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-card transition-all"
               onClick={handleExport}
             >
               <Download className="w-4 h-4" />
@@ -301,8 +311,8 @@ export default function ClientsPage({
               }}
             >
               <DialogTrigger asChild>
-                <Button className="font-bold gap-2">
-                  <Plus className="w-4 h-4" />
+                <Button className="h-12 px-8 font-black gap-2 bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 text-white transition-all transform hover:-translate-y-1">
+                  <Plus className="w-5 h-5" />
                   {t("newClient")}
                 </Button>
               </DialogTrigger>
@@ -485,7 +495,28 @@ export default function ClientsPage({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 animate-fade-in-up delay-100">
+        {!isComponent && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
+            {[
+              { label: "Total Clients", value: clients.length, icon: Users2, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { label: "Entreprises", value: clients.filter(c => c.type === "company").length, icon: Building, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { label: "Valeur Totale", value: `${clients.reduce((acc, c) => acc + (c.totalSpent || 0), 0).toLocaleString()} CFA`, icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10" },
+              { label: "Clients Actifs", value: clients.length, icon: ShieldCheck, color: "text-teal-500", bg: "bg-teal-500/10" }
+            ].map((stat, i) => (
+              <div key={i} className="p-6 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300">
+                <div className={cn("size-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", stat.bg, stat.color)}>
+                  <stat.icon className="size-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</p>
+                  <p className="text-xl font-black tracking-tight">{stat.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 animate-fade-in-up delay-200">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input

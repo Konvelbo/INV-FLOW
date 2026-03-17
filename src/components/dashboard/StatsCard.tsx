@@ -83,9 +83,9 @@ export function StatsCard({
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative p-6 rounded-3xl bg-card border border-border/50 transition-all duration-500",
-        "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
-        "hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:border-border hover:-translate-y-1.5",
+        "group relative p-6 rounded-lg bg-card border border-border transition-all duration-500",
+        "shadow-sm hover:shadow-md",
+        "hover:border-primary/50 hover:-translate-y-1",
         href && "cursor-pointer",
         className,
       )}

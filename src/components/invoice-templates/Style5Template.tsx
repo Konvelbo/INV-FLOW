@@ -161,11 +161,8 @@ export default function Style5Template({
           {/* Header */}
           <div className="flex justify-between items-center mb-16 select-none">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white">
-                <Zap className="w-5 h-5 fill-current" />
-              </div>
-              <span className="font-bold text-lg tracking-tight">
-                SaaS.bill
+              <span className="font-bold text-2xl tracking-tight uppercase">
+                {dict.invoice}
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm font-medium text-zinc-500">

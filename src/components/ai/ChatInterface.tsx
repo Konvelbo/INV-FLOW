@@ -145,7 +145,7 @@ export function ChatInterface() {
               className={cn(
                 "max-w-[80%] p-5 rounded-3xl text-sm leading-relaxed font-sans",
                 msg.role === "assistant"
-                  ? "bg-white/5 border border-white/10 text-foreground rounded-tl-none"
+                  ? "bg-muted/30 border border-border/50 text-foreground rounded-tl-none"
                   : "bg-primary text-primary-foreground rounded-tr-none shadow-xl shadow-primary/20",
               )}
             >
@@ -158,7 +158,7 @@ export function ChatInterface() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
               <Loader2 className="w-5 h-5 text-primary animate-spin" />
             </div>
-            <div className="bg-white/5 border border-white/10 p-5 rounded-3xl rounded-tl-none italic text-muted-foreground text-sm">
+            <div className="bg-muted/30 border border-border/50 p-5 rounded-3xl rounded-tl-none italic text-muted-foreground text-sm">
               Analyse de vos données financières en cours...
             </div>
           </div>
@@ -187,7 +187,7 @@ export function ChatInterface() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Posez une question sur votre stratégie économique..."
-            className="w-full bg-slate-950/50 border border-border/50 rounded-2xl p-5 pr-16 text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-sans"
+            className="w-full bg-muted/20 border border-border/50 rounded-2xl p-5 pr-16 text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-sans"
           />
           <Button
             onClick={handleSend}

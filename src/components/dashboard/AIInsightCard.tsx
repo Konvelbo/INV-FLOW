@@ -168,7 +168,7 @@ export function AIInsightCard({ stats }: { stats?: DashboardStats }) {
           <div
             key={insight.id}
             className={cn(
-              "p-5 rounded-2xl bg-slate-950/30 border border-white/5 hover:border-secondary/30 transition-all duration-300 group/item",
+              "p-5 rounded-2xl bg-muted/30 border border-border/50 hover:border-secondary/30 transition-all duration-300 group/item",
               insight.type === "opportunity" && "hover:bg-primary/5 hover:border-primary/30 shadow-[0_4px_20px_rgba(16,185,129,0.05)]",
               insight.type === "warning" && "hover:bg-amber-500/5 hover:border-amber-500/30",
             )}

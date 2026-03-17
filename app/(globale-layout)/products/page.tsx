@@ -13,16 +13,19 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import {
-  Package,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Tag,
-  Percent,
-  DollarSign,
   Download,
   Zap,
+  Layers,
+  ShoppingBag,
+  LineChart,
+  Search,
+  Plus,
+  Package,
+  Edit,
+  Trash2,
+  Building,
+  DollarSign,
+  Percent,
 } from "lucide-react";
 import {
   Dialog,
@@ -129,8 +132,7 @@ export default function ProductsPage({
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(t("itemDeleteWarning").replace("{name}", name)))
-      return;
+    if (!confirm(t("itemDeleteWarning").replace("{name}", name))) return;
     try {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
@@ -212,36 +214,42 @@ export default function ProductsPage({
           : "min-h-full min-w-full bg-background text-foreground p-5 md:p-10 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative pb-20"
       }
     >
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full animate-pulse delay-700" />
+      </div>
+
       <div
         className={
           isComponent
-            ? "space-y-6 w-full"
+            ? "space-y-6 w-full relative z-10"
             : "max-w-7xl mx-auto space-y-10 relative z-10 w-full"
         }
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up">
           {!isComponent && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-10 bg-indigo-500 rounded-full" />
-                <span className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.3em]">
+                <div className="h-2 w-12 bg-linear-to-r from-indigo-500 to-blue-500 rounded-full" />
+                <span className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.4em]">
                   {t("catalog")}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent font-sans">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tighter bg-linear-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans">
                 {t("productsServices")}
               </h1>
-              <p className="text-muted-foreground text-lg max-w-xl font-sans">
+              <p className="text-muted-foreground text-lg max-w-xl font-medium leading-relaxed opacity-80">
                 {t("catalogDesc")}
               </p>
             </div>
           )}
           {isComponent && <div />}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="gap-2 font-bold"
+              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-card transition-all"
               onClick={handleExport}
             >
               <Download className="w-4 h-4" />
@@ -255,8 +263,8 @@ export default function ProductsPage({
               }}
             >
               <DialogTrigger asChild>
-                <Button className="font-bold gap-2">
-                  <Plus className="w-4 h-4" />
+                <Button className="h-12 px-8 font-black gap-2 bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 text-white transition-all transform hover:-translate-y-1">
+                  <Plus className="w-5 h-5" />
                   {t("newItem")}
                 </Button>
               </DialogTrigger>
@@ -265,9 +273,7 @@ export default function ProductsPage({
                   <DialogTitle>
                     {editingId ? t("editItem") : t("newItem")}
                   </DialogTitle>
-                  <DialogDescription>
-                    {t("catalogAddDesc")}
-                  </DialogDescription>
+                  <DialogDescription>{t("catalogAddDesc")}</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-4 py-4">
                   <div className="space-y-4">
@@ -284,7 +290,9 @@ export default function ProductsPage({
                           })
                         }
                       >
-                        <option value="service">{t("servicePrestation")}</option>
+                        <option value="service">
+                          {t("servicePrestation")}
+                        </option>
                         <option value="product">{t("productMaterial")}</option>
                       </select>
                     </div>
@@ -363,9 +371,7 @@ export default function ProductsPage({
                   </div>
                   <DialogFooter className="pt-4">
                     <Button type="submit" className="w-full font-bold">
-                      {editingId
-                        ? t("saveChanges")
-                        : t("addToCatalog")}
+                      {editingId ? t("saveChanges") : t("addToCatalog")}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -374,7 +380,65 @@ export default function ProductsPage({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 animate-fade-in-up delay-100">
+        {!isComponent && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
+            {[
+              {
+                label: "Total Articles",
+                value: products.length,
+                icon: ShoppingBag,
+                color: "text-indigo-500",
+                bg: "bg-indigo-500/10",
+              },
+              {
+                label: "Services",
+                value: products.filter((p) => p.type === "service").length,
+                icon: Zap,
+                color: "text-blue-500",
+                bg: "bg-blue-500/10",
+              },
+              {
+                label: "Produits",
+                value: products.filter((p) => p.type === "product").length,
+                icon: Layers,
+                color: "text-purple-500",
+                bg: "bg-purple-500/10",
+              },
+              {
+                label: "Prix Moyen",
+                value: `${Math.round(products.reduce((acc, p) => acc + p.price, 0) / (products.length || 1)).toLocaleString()} CFA`,
+                icon: LineChart,
+                color: "text-emerald-500",
+                bg: "bg-emerald-500/10",
+              },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="p-6 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
+              >
+                <div
+                  className={cn(
+                    "size-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                    stat.bg,
+                    stat.color,
+                  )}
+                >
+                  <stat.icon className="size-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    {stat.label}
+                  </p>
+                  <p className="text-xl font-black tracking-tight">
+                    {stat.value}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 animate-fade-in-up delay-200">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -408,29 +472,43 @@ export default function ProductsPage({
                 className="group relative bg-card/60 backdrop-blur-xl border border-border/40 shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30 transition-all duration-500 rounded-3xl overflow-hidden flex flex-col h-full animate-fade-in-up"
               >
                 {/* Visual Accent */}
-                <div className={cn(
-                  "absolute top-0 left-0 w-full h-1.5 transition-opacity duration-500",
-                  product.type === "service" ? "bg-linear-to-r from-blue-500 to-indigo-500" : "bg-linear-to-r from-purple-500 to-pink-500"
-                )} />
+                <div
+                  className={cn(
+                    "absolute top-0 left-0 w-full h-1.5 transition-opacity duration-500",
+                    product.type === "service"
+                      ? "bg-linear-to-r from-blue-500 to-indigo-500"
+                      : "bg-linear-to-r from-purple-500 to-pink-500",
+                  )}
+                />
                 <CardHeader className="p-7 pb-4">
                   <div className="flex justify-between items-start mb-6">
-                    <div className={cn(
-                      "p-3 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
-                      product.type === "service"
-                        ? "bg-blue-500/10 text-blue-500 shadow-blue-500/5 border border-blue-500/10"
-                        : "bg-purple-500/10 text-purple-500 shadow-purple-500/5 border border-purple-500/10"
-                    )}>
-                      {product.type === "service" ? <Zap className="w-5 h-5" /> : <Package className="w-5 h-5" />}
+                    <div
+                      className={cn(
+                        "p-3 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
+                        product.type === "service"
+                          ? "bg-blue-500/10 text-blue-500 shadow-blue-500/5 border border-blue-500/10"
+                          : "bg-purple-500/10 text-purple-500 shadow-purple-500/5 border border-purple-500/10",
+                      )}
+                    >
+                      {product.type === "service" ? (
+                        <Zap className="w-5 h-5" />
+                      ) : (
+                        <Package className="w-5 h-5" />
+                      )}
                     </div>
 
                     <div className="flex gap-2">
-                      <div className={cn(
-                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                        product.type === "service"
-                          ? "bg-blue-500/5 text-blue-500 border-blue-500/10"
-                          : "bg-purple-500/5 text-purple-500 border-purple-500/10",
-                      )}>
-                        {product.type === "service" ? t("service") : t("catalog")}
+                      <div
+                        className={cn(
+                          "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                          product.type === "service"
+                            ? "bg-blue-500/5 text-blue-500 border-blue-500/10"
+                            : "bg-purple-500/5 text-purple-500 border-purple-500/10",
+                        )}
+                      >
+                        {product.type === "service"
+                          ? t("service")
+                          : t("catalog")}
                       </div>
                       <div className="flex opacity-0 group-hover:opacity-100 transition-opacity duration-300 gap-1 mt-[-4px]">
                         <Button
@@ -509,10 +587,9 @@ export default function ProductsPage({
                 <Plus className="w-4 h-4" /> {t("addFirstItem")}
               </Button>
             </div>
-          )
-          }
-        </div >
-      </div >
-    </div >
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -7,6 +7,14 @@ import {
   LayoutDashboard,
   ClipboardList,
   ChevronRight,
+  Users,
+  Package,
+  Wallet,
+  Settings,
+  HelpCircle,
+  MessageSquare,
+  Send,
+  Star,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,7 +33,20 @@ import { useLanguage } from "@/src/context/LanguageContext";
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { toast } from "react-hot-toast";
 
 export const AppSidebar = React.memo(function AppSidebar() {
   const { clearInvoiceData } = useInvoiceActions();
@@ -33,6 +54,43 @@ export const AppSidebar = React.memo(function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const [feedback, setFeedback] = useState("");
+  const [rating, setRating] = useState(5);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSendFeedback = async () => {
+    if (!feedback.trim()) return;
+    setIsSubmitting(true);
+    try {
+      // 1. Store in Backend
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
+
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ content: feedback, rating }),
+      });
+
+      if (res.ok) {
+        toast.success("Mérci pour votre retour !");
+        setIsFeedbackOpen(false);
+        setFeedback("");
+        setRating(5);
+      } else {
+        toast.error("Erreur lors de l'envoi du feedback");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Une erreur est survenue");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const menuItems = [
     {
@@ -57,6 +115,27 @@ export const AppSidebar = React.memo(function AppSidebar() {
       color: "text-amber-500",
     },
     {
+      title: dict.clients,
+      url: "/clients",
+      icon: Users,
+      id: "Clients",
+      color: "text-orange-500",
+    },
+    {
+      title: dict.productsServices,
+      url: "/products",
+      icon: Package,
+      id: "Products",
+      color: "text-indigo-500",
+    },
+    {
+      title: dict.expenses,
+      url: "/expenses",
+      icon: Wallet,
+      id: "Expenses",
+      color: "text-red-500",
+    },
+    {
       title: dict.workPlanning,
       url: "/planning",
       icon: ClipboardList,
@@ -74,8 +153,8 @@ export const AppSidebar = React.memo(function AppSidebar() {
 
   return (
     <Sidebar
-      collapsible="icon"
-      className="border-r border-border/40 bg-card/30 backdrop-blur-xl"
+      collapsible="offcanvas"
+      className="border-r border-sidebar-border bg-sidebar sticky top-0 h-screen"
     >
       <SidebarContent className="p-4 space-y-8">
         {/*<div className="px-2 mb-6">
@@ -172,7 +251,95 @@ export const AppSidebar = React.memo(function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup className="mt-auto">
-          <SidebarGroupContent className="px-2 py-4">
+          <SidebarGroupContent className="px-2 py-4 space-y-4">
+            <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className={cn(
+                    "flex items-center gap-3 w-full px-3 py-2 rounded-xl transition-all duration-300",
+                    "bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 group",
+                  )}
+                >
+                  <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <HelpCircle className="size-4" />
+                  </div>
+                  {!isCollapsed && (
+                    <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+                      Besoin d'aide ?
+                    </span>
+                  )}
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-card border-border/50 backdrop-blur-xl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <MessageSquare className="size-5 text-primary" />
+                    Envoyer un retour
+                  </DialogTitle>
+                  <DialogDescription>
+                    Votre avis nous aide à améliorer l'application. Décrivez votre problème ou suggestion ci-dessous.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-6 text-foreground">
+                  <div className="space-y-4 text-center">
+                    <Label className="text-sm font-bold opacity-70">Quelle note donneriez-vous à l'application ?</Label>
+                    <div className="flex items-center justify-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setRating(star)}
+                          className="transition-transform active:scale-95 hover:scale-110"
+                        >
+                          <Star
+                            className={cn(
+                              "size-8 transition-colors",
+                              star <= rating
+                                ? "fill-amber-500 text-amber-500"
+                                : "text-muted-foreground/30"
+                            )}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest opacity-60">Votre message</Label>
+                    <Textarea
+                      placeholder="Comment pouvons-nous nous améliorer ?"
+                      className="min-h-[120px] bg-background border-border/50 shadow-inner rounded-xl resize-none focus:ring-primary/20"
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground italic bg-primary/5 p-3 rounded-lg border border-primary/10">
+                    Note : Votre retour sera directement enregistré et envoyé à notre équipe.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsFeedbackOpen(false)}
+                    className="rounded-xl"
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={handleSendFeedback}
+                    className="rounded-xl bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-primary/20 min-w-[120px]"
+                    disabled={!feedback.trim() || isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Send className="size-4" />
+                    )}
+                    Envoyer
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <div className="flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
               <div className="size-1.5 rounded-full bg-primary animate-pulse" />
               <span className="text-[8px] font-mono tracking-widest uppercase">
