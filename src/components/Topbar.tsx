@@ -14,7 +14,7 @@ export default function Topbar() {
         {/* Left section: Logo and Sidebar Trigger */}
         <div className="flex items-center gap-4">
           <Logo w={32} h={32} logoUrl="/black-caractere-non-black.png" />
-          <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
+          <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
         </div>
 
         {/* Middle spacer */}

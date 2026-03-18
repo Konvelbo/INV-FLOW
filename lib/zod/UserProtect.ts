@@ -3,7 +3,7 @@ import * as z from "zod";
 export const UserSchema = z.object({
   name: z
     .string()
-    .min(10, "Le nom doit contenir au moins 2 caractères")
+    .min(2, "Le nom doit contenir au moins 2 caractères")
     .max(40, "Le nom ne doit pas exéder 40 caractères"),
   email: z.string().email("Format d'email invalide"),
   password: z
@@ -14,7 +14,7 @@ export const UserSchema = z.object({
 
 export const authSchema = z
   .object({
-    name: z.string().min(10, "Le nom doit contenir au moins 2 caractères"),
+    name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
     email: z.string().email("Format d'email invalide"),
     password: z
       .string()

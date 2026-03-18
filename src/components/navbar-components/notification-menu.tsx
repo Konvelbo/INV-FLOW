@@ -46,7 +46,7 @@ export default function NotificationMenu() {
       <PopoverTrigger asChild>
         <Button
           aria-label="Open notifications"
-          className="relative size-10 rounded-xl text-muted-foreground shadow-none hover:bg-muted/50 transition-all border border-transparent hover:border-border/50"
+          className="relative size-10 rounded-xl text-muted-foreground shadow-none hover:bg-muted/50 transition-all border border-transparent hover:border-border/50 cursor-pointer"
           size="icon"
           variant="ghost"
         >

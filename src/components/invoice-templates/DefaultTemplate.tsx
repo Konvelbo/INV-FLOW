@@ -150,33 +150,34 @@ export default function DefaultTemplate({
         id="canvas"
         className={`bg-white w-[850px] text-black relative ${scale < 0.8 ? "scale-small" : ""}`}
       >
-        <div className="flex justify-between items-center relative w-full mb-2">
-          <div>
-            <h1 className="mb-3">
-              {dict.proforma} :{" "}
-              {
+        <div className="flex justify-between items-start relative w-full mb-8 pt-10">
+          <div className="flex flex-col gap-4">
+            <div className="editable-field p-2">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 font-medium uppercase text-xs tracking-wider">REF:</span>
                 <OptimizedInput
                   value={reference}
                   onValueChange={setReference}
                   placeholder={dict.reference}
-                  className="w-60 pl-2"
+                  className="w-40 font-bold text-lg bg-transparent"
                 />
-              }
-            </h1>
+              </div>
+            </div>
           </div>
-          <h2>
-            <OptimizedInput
-              value={city}
-              dir="rtl"
-              onValueChange={setCity}
-              placeholder={dict.city}
-              className="w-60 pr-2"
-            />
-            {dict.date}{" "}
-            {new Date().toLocaleDateString(
-              language === "fr" ? "fr-FR" : "en-US",
-            )}
-          </h2>
+          <div className="text-right flex flex-col gap-2 p-2">
+             <div className="flex items-center justify-end gap-2">
+                <OptimizedInput
+                  value={city}
+                  dir="rtl"
+                  onValueChange={setCity}
+                  placeholder={dict.city}
+                  className="w-40 font-medium bg-transparent"
+                />
+             </div>
+             <p className="text-gray-600 font-semibold uppercase text-xs tracking-widest border-t pt-2">
+                {dict.date} {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US")}
+             </p>
+          </div>
         </div>
         <div className="border h-35 w-full min-h-70">
           <div className="flex justify-between">
@@ -187,56 +188,55 @@ export default function DefaultTemplate({
               <h2>{dict.deliveryAddress}:</h2>
             </div>
           </div>
-          <div className="px-5 mt-2 space-y-2">
-            <div className="flex flex-col gap-2"></div>
-            <div className="flex justify-between items-center gap-2 text-sm w-full">
-              <div>
-                {dict.address}:
+            <div className="client-info space-y-3">
+              <div className="editable-field flex items-center gap-2">
+                <span className="label w-24">{dict.client} :</span>
+                <OptimizedInput
+                  value={clientName}
+                  onValueChange={setClientName}
+                  placeholder={dict.client}
+                  className="flex-1 font-bold text-lg bg-transparent"
+                />
+              </div>
+              <div className="editable-field flex items-center gap-2">
+                <span className="label w-24">{dict.address} :</span>
                 <OptimizedInput
                   value={clientAddress}
                   onValueChange={setClientAddress}
-                  placeholder={`${dict.address} (Optional)`}
-                  className="w-full pl-2 border-b"
+                  placeholder={dict.address}
+                  className="flex-1 bg-transparent"
                 />
               </div>
-              <div>
-                {dict.contact}:
-                <OptimizedInput
-                  value={clientContact}
-                  onValueChange={setClientContact}
-                  placeholder={`${dict.contact} (Optional)`}
-                  className="w-full pl-2 border-b"
-                />
+              <div className="flex gap-4">
+                <div className="editable-field flex-1 flex items-center gap-2">
+                  <span className="label w-24">{dict.contact} :</span>
+                  <OptimizedInput
+                    value={clientContact}
+                    onValueChange={setClientContact}
+                    placeholder={dict.contact}
+                    className="flex-1 bg-transparent"
+                  />
+                </div>
+                <div className="editable-field flex-1 flex items-center gap-2">
+                  <span className="label w-24">{dict.poBox} :</span>
+                  <OptimizedInput
+                    value={clientPOBox}
+                    onValueChange={setClientPOBox}
+                    placeholder={dict.poBox}
+                    className="flex-1 bg-transparent"
+                  />
+                </div>
               </div>
-              <div>
-                {dict.poBox}:
+              <div className="editable-field flex items-center gap-2 border-t pt-2 mt-2">
+                <span className="label w-24">{dict.object} :</span>
                 <OptimizedInput
-                  value={clientPOBox}
-                  onValueChange={setClientPOBox}
-                  placeholder={`${dict.poBox} (Optional)`}
-                  className="w-full pl-2 border-b"
+                  value={object}
+                  onValueChange={setObject}
+                  placeholder={dict.object}
+                  className="flex-1 font-medium bg-transparent"
                 />
               </div>
             </div>
-            <h1 className="w-1/2">
-              {dict.client}:
-              <OptimizedInput
-                value={clientName}
-                onValueChange={setClientName}
-                placeholder={dict.client}
-                className="w-full pl-2 border-b"
-              />
-            </h1>
-            <h1 className="w-1/2">
-              {dict.object}:
-              <OptimizedInput
-                value={object}
-                onValueChange={setObject}
-                placeholder={dict.object}
-                className="w-full pl-2 border-b"
-              />
-            </h1>
-          </div>
         </div>
         <table>
           <thead>
@@ -251,49 +251,56 @@ export default function DefaultTemplate({
           <tbody className="relative">
             {itemsArr.map((item: InvoiceItemWithId) => (
               <tr key={item.id}>
-                <td className="relative">
-                  <OptimizedInput
-                    value={item.designation}
-                    onValueChange={(val) =>
-                      updateItem(item.id, "designation", val)
-                    }
-                    placeholder={dict.designation}
-                    className="border-none outline-none w-full bg-transparent"
-                  />
+                <td className="relative p-0">
+                  <div className="editable-field p-2">
+                    <OptimizedInput
+                      value={item.designation}
+                      onValueChange={(val) =>
+                        updateItem(item.id, "designation", val)
+                      }
+                      placeholder={dict.designation}
+                      className="border-none outline-none w-full bg-transparent"
+                    />
+                  </div>
                   <CookingPot
                     id="Delete"
                     onClick={() => deleteItem(item.id)}
-                    className="delete text-black absolute -left-7 bottom-1 size-5"
+                    className="delete text-black absolute -left-7 top-1/2 -translate-y-1/2 size-5"
                   />
                 </td>
-                <td>
-                  <OptimizedInput
-                    value={item.unit}
-                    onValueChange={(val) => updateItem(item.id, "unit", val)}
-                    placeholder={dict.unit}
-                  // className="border-none outline-none w-15"
-                  />
+                <td className="p-0">
+                  <div className="editable-field p-2">
+                    <OptimizedInput
+                      value={item.unit}
+                      onValueChange={(val) => updateItem(item.id, "unit", val)}
+                      placeholder={dict.unit}
+                      className="bg-transparent w-full text-center"
+                    />
+                  </div>
                 </td>
-
-                <td>
-                  <OptimizedInput
-                    value={item.quantity}
-                    onValueChange={(val) =>
-                      updateItem(item.id, "quantity", Number(val))
-                    }
-                    placeholder={dict.quantity}
-                  // className="border-none outline-none w-20"
-                  />
+                <td className="p-0">
+                  <div className="editable-field p-2">
+                    <OptimizedInput
+                      value={item.quantity}
+                      onValueChange={(val) =>
+                        updateItem(item.id, "quantity", Number(val))
+                      }
+                      placeholder={dict.quantity}
+                      className="bg-transparent w-full text-center"
+                    />
+                  </div>
                 </td>
-                <td>
-                  <OptimizedInput
-                    value={item.unitPrice}
-                    onValueChange={(val) =>
-                      updateItem(item.id, "unitPrice", Number(val))
-                    }
-                    placeholder={dict.unitPrice}
-                  // className="border-none outline-none w-40"
-                  />
+                <td className="p-0">
+                  <div className="editable-field p-2">
+                    <OptimizedInput
+                      value={item.unitPrice}
+                      onValueChange={(val) =>
+                        updateItem(item.id, "unitPrice", Number(val))
+                      }
+                      placeholder={dict.unitPrice}
+                      className="bg-transparent w-full text-center font-medium"
+                    />
+                  </div>
                 </td>
                 <td>
                   <h2>{formatCurrency(item.totalPrice)}</h2>
@@ -301,57 +308,65 @@ export default function DefaultTemplate({
               </tr>
             ))}
             <tr>
-              <td className="relative">
-                <OptimizedInput
-                  value={newItem.designation}
-                  onValueChange={(val) =>
-                    setNewItem({ ...newItem, designation: val })
-                  }
-                  placeholder={dict.designation}
-                  className="border-none outline-none w-full"
-                />
+              <td className="relative p-0">
+                <div className="editable-field p-2">
+                  <OptimizedInput
+                    value={newItem.designation}
+                    onValueChange={(val) =>
+                      setNewItem({ ...newItem, designation: val })
+                    }
+                    placeholder={dict.designation}
+                    className="border-none outline-none w-full bg-transparent"
+                  />
+                </div>
                 <ArrowDown
                   onClick={addItem}
-                  className="uploade text-black absolute -left-7 bottom-1 size-6"
+                  className="uploade text-black absolute -left-7 top-1/2 -translate-y-1/2 size-6"
                 />
               </td>
-              <td>
-                <OptimizedInput
-                  value={newItem.unit}
-                  onValueChange={(val) => setNewItem({ ...newItem, unit: val })}
-                  placeholder={dict.unit}
-                // className="border-none outline-none w-15"
-                />
+              <td className="p-0">
+                <div className="editable-field p-2">
+                  <OptimizedInput
+                    value={newItem.unit}
+                    onValueChange={(val) => setNewItem({ ...newItem, unit: val })}
+                    placeholder={dict.unit}
+                    className="bg-transparent w-full text-center"
+                  />
+                </div>
               </td>
-              <td>
-                <OptimizedInput
-                  value={newItem.quantity}
-                  onValueChange={(val) => {
-                    const q = Number(val);
-                    setNewItem((prev) => ({
-                      ...prev,
-                      quantity: q,
-                      totalPrice: q * Number(prev.unitPrice),
-                    }));
-                  }}
-                  placeholder={dict.quantity}
-                // className="border-none outline-none w-20"
-                />
+              <td className="p-0">
+                <div className="editable-field p-2">
+                  <OptimizedInput
+                    value={newItem.quantity}
+                    onValueChange={(val) => {
+                      const q = Number(val);
+                      setNewItem((prev) => ({
+                        ...prev,
+                        quantity: q,
+                        totalPrice: q * Number(prev.unitPrice),
+                      }));
+                    }}
+                    placeholder={dict.quantity}
+                    className="bg-transparent w-full text-center"
+                  />
+                </div>
               </td>
-              <td>
-                <OptimizedInput
-                  value={newItem.unitPrice}
-                  onValueChange={(val) => {
-                    const up = Number(val);
-                    setNewItem((prev) => ({
-                      ...prev,
-                      unitPrice: up,
-                      totalPrice: up * Number(prev.quantity),
-                    }));
-                  }}
-                  placeholder={dict.unitPrice}
-                // className="border-none outline-none w-40"
-                />
+              <td className="p-0">
+                <div className="editable-field p-2">
+                  <OptimizedInput
+                    value={newItem.unitPrice}
+                    onValueChange={(val) => {
+                      const up = Number(val);
+                      setNewItem((prev) => ({
+                        ...prev,
+                        unitPrice: up,
+                        totalPrice: up * Number(prev.quantity),
+                      }));
+                    }}
+                    placeholder={dict.unitPrice}
+                    className="bg-transparent w-full text-center"
+                  />
+                </div>
               </td>
               <td>
                 <h2>{formatCurrency(newItem.totalPrice)}</h2>

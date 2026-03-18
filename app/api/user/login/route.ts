@@ -28,9 +28,9 @@ export async function POST(req: Request) {
       include: { companies: true },
     });
 
-    if (!isExistUserEmail) {
+    if (!isExistUserEmail || !isExistUserEmail.password) {
       return NextResponse.json(
-        { message: "Utilisateur non trouvé !" },
+        { message: "Utilisateur non trouvé ou compte Google uniquement !" },
         { status: 404 },
       );
     } else {
@@ -52,10 +52,22 @@ export async function POST(req: Request) {
         avatar: isExistUserEmail.avatar,
         companies: isExistUserEmail.companies,
       };
-      return NextResponse.json(
+
+      const response = NextResponse.json(
         { user, message: "Connexion réussie" },
         { status: 200 },
       );
+
+      // Set auth-token cookie for Server Components
+      response.cookies.set("auth-token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        path: "/",
+      });
+
+      return response;
     }
   } catch (error) {
     console.error(error);

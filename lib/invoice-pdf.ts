@@ -98,9 +98,18 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   <div class="page ${pageIndex > 0 ? "page-break" : ""}">
     ${pageIndex === 0
           ? `
-    <div class="proforma-line">
-      <span class="ref">${data.type === "quote" ? dict.proforma : dict.invoice} : ${data.reference}</span>
-      <span class="date">${data.city} ${dict.date} ${date}</span>
+    <div class="proforma-line" style="margin-top: 140px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 14px; font-weight: 500; color: #4b5563;">
+          <span style="letter-spacing: 0.1em; color: #9ca3af; font-size: 10px;">REF:</span> ${data.reference}
+        </div>
+      </div>
+      <div style="text-align: right; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="font-size: 16px; font-weight: 600;">${data.city}</div>
+        <div style="font-size: 11px; font-weight: 500; color: #6b7280; border-top: 1px solid #e5e7eb; pt: 4px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;">
+          ${dict.date} ${date}
+        </div>
+      </div>
     </div>
 
     <div class="address-container">
@@ -109,11 +118,19 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         <div class="address-title">${dict.deliveryAddress}</div>
       </div>
       <div class="client-info">
-        <p>${dict.client} : ${data.clientName}</p>
-        ${data.clientAddress ? `<p>${dict.address} : ${data.clientAddress}</p>` : ""}
-        ${data.clientContact ? `<p>${dict.contact} : ${data.clientContact}</p>` : ""}
-        ${data.clientPOBox ? `<p>${dict.poBox} : ${data.clientPOBox}</p>` : ""}
-        <p>${dict.object} : ${data.object}</p>
+        <div style="margin-bottom: 12px; display: flex; align-items: center;">
+          <span class="label" style="width: 80px;">${dict.client} :</span> 
+          <span style="font-size: 18px; font-weight: 800; color: #000;">${data.clientName}</span>
+        </div>
+        ${data.clientAddress ? `<div style="margin-bottom: 8px; display: flex;"><span class="label" style="width: 80px;">${dict.address} :</span> <span style="font-weight: 500;">${data.clientAddress}</span></div>` : ""}
+        <div style="display: flex; gap: 20px;">
+          ${data.clientContact ? `<div style="margin-bottom: 8px; display: flex;"><span class="label" style="width: 80px;">${dict.contact} :</span> <span style="font-weight: 500;">${data.clientContact}</span></div>` : ""}
+          ${data.clientPOBox ? `<div style="margin-bottom: 8px; display: flex;"><span class="label" style="width: 80px;">${dict.poBox} :</span> <span style="font-weight: 500;">${data.clientPOBox}</span></div>` : ""}
+        </div>
+        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed #e5e7eb; display: flex; align-items: center;">
+          <span class="label" style="width: 80px;">${dict.object} :</span> 
+          <span style="font-weight: 600; color: #111827;">${data.object}</span>
+        </div>
       </div>
     </div>`
           : ""
@@ -161,7 +178,7 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
           : ""
         }
     </div>
-    <div class="pageNumber">${dict.page} ${pageIndex + 1} ${dict.of} ${totalPages}</div>
+    <div class="pageNumber">${pageIndex + 1} / ${totalPages}</div>
   </div>`;
     })
     .join("");
@@ -172,20 +189,21 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 <head>
 <meta charset="UTF-8" />
 <style>
-  body { margin: 0; padding: 0; background: #eee; font-family: "Times New Roman", serif; font-size: 11px; color: #000; }
+  body { margin: 0; padding: 0; background: #eee; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; color: #000; }
   .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; }
   .page-break { page-break-before: always; }
-  .pageNumber { position: absolute; bottom: 30px; right: 30px; }
-  .proforma-line { display: flex; justify-content: space-between; margin-top: 80px; font-weight: bold; font-size: 20px; }
-  .address-container { border: 1px solid #000; margin-top: 15px; }
-  .address-header { display: flex; border-bottom: 1px solid #000; height: 30px; font-size: 14px; }
-  .address-title { width: 50%; padding: 6px; font-weight: bold; border-right: 1px solid #000; }
+  .pageNumber { position: absolute; bottom: 30px; right: 30px; font-size: 12px; font-weight: 500; color: #4b5563; }
+  .proforma-line { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px; }
+  .address-container { border: 1px solid #000; background: #fff; }
+  .address-header { display: flex; border-bottom: 1px solid #000; height: 35px; font-size: 14px; }
+  .address-title { width: 50%; padding: 10px; font-weight: 800; border-right: 1px solid #000; text-transform: uppercase; letter-spacing: 0.1em; background: #f8fafc; color: #475569; }
   .address-title:last-child { border-right: none; }
-  .client-info { padding: 8px; }
-  .client-info p { margin-bottom: 4px; font-weight: bold; font-size: 15px; }
+  .client-info { padding: 20px; }
+  .client-info p { margin-bottom: 10px; font-size: 16px; line-height: 1.5; color: #1e293b; }
+  .client-info .label { color: #94a3b8; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
   table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  th, td { border: 1px solid #000; padding: 4px; font-size: 11px; }
-  th { font-weight: bold; text-align: center; font-size: 16px; }
+  th, td { border: 1px solid #000; padding: 10px 8px; font-size: 12px; }
+  th { font-weight: bold; text-align: center; font-size: 15px; background: #f3f4f6; text-transform: uppercase; letter-spacing: 0.02em; }
   .totals { width: 40%; margin-left: auto; margin-top: 10px; background-color: #eee; }
   .signature { margin-top: 30px; text-align: right; font-weight: bold; }
 </style>

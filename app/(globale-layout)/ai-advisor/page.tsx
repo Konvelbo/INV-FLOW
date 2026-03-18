@@ -1,9 +1,21 @@
-"use client";
-
-import { Brain, ShieldCheck, Zap } from "lucide-react";
+import { getServerSession } from "@/lib/session";
 import { ChatInterface } from "@/src/components/ai/ChatInterface";
+import { redirect } from "next/navigation";
+import { ShieldCheck, Zap } from "lucide-react";
 
-export default function AIAdvisorPage() {
+export default async function AIAdvisorPage() {
+  const session = await getServerSession();
+
+  if (!session?.userId) {
+    redirect("/");
+  }
+
+  const initialUser = {
+    name: session.name || "",
+    email: session.email || "",
+    avatar: session.avatar || undefined,
+  };
+
   return (
     <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-16 pt-32 md:pt-32 lg:pt-32 relative overflow-hidden pb-20">
       {/* Background Decorative Elements */}
@@ -45,7 +57,7 @@ export default function AIAdvisorPage() {
 
         {/* Chat Section */}
         <div className="flex-1 min-h-0 animate-fade-in-up delay-100">
-          <ChatInterface />
+          <ChatInterface initialUser={initialUser} />
         </div>
       </div>
     </div>

@@ -6,37 +6,45 @@
 /* Base Layout Enhancements */
 html,
 body {
-  scrollbar-gutter: stable;
   background: oklch(0.2126 0.0066 314.6771); /* Fixed dark background */
   color-scheme: dark;
 }
 
 /* Premium Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+#main-page::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 
-::-webkit-scrollbar-track {
+#main-page::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.1); /* primary with low opacity */
+#main-page::-webkit-scrollbar-thumb {
+  background: rgba(
+    16,
+    185,
+    129,
+    0.2
+  ); /* Slightly more visible since it's thinner */
   border-radius: 20px;
-  border: 3px solid transparent;
+  border: 1px solid transparent;
   background-clip: content-box;
   transition: all 0.3s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
+#main-page::-webkit-scrollbar-thumb:hover {
   background: rgba(16, 185, 129, 0.3);
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
+button {
+  cursor: pointer;
+}
+
 /* Firefox Support */
-* {
+#main-page {
   scrollbar-width: thin;
   scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
 }
@@ -55,18 +63,40 @@ body {
 #canvas {
   /* A4 width visual */
   width: 794px;
-  min-height: 1300px;
+  min-height: 1123px;
   margin: 0 auto;
   background: #fff;
-  padding: 140px 30px 40px 30px;
+  padding: 160px 40px 40px 40px; /* Increased top padding for the "big margin" */
   box-sizing: border-box;
   display: inline-block;
-  border-radius: 6px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   transform-origin: top left;
   transition: transform 150ms ease;
   position: relative;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #000;
 }
+
+/* Interactive element hints */
+.editable-field {
+  transition: all 0.2s ease;
+  border-bottom: 1px dashed transparent;
+  cursor: text;
+  border-radius: 2px;
+}
+
+.editable-field:hover {
+  background: rgba(16, 185, 129, 0.05);
+  border-bottom-color: rgba(16, 185, 129, 0.3);
+}
+
+.editable-field:focus-within {
+  background: rgba(16, 185, 129, 0.1);
+  border-bottom-color: #10b981;
+  outline: none;
+}
+
 
 .canvas-viewer {
   width: 100%;
@@ -146,9 +176,12 @@ p {
 .proforma-line {
   display: flex;
   justify-content: space-between;
-  margin-top: 25px;
-  font-weight: bold;
-  font-size: 20px;
+  margin-top: 40px;
+  font-weight: 800;
+  font-size: 24px;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
 }
 
 /* =========================
@@ -156,21 +189,24 @@ p {
   ========================== */
 .address-container {
   border: 1px solid #000;
-  margin-top: 15px;
+  margin-top: 0;
 }
 
 .address-header {
   display: flex;
   border-bottom: 1px solid #000;
-  height: 30px;
-  font-size: 14px;
+  height: 35px;
+  font-size: 15px;
 }
 
 .address-title {
   width: 50%;
-  padding: 6px;
+  padding: 8px;
   font-weight: bold;
   border-right: 1px solid #000;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #f9fafb;
 }
 
 .address-title:last-child {
@@ -178,13 +214,23 @@ p {
 }
 
 .client-info {
-  padding: 8px;
+  padding: 15px;
 }
 
 .client-info p {
-  margin-bottom: 4px;
-  font-weight: bold;
-  font-size: 15px;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.client-info .label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-right: 4px;
 }
 
 /* =========================
@@ -200,14 +246,15 @@ table {
 }
 
 thead {
-  height: 30px;
+  height: 40px;
+  background: #f3f4f6;
 }
 
 th,
 td {
   border: 1px solid #000;
-  padding: 6px 8px;
-  font-size: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
   overflow-wrap: anywhere;
   word-break: break-word;
   white-space: normal;
@@ -218,7 +265,9 @@ td {
 th {
   font-weight: bold;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* allow cells to grow vertically without forcing overflow */
@@ -834,15 +883,19 @@ td {
   transform: translateY(20px) scale(0.8);
 }
 
-.fab-item-center:hover {
-  bottom: calc(100% + 10px);
-  transform: translateY(20px) scale(0.8);
-  scale: 1.1;
-}
-
 .fab-item-up:hover {
   scale: 1.1;
   /*filter: drop-shadow(4px -5px 5px rgba(225, 225, 225, 0.3));*/
+}
+
+.fab-item-center {
+  right: calc(100% + 8px);
+  bottom: calc(100% + 8px);
+  transform: translateX(50px) scale(0.8);
+}
+
+.fab-item-center:hover {
+  scale: 1.1;
 }
 
 .fab-container:hover .fab-item {

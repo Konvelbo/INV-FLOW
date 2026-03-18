@@ -5,23 +5,37 @@ const {
   session,
   ipcMain,
   Notification,
+  shell,
 } = require("electron");
 const path = require("path");
 
+let win;
+
+// Register the custom protocol for deep linking
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("essor", process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient("essor");
+}
+
 function createWindow() {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 1000,
     minHeight: 700,
-    titleBarStyle: "hiddenInset", // For Mac native look, though we might need a custom titlebar for Windows
+    titleBarStyle: "hiddenInset",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
       spellcheck: true,
     },
-    backgroundColor: "#000000", // Match app background for smoother startup
+    backgroundColor: "#000000",
   });
   win.setMenuBarVisibility(false);
 
@@ -38,14 +52,28 @@ function createWindow() {
     });
   }
 
-  // En développement : on charge l'URL de Next.js
   const isDev = !app.isPackaged;
   if (isDev) {
     win.loadURL("http://localhost:3000");
     win.webContents.openDevTools();
   } else {
-    // En production : on charge le fichier HTML exporté
     win.loadFile(path.join(__dirname, "../out/index.html"));
+  }
+
+  // Check if app was opened via deep link (Windows)
+  const argUrl = process.argv.find((arg) => arg.startsWith("essor://"));
+  if (argUrl) {
+    win.webContents.once("did-finish-load", () => {
+      try {
+        const parsedUrl = new URL(argUrl);
+        const token = parsedUrl.searchParams.get("token");
+        if (token) {
+          win.webContents.send("login-success", token);
+        }
+      } catch (e) {
+        console.error("Failed to parse startup deep link:", e);
+      }
+    });
   }
 
   // Handle notifications from renderer
@@ -56,17 +84,42 @@ function createWindow() {
       icon: options.icon,
       silent: false,
     });
-
     notification.show();
-
     notification.on("click", () => {
       if (win.isMinimized()) win.restore();
       win.focus();
     });
   });
 
+  // Handle opening external URLs in the system browser
+  ipcMain.handle("open-external", async (event, url) => {
+    await shell.openExternal(url);
+  });
+
   return win;
 }
+
+// Handle deep links when the app is already running
+app.on("second-instance", (event, commandLine) => {
+  if (win) {
+    if (win.isMinimized()) win.restore();
+    win.focus();
+  }
+  
+  // Extract token from essor://login?token=...
+  const url = commandLine.find((arg) => arg.startsWith("essor://"));
+  if (url) {
+    try {
+      const parsedUrl = new URL(url);
+      const token = parsedUrl.searchParams.get("token");
+      if (token && win) {
+        win.webContents.send("login-success", token);
+      }
+    } catch (e) {
+      console.error("Failed to parse deep link URL:", e);
+    }
+  }
+});
 
 app.whenReady().then(createWindow);
 

@@ -21,10 +21,15 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function Home() {
   const [signUpChoise, setSignUpChoise] = useState<string>("");
   const [visibility, setVisibility] = useState<boolean>(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { clearInvoiceData } = useInvoice();
   const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
@@ -34,16 +39,36 @@ export default function Home() {
   } | null>(null);
 
   useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      // If authenticated via Google, redirect or set storage-like state
+      // For now, we'll favor the session if it exists
+      // However, the rest of the app might rely on localStorage.item("user")
+      // So we might need to "bridge" the session to localStorage
+      const user = {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        token: "session", // Marker for session-based auth
+      };
+      localStorage.setItem("user", JSON.stringify(user));
+      setStorage(user as any);
+      router.push("/dashboard");
+    }
+  }, [session, status, router]);
+
+  useEffect(() => {
     setMounted(true);
     const userStr = localStorage.getItem("user");
-    if (userStr) {
+    if (userStr && !storage) {
       try {
         setStorage(JSON.parse(userStr));
       } catch (e) {
         console.error("Failed to parse user from local storage", e);
       }
     }
-  }, []);
+  }, [storage]);
+
+  if (!mounted) return null;
 
   return (
     <div

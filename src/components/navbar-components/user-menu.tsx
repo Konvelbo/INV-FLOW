@@ -37,6 +37,7 @@ import { useInvoice } from "@/src/context/InvoiceContext";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { signOut } from "next-auth/react";
 
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -64,9 +65,10 @@ export default function UserMenu() {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    await signOut({ redirect: false });
     router.push("/");
     window.location.reload(); // Force refresh to update landing page state
   };
@@ -137,7 +139,7 @@ export default function UserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="relative h-10 w-10 rounded-xl p-0 border border-white/5 hover:border-primary/20 transition-all bg-card overflow-hidden"
+            className="relative h-10 w-10 rounded-xl p-0 border border-white/5 hover:border-primary/20 transition-all bg-card overflow-hidden cursor-pointer"
             variant="ghost"
           >
             <Avatar className="h-full w-full rounded-xl">

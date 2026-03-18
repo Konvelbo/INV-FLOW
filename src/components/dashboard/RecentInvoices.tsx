@@ -50,7 +50,7 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
         <Button
           variant="ghost"
           size="sm"
-          className="text-secondary hover:text-secondary hover:bg-secondary/10 font-bold text-xs uppercase tracking-widest"
+          className="text-secondary hover:text-secondary hover:bg-secondary/10 font-bold text-xs uppercase tracking-widest cursor-pointer"
           onClick={() => router.push("/history")}
         >
           {t("viewHistory")}

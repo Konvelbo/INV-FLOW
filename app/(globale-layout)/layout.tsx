@@ -12,9 +12,12 @@ export default function InvoiceLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col h-screen overflow-hidden">
           <Topbar />
-          <main className="flex-1 overflow-x-hidden bg-background">
+          <main
+            id="main-page"
+            className="flex-1 overflow-y-auto overflow-x-hidden bg-background"
+          >
             <PageTransition>{children}</PageTransition>
           </main>
         </div>

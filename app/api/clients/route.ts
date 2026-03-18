@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { getClientsData } from "@/lib/data-fetching/clients";
 
 export async function GET(req: Request) {
     try {
@@ -8,33 +9,13 @@ export async function GET(req: Request) {
         if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
-        const companyId = searchParams.get("companyId");
+        const companyId = searchParams.get("companyId") || undefined;
 
-        const whereClause: any = { userId };
-        if (companyId) {
-            whereClause.companyId = companyId;
-        }
-
-        const clients = await prisma.client.findMany({
-            where: whereClause,
-            include: {
-                company: true,
-                invoices: {
-                    select: {
-                        status: true,
-                        totalTTC: true
-                    }
-                },
-                _count: {
-                    select: { invoices: true }
-                }
-            },
-            orderBy: { createdAt: "desc" },
-        });
-
-        // No need to enrich, the stats are already in the DB
+        const clients = await getClientsData(userId, companyId);
+        
         return NextResponse.json(clients);
     } catch (error) {
+        console.error("Error fetching clients:", error);
         return NextResponse.json({ message: "Error fetching clients", error }, { status: 500 });
     }
 }

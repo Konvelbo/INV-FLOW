@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
@@ -13,7 +13,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/src/context/LanguageContext";
-// import { User, Mail, Lock, CheckCircle2, ArrowRight } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { Chrome, Eye, EyeOff } from "lucide-react";
 
 export default function SignUp({
   choice,
@@ -27,7 +28,13 @@ export default function SignUp({
   const router = useRouter();
   const { t } = useLanguage();
   const isLogin = choice === "Connexion" || choice === t("loginAction");
+  const isRegistration =
+    choice === "Creer votre compte" ||
+    choice === "Créer votre compte" ||
+    choice === t("createAccount");
   const schema = isLogin ? LoginSchema : authSchema;
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -45,9 +52,65 @@ export default function SignUp({
     },
   });
 
+  const onGoogleLogin = async () => {
+    if (typeof window !== "undefined" && (window as any).electronAPI) {
+      // In Electron: Open a helper page that initiates the POST signin
+      // Generate a unique connection ID for polling
+      const connectionId = Math.random().toString(36).substring(2, 15);
+      const bridgeUrl = `${window.location.origin}/auth-bridge?id=${connectionId}`;
+      const initiatorUrl = `${window.location.origin}/auth/google?callbackUrl=${encodeURIComponent(bridgeUrl)}`;
+      
+      (window as any).electronAPI.openExternal(initiatorUrl);
+
+      // Start polling for the token
+      const pollInterval = setInterval(async () => {
+        try {
+          const res = await axios.get(`/api/auth/bridge?id=${connectionId}`);
+          if (res.data.token) {
+            clearInterval(pollInterval);
+            handleLoginWithToken(res.data.token);
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 2000);
+
+      // Cleanup polling after 5 minutes
+      setTimeout(() => clearInterval(pollInterval), 300000);
+    } else {
+      // In Web: Standard redirect
+      signIn("google", { callbackUrl: "/dashboard" });
+    }
+  };
+
+  const handleLoginWithToken = async (token: string) => {
+    try {
+      // Fetch user data using the token and store in localStorage
+      const response = await axios.get("/api/user/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const userData = { ...response.data.user, token };
+      localStorage.setItem("user", JSON.stringify(userData));
+      router.push("/dashboard");
+      toast.success(t("loginSuccess"));
+    } catch (err) {
+      console.error("Failed to fetch user after token sync:", err);
+      toast.error(t("authError"));
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).electronAPI) {
+      const cleanup = (window as any).electronAPI.onLoginSuccess((token: string) => {
+        handleLoginWithToken(token);
+      });
+      return cleanup;
+    }
+  }, [router, t]);
+
   const onSubmit = async (data: AuthFormData) => {
     try {
-      if (choice === "Creer votre compte" || choice === t("createAccount")) {
+      if (isRegistration) {
         const response = await axios.post("/api/user/register", data);
         if (response.status === 200) {
           toast.success(t("accountCreated"));
@@ -140,7 +203,7 @@ export default function SignUp({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <CardContent className="space-y-5 p-0">
-            {choice === "Creer votre compte" && (
+            {isRegistration && (
               <div className="space-y-2.5">
                 <Label
                   htmlFor="name"
@@ -192,13 +255,26 @@ export default function SignUp({
                 >
                   {t("password")}
                 </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t("passwordPlaceholder")}
-                  className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
-                  {...register("password")}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t("passwordPlaceholder")}
+                    className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans pr-10"
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
                 {errors.password && (
                   <span className="text-destructive text-[10px] font-bold uppercase tracking-wide ml-1">
                     {errors.password.message}
@@ -207,7 +283,7 @@ export default function SignUp({
               </div>
             )}
 
-            {choice === "Creer votre compte" && (
+            {isRegistration && (
               <div className="space-y-2.5">
                 <Label
                   htmlFor="confirmPassword"
@@ -215,13 +291,26 @@ export default function SignUp({
                 >
                   {t("confirmPassword")}
                 </Label>
-                <Input
-                  id="confirmPassword"
-                  type="confirmPassword"
-                  placeholder={t("passwordPlaceholder")}
-                  className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
-                  {...register("confirmPassword")}
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder={t("passwordPlaceholder")}
+                    className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans pr-10"
+                    {...register("confirmPassword")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
                 {errors.confirmPassword && (
                   <span className="text-destructive text-[10px] font-bold uppercase tracking-wide ml-1">
                     {errors.confirmPassword.message}
@@ -256,13 +345,26 @@ export default function SignUp({
                 >
                   {t("newPassword")}
                 </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t("passwordPlaceholder")}
-                  className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans"
-                  {...register("password")}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t("passwordPlaceholder")}
+                    className="bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary transition-all font-sans pr-10"
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </CardContent>
@@ -274,6 +376,31 @@ export default function SignUp({
             >
               {isSubmitting ? t("initializing") : choice}
             </Button>
+
+            {(isLogin || isRegistration) && (
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/50" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+                  <span className="bg-card px-2 text-muted-foreground font-bold">
+                    Ou continuer avec
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {(isLogin || isRegistration) && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onGoogleLogin}
+                className="w-full h-14 text-xs font-black uppercase tracking-[0.3em] rounded-2xl border-border/50 hover:bg-white/5 transition-all duration-300 flex items-center justify-center gap-3"
+              >
+                <Chrome className="w-5 h-5 text-primary" />
+                Google
+              </Button>
+            )}
 
             {isLogin ? (
               <div className="space-y-4">

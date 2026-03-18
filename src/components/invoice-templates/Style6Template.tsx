@@ -184,7 +184,7 @@ export default function Style6Template({
             <div className="w-1/2">
               <div className="font-bold text-lg mb-2">Compagnie Essor</div>
               <div className="text-zinc-600 space-y-1">
-                <p>Abidjan, Côte d'Ivoire</p>
+                <p>Abidjan, Côte d&apos;Ivoire</p>
                 <p>contact@essor.ci</p>
                 <p>+225 01 02 03 04 05</p>
               </div>

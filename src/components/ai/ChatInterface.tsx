@@ -11,7 +11,15 @@ interface Message {
   content: string;
 }
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  initialUser?: {
+    name: string;
+    email: string;
+    avatar?: string;
+  } | null;
+}
+
+export function ChatInterface({ initialUser }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -23,21 +31,23 @@ export function ChatInterface() {
     name: string;
     email: string;
     avatar?: string;
-  } | null>(null);
+  } | null>(initialUser || null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        setUser(JSON.parse(userStr));
-      } catch (e) {
-        // console.error("Error parsing user data", e);
+    if (!user) {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          setUser(JSON.parse(userStr));
+        } catch (e) {
+          // console.error("Error parsing user data", e);
+        }
       }
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (scrollRef.current) {

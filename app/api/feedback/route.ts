@@ -45,6 +45,16 @@ export async function POST(req: Request) {
       feedback = { ...feedbackData, id: "raw-inserted" };
     }
 
+    // Fetch user name if authenticated
+    let userName = "Anonyme";
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true }
+      });
+      if (user) userName = user.name;
+    }
+
     // 2. Send Email via Resend
     try {
       await resend.emails.send({
@@ -56,7 +66,8 @@ export async function POST(req: Request) {
             <h2 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 10px;">Nouveau Feedback Reçu</h2>
             <div style="margin: 20px 0;">
               <p><strong>Note :</strong> ${feedbackData.rating} / 5 ⭐</p>
-              <p><strong>Utilisateur ID :</strong> ${feedbackData.userId || 'Anonyme'}</p>
+              <p><strong>Utilisateur :</strong> ${userName}</p>
+              <p><strong>ID Utilisateur :</strong> ${feedbackData.userId || 'N/A'}</p>
               <p><strong>Date :</strong> ${feedbackData.createdAt.toLocaleString()}</p>
             </div>
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px; font-style: italic;">

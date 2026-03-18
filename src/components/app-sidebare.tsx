@@ -265,7 +265,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                   </div>
                   {!isCollapsed && (
                     <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                      Besoin d'aide ?
+                      Besoin d&apos;aide ?
                     </span>
                   )}
                 </button>
@@ -277,12 +277,12 @@ export const AppSidebar = React.memo(function AppSidebar() {
                     Envoyer un retour
                   </DialogTitle>
                   <DialogDescription>
-                    Votre avis nous aide à améliorer l'application. Décrivez votre problème ou suggestion ci-dessous.
+                    Votre avis nous aide à améliorer l&apos;application. Décrivez votre problème ou suggestion ci-dessous.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-6 text-foreground">
                   <div className="space-y-4 text-center">
-                    <Label className="text-sm font-bold opacity-70">Quelle note donneriez-vous à l'application ?</Label>
+                    <Label className="text-sm font-bold opacity-70">Quelle note donneriez-vous à l&apos;application ?</Label>
                     <div className="flex items-center justify-center gap-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
