@@ -1,7 +1,4 @@
-import { auth } from "@/auth";
-import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-import { prisma } from "./prisma";
 
 export interface UnifiedSession {
   userId: string;
@@ -12,50 +9,62 @@ export interface UnifiedSession {
 }
 
 export async function getServerSession(): Promise<UnifiedSession | null> {
-  // 1. Try NextAuth (Google Login)
-  try {
-    const session = await auth();
-    if (session?.user?.id) {
-      return {
-        userId: session.user.id,
-        name: session.user.name,
-        email: session.user.email,
-        avatar: (session.user as any).avatar || session.user.image,
-        companies: (session.user as any).companies || [],
-      };
+  // 1. Try custom cookie (Email/Password Login) - ONLY ON SERVER
+  if (typeof window === "undefined") {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { cookies } = require("next/headers");
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { prisma } = require("./prisma");
+
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth-token")?.value;
+
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
+        if (decoded?.id) {
+          const user = await prisma.user.findUnique({
+            where: { id: decoded.id },
+            include: { companies: true },
+          });
+
+          if (user) {
+            return {
+              userId: user.id,
+              name: user.name,
+              email: user.email,
+              avatar: user.avatar,
+              companies: user.companies,
+            };
+          }
+        }
+      }
+    } catch (error) {
+      if ((error as any)?.code !== 'NEXT_STATIC_GEN_BAILOUT') {
+        console.error("Custom session check failed:", error);
+      }
     }
-  } catch (error) {
-    console.error("NextAuth session check failed:", error);
   }
 
-  // 2. Try custom cookie (Email/Password Login)
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth-token")?.value;
-
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
-      if (decoded?.id) {
-        // Fetch user from DB to get name/email/companies
-        const user = await prisma.user.findUnique({
-          where: { id: decoded.id },
-          include: { companies: true },
-        });
-
-        if (user) {
+  // 2. Client-side fallback (for Electron Output: Export)
+  if (typeof window !== "undefined") {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user && user.id) {
           return {
             userId: user.id,
             name: user.name,
             email: user.email,
             avatar: user.avatar,
-            companies: user.companies,
+            companies: user.companies || [],
           };
         }
       }
+    } catch (e) {
+      console.error("Failed to parse user from localStorage:", e);
     }
-  } catch (error) {
-    // Token expired or invalid
-    console.error("Custom session check failed:", error);
   }
 
   return null;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -27,6 +26,7 @@ import {
 } from "@/src/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/src/context/NotificationContext";
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 interface HistoryClientProps {
   initialInvoices: any[];
@@ -34,6 +34,44 @@ interface HistoryClientProps {
 
 export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
   const [invoices, setInvoices] = useState<any[]>(initialInvoices);
+
+  // Send Email Statec
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [selectedInvoiceForEmail, setSelectedInvoiceForEmail] =
+    useState<any>(null);
+  const [targetEmail, setTargetEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [isFetchingClients, setIsFetchingClients] = useState(false);
+
+  useEffect(() => {
+    setInvoices(initialInvoices);
+  }, [initialInvoices]);
+
+  // Fetch clients for the email modal
+  useEffect(() => {
+    if (isEmailModalOpen) {
+      const fetchClients = async () => {
+        setIsFetchingClients(true);
+        try {
+          // @ts-ignore
+          if (window.electronAPI) {
+            // @ts-ignore
+            const res = await window.electronAPI.getData("clients");
+            if (res.success) {
+              setClients(res.data);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch clients", error);
+        } finally {
+          setIsFetchingClients(false);
+        }
+      };
+      fetchClients();
+    }
+  }, [isEmailModalOpen]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -41,25 +79,14 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
   const { currency, clearInvoiceData } = useInvoice();
   const { addNotification } = useNotifications();
   const { t, language } = useLanguage();
-
-  // Send Email State
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [selectedInvoiceForEmail, setSelectedInvoiceForEmail] =
-    useState<any>(null);
-  const [targetEmail, setTargetEmail] = useState("");
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const { performAction, loading: actionLoading } = useIPCAction();
 
   const handleDelete = async (id: string) => {
     if (!confirm(t("deleteStructureWarning"))) return;
 
-    try {
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
+    const res = await performAction("invoices", "delete", id);
 
-      await axios.delete(`/api/invoices/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+    if (res.success) {
       setInvoices(invoices.filter((inv) => inv.id !== id));
 
       addNotification({
@@ -68,24 +95,15 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
         target: `la facture ${id}`,
         type: "invoice",
       });
-    } catch {
-      toast.error(t("authError"));
     }
   };
 
   const handleToggleScale = async (id: string, currentStatus: boolean) => {
-    try {
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
+    const res = await performAction("invoices", "update", id, {
+      isScaled: !currentStatus,
+    });
 
-      await axios.patch(
-        `/api/invoices/${id}`,
-        { isScaled: !currentStatus },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
+    if (res.success) {
       setInvoices(
         invoices.map((inv) =>
           inv.id === id ? { ...inv, isScaled: !currentStatus } : inv,
@@ -98,51 +116,40 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
         target: `la facture ${id}`,
         type: "invoice",
       });
-    } catch {
-      toast.error(t("authError"));
     }
   };
 
   const handleSendEmail = async () => {
     if (!targetEmail || !selectedInvoiceForEmail) return;
     setIsSendingEmail(true);
-    try {
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
 
-      const res = await axios.post(
-        "/api/invoices/send",
-        {
-          invoiceId: selectedInvoiceForEmail.id,
-          email: targetEmail,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+    const invoiceId = selectedInvoiceForEmail.id;
 
-      if (res.status === 200) {
-        toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
-        addNotification({
-          user: "Système",
-          action: "a envoyé",
-          target: `la facture ${selectedInvoiceForEmail.reference} par e-mail`,
-          type: "invoice",
-          silent: true,
-        });
-        setIsEmailModalOpen(false);
-        setTargetEmail("");
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(
-        err.response?.data?.message ||
-        t("emailSendError") ||
-        "Erreur lors de l'envoi de l'e-mail",
+    const params = invoiceId ? [invoiceId, targetEmail] : [targetEmail];
+    const res = await performAction("invoices", "send", ...params);
+
+    if (res.success) {
+      toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
+      addNotification({
+        user: "Système",
+        action: "a envoyé",
+        target: `la facture ${selectedInvoiceForEmail.reference} par e-mail`,
+        type: "invoice",
+        silent: true,
+      });
+      setIsEmailModalOpen(false);
+      setTargetEmail("");
+
+      // Update local state if needed (e.g. status)
+      setInvoices(
+        invoices.map((inv) =>
+          inv.id === selectedInvoiceForEmail.id
+            ? { ...inv, status: "pending" }
+            : inv,
+        ),
       );
-    } finally {
-      setIsSendingEmail(false);
     }
+    setIsSendingEmail(false);
   };
 
   const filteredInvoices = invoices.filter((invoice) => {
@@ -279,12 +286,15 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                 <div className="flex justify-between items-start gap-4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                       <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] px-2 py-0.5 bg-primary/10 rounded-full">
+                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] px-2 py-0.5 bg-primary/10 rounded-full">
                         PROFORMA
                       </span>
                     </div>
                     <CardTitle className="text-xl font-bold font-mono text-foreground tracking-tighter">
-                      {invoice.invoiceNumber ? `#${invoice.invoiceNumber} - ` : ""}{invoice.reference}
+                      {invoice.invoiceNumber
+                        ? `#${invoice.invoiceNumber} - `
+                        : ""}
+                      {invoice.reference}
                     </CardTitle>
                     <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-2">
                       <Calendar className="w-3 h-3 text-primary" />
@@ -331,8 +341,10 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                         {t("client")}
                       </span>
                     </div>
-                    <span className="font-bold text-foreground font-sans truncate max-w-[150px]">
-                      {invoice.clientName}
+                    <span className="font-bold text-foreground font-sans line-clamp-2 break-words text-right max-w-[200px]">
+                      {invoice.client
+                        ? `${invoice.client.firstName ? invoice.client.firstName + " " : ""}${invoice.client.name}${invoice.client.companyName ? ` - ${invoice.client.companyName}` : ""}`
+                        : invoice.clientName}
                     </span>
                   </div>
 
@@ -439,13 +451,51 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 block">
                   {t("clientEmailAddress") || "Adresse e-mail du client"}
                 </label>
-                <input
-                  type="email"
-                  value={targetEmail}
-                  onChange={(e) => setTargetEmail(e.target.value)}
-                  className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
-                  placeholder="client@exemple.com"
-                />
+                <div className="flex flex-col gap-3">
+                  <select
+                    className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                    onChange={(e) => {
+                      const selectedEmail = e.target.value;
+                      if (selectedEmail) setTargetEmail(selectedEmail);
+                    }}
+                    value=""
+                  >
+                    <option value="" disabled>
+                      {isFetchingClients
+                        ? "Chargement des clients..."
+                        : "Choisir un client..."}
+                    </option>
+                    {clients.map(
+                      (client) =>
+                        client.email && (
+                          <option key={client.id} value={client.email}>
+                            {client.firstName ? client.firstName + " " : ""}
+                            {client.name}{" "}
+                            {client.companyName
+                              ? `(${client.companyName})`
+                              : ""}{" "}
+                            - {client.email}
+                          </option>
+                        ),
+                    )}
+                  </select>
+
+                  <div className="flex items-center gap-2">
+                    <div className="h-px bg-border/50 flex-1"></div>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                      OU
+                    </span>
+                    <div className="h-px bg-border/50 flex-1"></div>
+                  </div>
+
+                  <input
+                    type="email"
+                    value={targetEmail}
+                    onChange={(e) => setTargetEmail(e.target.value)}
+                    className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
+                    placeholder="Saisir une adresse e-mail manuellement..."
+                  />
+                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <Button

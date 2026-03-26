@@ -1,25 +1,21 @@
-import { getServerSession } from "@/lib/session";
-import { getExpensesData } from "@/lib/data-fetching/expenses";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import ExpensesClient from "./ExpensesClient";
-import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
+import Loading from "./loading";
 
-export default async function ExpensesPage() {
-  const session = await getServerSession();
+export default function ExpensesPage() {
+  const { session, data, loading } = useIPCData<any>("expenses");
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const { expenses, companies } = await getExpensesData(session.userId);
-
   return (
-    <Suspense fallback={<Loading />}>
-      <ExpensesClient
-        initialExpenses={expenses}
-        initialCompanies={companies}
-      />
-    </Suspense>
+    <ExpensesClient
+      initialExpenses={data?.expenses || []}
+      initialCompanies={data?.companies || []}
+      userId={session.userId}
+    />
   );
 }

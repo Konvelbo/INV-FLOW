@@ -36,8 +36,12 @@ export default function DashboardClient({
   initialTodos,
   userName,
 }: DashboardClientProps) {
-  const [stats] = useState<DashboardStats>(initialStats);
-  const [todos] = useState<Todo[]>(initialTodos);
+  const stats = initialStats || {
+    recentProducts: [],
+    chartData: [],
+    recentInvoices: [],
+  } as any;
+  const todos = initialTodos || [];
 
   const { currency } = useInvoiceState();
   const { t, language } = useLanguage();
@@ -52,9 +56,10 @@ export default function DashboardClient({
   );
 
   const productivityStats = useMemo(() => {
-    const total = todos.length;
-    const completedTasks = todos.filter((t) => t.status === "done");
-    const inProgress = todos.filter((t) => t.status === "in_progress").length;
+    const safeTodos = todos || [];
+    const total = safeTodos.length;
+    const completedTasks = safeTodos.filter((t) => t.status === "done");
+    const inProgress = safeTodos.filter((t) => t.status === "in_progress").length;
 
     const productiveMs = completedTasks.reduce((acc: number, t) => {
       if (t.startTime && t.endTime) {
@@ -80,7 +85,7 @@ export default function DashboardClient({
     };
   }, [todos]);
 
-  const productCount = stats.recentProducts.length;
+   const productCount = stats?.recentProducts?.length || 0;
 
   return (
     <div
@@ -151,8 +156,8 @@ export default function DashboardClient({
           />
           <StatsCard
             title={t("monthlyExpenses")}
-            value={formatCurrency(stats.expensesThisMonth || 0)}
-            trend={`${stats.expensesCountThisMonth || 0} ${t("expenses")}`}
+            value={formatCurrency(stats?.expensesThisMonth || 0)}
+            trend={`${stats?.expensesCountThisMonth || 0} ${t("expenses")}`}
             trendUp={false}
             icon={Wallet}
             variant="amber"
@@ -160,28 +165,19 @@ export default function DashboardClient({
           />
           <StatsCard
             title={t("monthlyProfit")}
-            value={formatCurrency(stats.profitThisMonth || 0)}
-            trend={stats.profitThisMonth > 0 ? t("positive_stat") : t("negative_stat")}
-            trendUp={stats.profitThisMonth > 0}
+            value={formatCurrency(stats?.profitThisMonth || 0)}
+            trend={stats?.profitThisMonth > 0 ? t("positive_stat") : t("negative_stat")}
+            trendUp={stats?.profitThisMonth > 0}
             icon={TrendingUp}
             variant="emerald"
           />
           <StatsCard
             title={t("scaledRevenue")}
-            value={formatCurrency(stats.revenuesScaledAllTime || 0)}
-            trend={`${stats.countScaledAllTime || 0} ${t("invoice")}`}
-            trendUp={true}
-            icon={TrendingUp}
-            variant="emerald"
-            href="/history"
-          />
-          <StatsCard
-            title={t("unpaidInvoices")}
-            value={formatCurrency(stats.revenuesNonScaledAllTime || 0)}
-            trend={`${stats.countNonScaledAllTime || 0} ${t("invoice")}`}
+            value={formatCurrency(stats?.revenuesNonScaledAllTime || 0)}
+            trend={`${stats?.countNonScaledAllTime || 0} ${t("invoice")}`}
             trendUp={false}
-            icon={TrendingDown}
-            variant="amber"
+            icon={TrendingUp}
+            variant="rose"
             href="/history"
           />
           <StatsCard

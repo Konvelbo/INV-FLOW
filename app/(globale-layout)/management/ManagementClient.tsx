@@ -12,6 +12,7 @@ interface ManagementClientProps {
   initialProducts: any[];
   initialExpenses: any[];
   initialCompanies: any[];
+  userId?: string;
 }
 
 export default function ManagementClient({
@@ -19,6 +20,7 @@ export default function ManagementClient({
   initialProducts,
   initialExpenses,
   initialCompanies,
+  userId,
 }: ManagementClientProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<
@@ -51,7 +53,7 @@ export default function ManagementClient({
               onClick={() => setActiveTab("clients")}
               className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "clients" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
-              <point className="w-1.5 h-1.5 rounded-full" />
+              <div className="w-1.5 h-1.5 rounded-full" />
               <Users className="w-4 h-4" />
               {t("clients") || "Clients"}
             </button>
@@ -76,16 +78,17 @@ export default function ManagementClient({
       <div className="flex-1 p-5 md:p-5 lg:p-5 px-10 md:px-10 lg:px-10 overflow-y-auto relative pb-20">
         <div className="w-full animate-fade-in-up">
           {activeTab === "clients" && (
-            <ClientsClient initialClients={initialClients} isComponent={true} />
+            <ClientsClient initialClients={initialClients} isComponent={true} userId={userId} />
           )}
           {activeTab === "products" && (
-            <ProductsClient initialProducts={initialProducts} isComponent={true} />
+            <ProductsClient initialProducts={initialProducts} isComponent={true} userId={userId} />
           )}
           {activeTab === "expenses" && (
             <ExpensesClient
               initialExpenses={initialExpenses}
               initialCompanies={initialCompanies}
               isComponent={true}
+              userId={userId}
             />
           )}
         </div>

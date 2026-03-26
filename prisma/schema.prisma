@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/p_client"
 }
 
 datasource db {
@@ -25,6 +26,7 @@ model User {
   products          Product[]
   expenses          Expense[]
   feedbacks         Feedback[]
+  activeCompanyId   String?            @db.ObjectId
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -63,6 +65,7 @@ model Company {
   invoices Invoice[]
   clients  Client[]
   expenses Expense[]
+  products Product[]
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -81,6 +84,8 @@ model Client {
 
   // New fields
   firstName              String?
+  age                    String?
+  sexe                   String?
   city                   String?
   country                String?
   companyName            String?
@@ -119,6 +124,10 @@ model Product {
   price       Float
   taxRate     Float   @default(0) // Percentage (e.g., 18 for 18%)
   unit        String  @default("U")
+  type        String? @default("product") // "product" or "service"
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
@@ -224,6 +233,8 @@ model Invoice {
   paidAt        DateTime?
 
   isScaled  Boolean  @default(false)
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
   style     String   @default("default")
   createdAt DateTime? @default(now())
   updatedAt DateTime? @default(now()) @updatedAt

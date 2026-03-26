@@ -14,12 +14,9 @@ export const UserSchema = z.object({
 
 export const authSchema = z
   .object({
-    name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+    name: z.string().optional(),
     email: z.string().email("Format d'email invalide"),
-    password: z
-      .string()
-      .min(6, "Le mot de passe doit faire au moins 6 caractères")
-      .max(40, "Le mot de passe ne doit pas exéder 40 caractères"),
+    password: z.string().optional(),
     confirmPassword: z.string().optional(),
     otp: z.string().optional(),
   })

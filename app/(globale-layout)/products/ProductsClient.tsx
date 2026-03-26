@@ -36,30 +36,25 @@ import {
 import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  taxRate: number;
-  type?: "service" | "product";
-}
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 interface ProductsClientProps {
   initialProducts: Product[];
   isComponent?: boolean;
+  userId?: string;
 }
 
 export default function ProductsClient({
   initialProducts,
   isComponent,
+  userId,
 }: ProductsClientProps) {
   const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { performAction, loading: actionLoading } = useIPCAction();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -71,80 +66,44 @@ export default function ProductsClient({
 
   const fetchProducts = useCallback(async () => {
     try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const res = await fetch("/api/products", {
-        headers: { Authorization: `Bearer ${user.token}` },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data);
+      const result = await (window as any).electronAPI.getData("products", userId);
+      if (result.success) {
+        setProducts(result.data);
       }
     } catch (error) {
       console.error("Error fetching products", error);
     }
-  }, []);
+  }, [userId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
+    const method = editingId ? "update" : "create";
+    
+    const payload = {
+      ...formData,
+      price: parseFloat(formData.price),
+      taxRate: parseFloat(formData.taxRate),
+    };
 
-      const method = editingId ? "PUT" : "POST";
-      const url = editingId ? `/api/products/${editingId}` : "/api/products";
+    const params = editingId ? [editingId, payload] : [payload];
+    const res = await performAction("products", method, ...params);
 
-      const payload = {
-        ...formData,
-        price: parseFloat(formData.price),
-        taxRate: parseFloat(formData.taxRate),
-      };
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        toast.success(editingId ? t("itemUpdated") : t("itemAdded"));
-        setIsDialogOpen(false);
-        resetForm();
-        fetchProducts();
-      } else {
-        toast.error(t("saveError"));
-      }
-    } catch (error) {
-      console.error("Error saving product", error);
-      toast.error(t("unexpectedError"));
+    if (res.success) {
+      toast.success(editingId ? t("itemUpdated") : t("itemAdded"));
+      setIsDialogOpen(false);
+      resetForm();
+      fetchProducts();
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t("itemDeleteWarning").replace("{name}", name))) return;
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
+    
+    const res = await performAction("products", "delete", id);
 
-      const res = await fetch(`/api/products/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-
-      if (res.ok) {
-        toast.success(t("itemDeleted"));
-        fetchProducts();
-      }
-    } catch (error) {
-      console.error("Error deleting product", error);
+    if (res.success) {
+      toast.success(t("itemDeleted"));
+      fetchProducts();
     }
   };
 
@@ -172,26 +131,30 @@ export default function ProductsClient({
   };
 
   const handleExport = async () => {
+    setIsExporting(true);
     try {
       const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const response = await fetch("/api/export/products", {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "catalogue_export.csv";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
+      const userId = userStr ? JSON.parse(userStr).id : null;
+      // @ts-ignore
+      const res = await window.electronAPI.getData("export", userId, "products");
+      if (res.success) {
+        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "products_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success(t("exportSuccess"));
+      } else {
+        throw new Error(res.error);
       }
-    } catch (err) {
-      console.error("Export error", err);
+    } catch (error) {
+      console.error("Export error", error);
+      toast.error(t("authError"));
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -387,22 +350,22 @@ export default function ProductsClient({
                 bg: "bg-indigo-500/10",
               },
               {
-                label: "Services",
-                value: products.filter((p) => p.type === "service").length,
+                label: t("services"),
+                value: products.filter((p) => p.type === "service" || !p.type).length,
                 icon: Zap,
                 color: "text-blue-500",
                 bg: "bg-blue-500/10",
               },
               {
-                label: "Produits",
+                label: t("products"),
                 value: products.filter((p) => p.type === "product").length,
                 icon: Layers,
                 color: "text-purple-500",
                 bg: "bg-purple-500/10",
               },
               {
-                label: "Prix Moyen",
-                value: `${Math.round(products.reduce((acc, p) => acc + p.price, 0) / (products.length || 1)).toLocaleString()} CFA`,
+                label: t("totalValue"),
+                value: `${products.reduce((acc, p) => acc + p.price, 0).toLocaleString()} CFA`,
                 icon: LineChart,
                 color: "text-emerald-500",
                 bg: "bg-emerald-500/10",

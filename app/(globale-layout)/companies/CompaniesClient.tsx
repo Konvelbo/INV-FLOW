@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/src/context/LanguageContext";
 import {
@@ -15,7 +15,15 @@ import {
   Plus,
   Trash2,
   Edit2,
+  CheckCircle2,
+  TrendingUp,
+  TrendingDown,
+  Receipt,
+  Users2,
+  Download,
 } from "lucide-react";
+import { PhoneInput } from "@/src/components/ui/phone-input";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +35,7 @@ import {
 } from "@/src/components/ui/dialog";
 import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 interface Company {
   id: string;
@@ -52,16 +61,32 @@ interface Company {
 }
 
 interface CompaniesClientProps {
-  initialCompanies: Company[];
+  initialCompanies: any; // Now contains { companies, stats }
 }
 
 export default function CompaniesClient({
   initialCompanies,
 }: CompaniesClientProps) {
   const { t } = useLanguage();
-  const [companies, setCompanies] = useState<Company[]>(initialCompanies);
+  const [companies, setCompanies] = useState<Company[]>(initialCompanies?.companies || []);
+  const [stats, setStats] = useState(initialCompanies?.stats || {
+    totalRevenue: 0,
+    totalLoss: 0,
+    totalExpenses: 0,
+    totalClients: 0
+  });
+  const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const { performAction, loading: actionLoading } = useIPCAction();
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      setActiveCompanyId(JSON.parse(userStr).activeCompanyId);
+    }
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -86,20 +111,11 @@ export default function CompaniesClient({
   });
 
   const fetchCompanies = useCallback(async () => {
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const res = await fetch("/api/companies", {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCompanies(data);
-      }
-    } catch (error) {
-      console.error("Error fetching companies", error);
+    // @ts-ignore
+    const res = await window.electronAPI.getData("companies");
+    if (res.success) {
+      setCompanies(res.data.companies);
+      setStats(res.data.stats);
     }
   }, []);
 
@@ -156,60 +172,78 @@ export default function CompaniesClient({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
+    const method = editingCompany ? "update" : "create";
+    const params = editingCompany ? [editingCompany.id, formData] : [formData];
 
-      const url = editingCompany
-        ? `/api/companies/${editingCompany.id}`
-        : "/api/companies";
-      const method = editingCompany ? "PUT" : "POST";
+    const res = await performAction("companies", method, ...params);
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        toast.success(editingCompany ? t("updateStructure") : t("save"));
-        setIsDialogOpen(false);
-        resetForm();
-        fetchCompanies();
-      } else {
-        toast.error(t("authError"));
+    if (res.success) {
+      toast.success(editingCompany ? t("updateStructure") : t("save"));
+      setIsDialogOpen(false);
+      resetForm();
+      fetchCompanies();
+      
+      // Auto-set as active if this is the first company or none is active
+      if (!editingCompany && (!activeCompanyId || companies.length === 0)) {
+        setTimeout(() => {
+          handleSetActive(res.data.id);
+        }, 500);
       }
-    } catch (error) {
-      console.error("Save company error", error);
-      toast.error(t("authError"));
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t("deleteStructureWarning"))) return;
 
-    try {
+    const res = await performAction("companies", "delete", id);
+
+    if (res.success) {
+      toast.success("Entreprise supprimée");
+      fetchCompanies();
+    }
+  };
+
+  const handleSetActive = async (companyId: string) => {
+    const res = await performAction("companies", "setActive", companyId);
+    if (res.success) {
+      setActiveCompanyId(companyId);
+      const activeCompany = companies.find(c => c.id === companyId);
+      // Update localStorage
       const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const res = await fetch(`/api/companies/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-
-      if (res.ok) {
-        toast.success("Entreprise supprimée");
-        fetchCompanies();
-      } else {
-        toast.error("Erreur, suppression impossible");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        user.activeCompanyId = companyId;
+        user.activeCompanyName = activeCompany?.name || "";
+        localStorage.setItem("user", JSON.stringify(user));
       }
+      toast.success("Entreprise activée");
+      window.dispatchEvent(new CustomEvent("session-update"));
+    }
+  };
+
+  const handleExportStats = async () => {
+    setIsExporting(true);
+    try {
+       const userStr = localStorage.getItem("user");
+       const userId = userStr ? JSON.parse(userStr).id : null;
+       // @ts-ignore
+       const res = await window.electronAPI.getData("export", userId, "overview");
+       if (res.success && res.data) {
+         const blob = new Blob([res.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+         const url = URL.createObjectURL(blob);
+         const link = document.createElement("a");
+         link.href = url;
+         link.download = `overview_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+         document.body.appendChild(link);
+         link.click();
+         document.body.removeChild(link);
+         toast.success("Export réussi");
+       }
     } catch (error) {
-      console.error("Delete company error", error);
+       console.error(error);
+       toast.error("Erreur lors de l'export");
+    } finally {
+       setIsExporting(false);
     }
   };
 
@@ -220,33 +254,15 @@ export default function CompaniesClient({
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64 = reader.result as string;
-      try {
-        const userStr = localStorage.getItem("user");
-        if (!userStr) return;
-        const user = JSON.parse(userStr);
+      const res = await performAction("companies", "logo", {
+        image: base64,
+        companyId: editingCompany?.id,
+      });
 
-        const res = await fetch("/api/companies/logo", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({
-            image: base64,
-            companyId: editingCompany?.id,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setFormData((prev) => ({ ...prev, logoUrl: data.logoUrl }));
-          toast.success("Logo uploadé");
-        } else {
-          toast.error("Échec de l'upload");
-        }
-      } catch (error) {
-        console.error("Logo upload error", error);
-        toast.error("Erreur lors de l'upload");
+      if (res.success) {
+        setFormData((prev) => ({ ...prev, logoUrl: res.data.logoUrl }));
+        window.dispatchEvent(new CustomEvent("session-update"));
+        toast.success("Logo uploadé");
       }
     };
     reader.readAsDataURL(file);
@@ -271,7 +287,16 @@ export default function CompaniesClient({
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 animate-fade-in-up delay-100">
+            <Button
+              variant="outline"
+              disabled={isExporting}
+              onClick={handleExportStats}
+              className="h-14 px-6 gap-2 font-bold border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all rounded-2xl"
+            >
+              <Download className="w-4 h-4" />
+              {isExporting ? "Export..." : "Export Stats"}
+            </Button>
             <Dialog
               open={isDialogOpen}
               onOpenChange={(open) => {
@@ -433,13 +458,9 @@ export default function CompaniesClient({
                       >
                         Téléphone
                       </Label>
-                      <Input
-                        id="phone"
+                      <PhoneInput
                         value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        onChange={(val) => setFormData({ ...formData, phone: val })}
                       />
                     </div>
                     <div className="space-y-3">
@@ -525,7 +546,7 @@ export default function CompaniesClient({
                             htmlFor="description"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Description de l’entreprise *
+                            {t("description")} *
                           </Label>
                           <Input
                             id="description"
@@ -545,7 +566,7 @@ export default function CompaniesClient({
                             htmlFor="productsServices"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Produits ou services proposés *
+                            {t("proposedProducts")} *
                           </Label>
                           <Input
                             id="productsServices"
@@ -565,7 +586,7 @@ export default function CompaniesClient({
 
                     <div className="md:col-span-2 pt-4">
                       <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
-                        Informations financières
+                        {t("financialInfo")}
                       </h4>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
@@ -573,7 +594,7 @@ export default function CompaniesClient({
                             htmlFor="annualRevenue"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Chiffre d’affaires annuel *
+                            {t("annualRevenue")} *
                           </Label>
                           <Input
                             id="annualRevenue"
@@ -716,6 +737,62 @@ export default function CompaniesClient({
           </div>
         </div>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-200">
+          {[
+            {
+              label: t("totalRevenue"),
+              value: `${stats.totalRevenue.toLocaleString()} CFA`,
+              icon: TrendingUp,
+              color: "text-emerald-500",
+              bg: "bg-emerald-500/10",
+            },
+            {
+              label: t("totalLoss"),
+              value: `${stats.totalLoss.toLocaleString()} CFA`,
+              icon: TrendingDown,
+              color: "text-rose-500",
+              bg: "bg-rose-500/10",
+            },
+            {
+              label: t("totalExpenses"),
+              value: `${stats.totalExpenses.toLocaleString()} CFA`,
+              icon: Receipt,
+              color: "text-amber-500",
+              bg: "bg-amber-500/10",
+            },
+            {
+              label: t("totalClients"),
+              value: stats.totalClients,
+              icon: Users2,
+              color: "text-blue-500",
+              bg: "bg-blue-500/10",
+            },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="p-6 rounded-[2rem] bg-card/40 border border-white/5 backdrop-blur-2xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-500 shadow-xl overflow-hidden relative"
+            >
+              <div className={cn(
+                "size-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 relative z-10",
+                stat.bg,
+                stat.color
+              )}>
+                <stat.icon className="size-6" />
+              </div>
+              <div className="space-y-1 relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                  {stat.label}
+                </p>
+                <p className="text-2xl font-black tracking-tighter">
+                  {stat.value}
+                </p>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-primary/10 transition-colors" />
+            </div>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up delay-100">
           {companies.length > 0 ? (
             companies.map((company) => (
@@ -739,9 +816,23 @@ export default function CompaniesClient({
                     </div>
                     <div className="flex gap-2">
                       <Button
+                        variant="outline"
+                        size="icon"
+                        className={cn(
+                          "h-10 w-10 rounded-xl transition-all",
+                          activeCompanyId === company.id 
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" 
+                            : "text-slate-400 border-white/10 hover:bg-white/5"
+                        )}
+                        onClick={() => handleSetActive(company.id)}
+                        title={activeCompanyId === company.id ? "Entreprise active" : "Définir comme active"}
+                      >
+                        <CheckCircle2 className={cn("w-5 h-5", activeCompanyId === company.id ? "scale-110" : "opacity-50")} />
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         onClick={() => openEdit(company)}
                       >
                         <Edit2 className="w-4 h-4" />
@@ -749,7 +840,7 @@ export default function CompaniesClient({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         onClick={() => handleDelete(company.id, company.name)}
                       >
                         <Trash2 className="w-4 h-4" />

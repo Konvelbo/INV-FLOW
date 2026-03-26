@@ -15,12 +15,12 @@
     "incremental": true,
     "plugins": [
       {
-        "name": "next"
-      }
+        "name": "next",
+      },
     ],
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./*"],
+    },
   },
   "include": [
     "next-env.d.ts",
@@ -28,7 +28,10 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "out/types/**/*.ts",
+    "out/dev/types/**/*.ts",
+    "src/components/emails/InvoiceEmail.js",
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

@@ -6,7 +6,6 @@ import InvoiceCanvas, { ChoiceInvoice } from "@/src/components/InvoiceCanvas";
 import { Button } from "@/src/components/ui/button";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import toast from "react-hot-toast";
-import axios from "axios";
 import {
   Download,
   Loader2,
@@ -27,51 +26,66 @@ import {
   PopoverTrigger,
 } from "@/src/components/ui/popover";
 import { Label } from "@/src/components/ui/label";
+import { useIPCAction } from "@/hooks/useIPCAction";
+import { invoiceTemplate } from "@/lib/invoice-pdf";
 
 interface InvoiceClientProps {
   initialData?: any;
   invoiceId?: string | null;
 }
 
-export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientProps) {
+export default function InvoiceClient({
+  initialData,
+  invoiceId,
+}: InvoiceClientProps) {
   const [loading, setLoading] = useState(false);
   const divRef = useRef(null);
-
-  // Advanced Settings State
-  const [invoiceType, setInvoiceType] = useState(initialData?.type || "invoice");
-  const [invoiceStatus, setInvoiceStatus] = useState(initialData?.status || "draft");
-  const [dueDate, setDueDate] = useState(
-    initialData?.dueDate
-      ? new Date(initialData.dueDate).toISOString().split("T")[0]
-      : ""
-  );
-  const [isRecurring, setIsRecurring] = useState(initialData?.isRecurring || false);
-  const [recurrenceFreq, setRecurrenceFreq] = useState(initialData?.recurrenceFreq || "monthly");
-
-  // Email State
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [targetEmail, setTargetEmail] = useState("");
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-
-  const { t } = useLanguage();
+  const { performAction, loading: actionLoading } = useIPCAction();
+  const { t, language } = useLanguage();
   const {
-    reference,
+    itemsArr,
     city,
     clientName,
     clientAddress,
     clientContact,
     clientPOBox,
+    reference,
     object,
+    managerName,
+    amountWords,
+    style,
+    currency,
+    setInvoiceData,
+    clientId,
     totalMaterial,
     totalHT,
-    amountWords,
-    managerName,
-    itemsArr,
-    setInvoiceData,
-    currency,
-    style,
-    clientId,
   } = useInvoice();
+
+  // Advanced Settings State
+  const [invoiceType, setInvoiceType] = useState(
+    initialData?.type || "invoice",
+  );
+  const [invoiceStatus, setInvoiceStatus] = useState(
+    initialData?.status || "draft",
+  );
+  const [dueDate, setDueDate] = useState(
+    initialData?.dueDate
+      ? new Date(initialData.dueDate).toISOString().split("T")[0]
+      : "",
+  );
+  const [isRecurring, setIsRecurring] = useState(
+    initialData?.isRecurring || false,
+  );
+  const [frequency, setFrequency] = useState(
+    initialData?.recurrenceFreq || "monthly",
+  );
+
+  // Email State
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [targetEmail, setTargetEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [isFetchingClients, setIsFetchingClients] = useState(false);
 
   const { addNotification } = useNotifications();
 
@@ -82,188 +96,139 @@ export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientP
     }
   }, [initialData, setInvoiceData]);
 
-  const handleGeneratePDF = async () => {
-    setLoading(true);
+  useEffect(() => {
+    if (isEmailModalOpen) {
+      const fetchClients = async () => {
+        setIsFetchingClients(true);
+        try {
+          // @ts-ignore
+          if (window.electronAPI) {
+            // @ts-ignore
+            const res = await window.electronAPI.getData("clients");
+            if (res.success) {
+              setClients(res.data);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch clients", error);
+        } finally {
+          setIsFetchingClients(false);
+        }
+      };
+      fetchClients();
+    }
+  }, [isEmailModalOpen]);
 
+  const handleDownloadPDF = async () => {
+    if (!reference || !clientName || itemsArr.length === 0) {
+      toast.error(t("fillFields"));
+      return;
+    }
+
+    setLoading(true);
     try {
+      // Auto-save before download as requested
+      await handleSave();
+
       const data = {
-        reference: reference || "",
+        reference,
+        city,
+        clientName,
+        clientAddress,
+        clientContact,
+        clientPOBox,
+        object,
+        items: itemsArr,
+        totalHT: itemsArr.reduce(
+          (sum: number, item: any) =>
+            sum + (item.totalPrice || item.quantity * item.unitPrice),
+          0,
+        ),
+        totalMaterial: itemsArr.reduce(
+          (sum: number, item: any) => sum + Number(item.quantity),
+          0,
+        ),
+        managerName,
+        amountWords,
+        style,
         type: invoiceType,
-        status: invoiceStatus,
-        city: city || "",
-        invoiceDate: new Date().toISOString(),
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        clientName: clientName || "",
-        clientAddress: clientAddress || "",
-        clientContact: clientContact || "",
-        clientPOBox: clientPOBox || "",
-        object: object || "",
-        managerName: managerName || "",
-        totalHT: totalHT || 0,
-        totalMaterial: totalMaterial || 0,
-        amountWords: amountWords || "",
-        items: itemsArr || [],
         currencyCode: currency,
-        style: style || "default",
+        language,
       };
 
-      // Validate required fields
-      if (!data.reference || !data.clientName || data.items.length === 0) {
-        throw new Error(
-          "Please fill in the Reference, Client Name, and add at least one item.",
-        );
-      }
+      const html = invoiceTemplate(data);
+      // @ts-ignore
+      const pdfBuffer = await window.electronAPI.generatePDF(html);
 
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
-
-      if (!token) {
-        throw new Error("User not authenticated. Please log in.");
-      }
-
-      const res = await axios.post("/api/download-pdf", data, {
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.status !== 200) {
-        throw new Error(
-          "Failed to generate PDF. Server responded with status: " + res.status,
-        );
-      }
-
-      // Check if the response is actually JSON (error) despite blob type
-      if (res.data.type === "application/json") {
-        const text = await res.data.text();
-        const json = JSON.parse(text);
-        throw new Error(json.message || "Server Error (JSON)");
-      }
+      const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Invoice_${reference.replace(/\//g, "-")}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       toast.success(t("pdfSuccess"));
-
-      const url = URL.createObjectURL(res.data);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Invoice_${data.reference.replace(/\//g, "-")}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Error during PDF generation:", err);
-      let errorMessage = "An unknown error occurred.";
-
-      if (axios.isAxiosError(err)) {
-        if (
-          err.response?.data instanceof Blob &&
-          err.response.data.type === "application/json"
-        ) {
-          try {
-            const text = await err.response.data.text();
-            const json = JSON.parse(text);
-            errorMessage = json.message || "Server error occurred.";
-          } catch {
-            errorMessage = "Server error occurred (Blob).";
-          }
-        } else {
-          errorMessage =
-            err.response?.data?.message ||
-            err.message ||
-            "Server error occurred.";
-        }
-      } else {
-        errorMessage = (err as Error).message;
-      }
-
-      toast.error(errorMessage);
+    } catch (error: any) {
+      console.error("PDF generation error", error);
+      toast.error(error.message || "Erreur lors de la génération du PDF");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
-    setLoading(true);
+    const data = {
+      reference: reference || "",
+      type: invoiceType,
+      status: invoiceStatus,
+      city: city || "",
+      clientName: clientName || "",
+      clientAddress: clientAddress || "",
+      clientContact: clientContact || "",
+      clientPOBox: clientPOBox || "",
+      object: object || "",
+      managerName: managerName || "",
+      totalHT: itemsArr.reduce(
+        (sum: number, item: any) =>
+          sum + (item.totalPrice || item.quantity * item.unitPrice),
+        0,
+      ),
+      totalMaterial: itemsArr.reduce(
+        (sum: number, item: any) => sum + Number(item.quantity),
+        0,
+      ),
+      amountWords: amountWords || "",
+      items: itemsArr || [],
+      currencyCode: currency,
+      style: style || "default",
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+      isRecurring,
+      recurrenceFreq: isRecurring ? frequency : null,
+      clientId: clientId || null,
+    };
 
-    try {
-      const data = {
-        reference: reference || "",
-        type: invoiceType,
-        status: invoiceStatus,
-        city: city || "",
-        clientName: clientName || "",
-        clientAddress: clientAddress || "",
-        clientContact: clientContact || "",
-        clientPOBox: clientPOBox || "",
-        object: object || "",
-        managerName: managerName || "",
-        totalHT: totalHT || 0,
-        totalMaterial: totalMaterial || 0,
-        amountWords: amountWords || "",
-        items: itemsArr || [],
-        currencyCode: currency,
-        style: style || "default",
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        isRecurring,
-        recurrenceFreq: isRecurring ? recurrenceFreq : null,
-        clientId: clientId || null,
-      };
+    if (!data.reference || !data.clientName || data.items.length === 0) {
+      toast.error(t("fillFields"));
+      return;
+    }
 
-      // Validate required fields
-      if (!data.reference || !data.clientName || data.items.length === 0) {
-        throw new Error(t("fillFields"));
-      }
+    const method = invoiceId ? "update" : "create";
+    const params = invoiceId ? [invoiceId, data] : [data];
 
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
+    const res = await performAction("invoices", method, ...params);
 
-      if (!token) {
-        throw new Error("User not authenticated. Please log in.");
-      }
-
-      let res;
-      if (invoiceId) {
-        // Update existing invoice
-        res = await axios.put(`/api/invoices/${invoiceId}`, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } else {
-        // Create new invoice
-        res = await axios.post("/api/invoices", data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      }
-
-      if (res.status === 201 || res.status === 200) {
-        toast.success(invoiceId ? t("updateSuccess") : t("saveSuccess"));
-
-        addNotification({
-          user: "Système",
-          action: invoiceId ? "a modifié" : "a créé",
-          target: `la facture ${data.reference}`,
-          type: "invoice",
-          silent: true,
-        });
-      }
-    } catch (err) {
-      console.error("Error saving invoice:", err);
-      let errorMessage = "An unknown error occurred.";
-      if (axios.isAxiosError(err)) {
-        errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Server error occurred.";
-      } else {
-        errorMessage = (err as Error).message;
-      }
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+    if (res.success) {
+      toast.success(invoiceId ? t("updateSuccess") : t("saveSuccess"));
+      addNotification({
+        user: "Système",
+        action: invoiceId ? "a modifié" : "a créé",
+        target: `la facture ${data.reference}`,
+        type: "invoice",
+        silent: true,
+      });
     }
   };
 
@@ -280,32 +245,19 @@ export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientP
     }
 
     setIsSendingEmail(true);
-    try {
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
+    const params = invoiceId ? [invoiceId, targetEmail] : [targetEmail];
+    const res = await performAction("invoices", "send", ...params);
 
-      const res = await axios.post(
-        "/api/invoices/send",
-        {
-          invoiceId: invoiceId,
-          email: targetEmail,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
-      if (res.status === 200) {
-        toast.success(t("emailSentSuccess"));
-        setIsEmailModalOpen(false);
-        setTargetEmail("");
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || t("emailSendError"));
-    } finally {
-      setIsSendingEmail(false);
+    if (res.success) {
+      toast.success(t("emailSentSuccess"));
+      setIsEmailModalOpen(false);
+      setTargetEmail("");
+      // When sent, it becomes pending
+      setInvoiceStatus("pending");
+      // Trigger a save to update the status in DB
+      setTimeout(handleSave, 100);
     }
+    setIsSendingEmail(false);
   };
 
   return (
@@ -402,7 +354,6 @@ export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientP
                 <option value="draft">{t("draft")}</option>
                 <option value="pending">{t("sent")}</option>
                 <option value="paid">{t("paid")}</option>
-                <option value="overdue">{t("overdue")}</option>
               </select>
             </div>
 
@@ -431,8 +382,8 @@ export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientP
               {isRecurring && (
                 <div className="pl-6 animate-in slide-in-from-left-2 duration-300">
                   <select
-                    value={recurrenceFreq}
-                    onChange={(e) => setRecurrenceFreq(e.target.value)}
+                    value={frequency}
+                    onChange={(e) => setFrequency(e.target.value)}
                     className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
                   >
                     <option value="weekly">{t("weekly")}</option>
@@ -478,7 +429,7 @@ export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientP
 
           <div className="fab-item fab-item-up">
             <Button
-              onClick={handleGeneratePDF}
+              onClick={handleDownloadPDF}
               disabled={loading}
               className={cn(
                 "h-14 w-14 rounded-lg shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
@@ -548,13 +499,41 @@ export default function InvoiceClient({ initialData, invoiceId }: InvoiceClientP
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 block">
                   {t("clientEmailAddress")}
                 </label>
-                <input
-                  type="email"
-                  value={targetEmail}
-                  onChange={(e) => setTargetEmail(e.target.value)}
-                  className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
-                  placeholder="client@exemple.com"
-                />
+                <div className="flex flex-col gap-3">
+                  <select
+                    className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                    onChange={(e) => {
+                      const selectedEmail = e.target.value;
+                      if (selectedEmail) setTargetEmail(selectedEmail);
+                    }}
+                    value=""
+                  >
+                    <option value="" disabled>
+                      {isFetchingClients ? "Chargement des clients..." : "Choisir un client..."}
+                    </option>
+                    {clients.map(client => (
+                      client.email && (
+                        <option key={client.id} value={client.email}>
+                          {client.firstName ? client.firstName + ' ' : ''}{client.name} {client.companyName ? `(${client.companyName})` : ''} - {client.email}
+                        </option>
+                      )
+                    ))}
+                  </select>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="h-px bg-border/50 flex-1"></div>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">OU</span>
+                    <div className="h-px bg-border/50 flex-1"></div>
+                  </div>
+
+                  <input
+                    type="email"
+                    value={targetEmail}
+                    onChange={(e) => setTargetEmail(e.target.value)}
+                    className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
+                    placeholder="Saisir une adresse e-mail manuellement..."
+                  />
+                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <Button

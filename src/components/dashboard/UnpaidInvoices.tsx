@@ -15,7 +15,7 @@ import { useLanguage } from "@/src/context/LanguageContext";
 import { type RecentInvoice } from "./types";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
-import axios from "axios";
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 export function UnpaidInvoices({
     invoices,
@@ -28,13 +28,20 @@ export function UnpaidInvoices({
     const { t, language } = useLanguage();
     const { currency } = useInvoice();
 
+    const { performAction, loading: actionLoading } = useIPCAction();
+
     const handleAction = async (id: string, action: 'paid' | 'scaled') => {
         try {
             const payload = action === 'paid' ? { status: 'paid' } : { isScaled: true };
-            const res = await axios.patch(`/api/invoices/${id}`, payload);
-            if (res.status === 200) {
+            const storedUser = localStorage.getItem("user");
+            const userId = storedUser ? JSON.parse(storedUser).id : null;
+            
+            const res = await performAction("invoices", "patch", userId, id, payload);
+            if (res.success) {
                 toast.success(t("systemReady") || "Success");
                 if (onUpdate) onUpdate();
+            } else {
+                toast.error(res.error || t("authError"));
             }
         } catch (error) {
             toast.error(t("authError") || "Error");

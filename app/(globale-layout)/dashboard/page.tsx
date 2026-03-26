@@ -1,26 +1,21 @@
-import { getServerSession } from "@/lib/session";
-import { getDashboardData } from "@/lib/data-fetching/dashboard";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import DashboardClient from "./DashboardClient";
-import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
+import Loading from "./loading";
 
-export default async function DashboardPage() {
-  const session = await getServerSession();
+export default function DashboardPage() {
+  const { session, data: stats, loading } = useIPCData<any>("dashboard");
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const stats = await getDashboardData(session.userId);
-
   return (
-    <Suspense fallback={<Loading />}>
-      <DashboardClient
-        initialStats={stats}
-        initialTodos={stats.todos}
-        userName={session.name || ""}
-      />
-    </Suspense>
+    <DashboardClient
+      initialStats={stats || {}}
+      initialTodos={stats?.todos || []}
+      userName={session.name || ""}
+    />
   );
 }

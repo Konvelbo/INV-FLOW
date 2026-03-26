@@ -37,13 +37,14 @@ import { useInvoice } from "@/src/context/InvoiceContext";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/src/context/LanguageContext";
-import { signOut } from "next-auth/react";
+
 
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 export default function UserMenu() {
   const router = useRouter();
+  const { performAction, loading: actionLoading } = useIPCAction();
   const { currency, setCurrency } = useInvoice();
   const { language, setLanguage, dict } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +69,6 @@ export default function UserMenu() {
   const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    await signOut({ redirect: false });
     router.push("/");
     window.location.reload(); // Force refresh to update landing page state
   };
@@ -85,19 +85,10 @@ export default function UserMenu() {
           const userData = userStr ? JSON.parse(userStr) : null;
           const token = userData?.token;
 
-          if (!token) {
-            toast.error("Vous devez être connecté pour changer d'avatar");
-            return;
-          }
+          const res = await performAction("auth", "avatar", userData.id, { image: base64String });
 
-          const response = await axios.post(
-            "/api/user/avatar",
-            { image: base64String },
-            { headers: { Authorization: `Bearer ${token}` } },
-          );
-
-          if (response.status === 200) {
-            const avatarUrl = response.data.avatar;
+          if (res.success) {
+            const avatarUrl = res.data.avatar;
             const updatedUser = user
               ? { ...user, avatar: avatarUrl }
               : { name: "User", email: "", avatar: avatarUrl };
@@ -108,7 +99,10 @@ export default function UserMenu() {
               "user",
               JSON.stringify({ ...userData, avatar: avatarUrl }),
             );
+            window.dispatchEvent(new CustomEvent("session-update"));
             toast.success("Avatar mis à jour !");
+          } else {
+            toast.error(res.error || "Échec de l'upload de l'avatar");
           }
         } catch (error) {
           console.error("Failed to upload avatar", error);

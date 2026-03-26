@@ -1,22 +1,20 @@
-import { getServerSession } from "@/lib/session";
-import { getProductsData } from "@/lib/data-fetching/products";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import ProductsClient from "./ProductsClient";
-import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
+import Loading from "./loading";
 
-export default async function ProductsPage() {
-  const session = await getServerSession();
+export default function ProductsPage() {
+  const { session, data: products, loading } = useIPCData<any[]>("products");
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const products = await getProductsData(session.userId);
-
   return (
-    <Suspense fallback={<Loading />}>
-      <ProductsClient initialProducts={products} />
-    </Suspense>
+    <ProductsClient 
+      initialProducts={products || []} 
+      userId={session.userId}
+    />
   );
 }

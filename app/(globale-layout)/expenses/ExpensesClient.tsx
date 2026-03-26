@@ -37,6 +37,7 @@ import {
 import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 interface Expense {
   id: string;
@@ -52,22 +53,26 @@ interface Expense {
 }
 
 interface ExpensesClientProps {
-  initialExpenses: Expense[];
-  initialCompanies: { id: string; name: string }[];
+  initialExpenses: any[];
+  initialCompanies: any[];
   isComponent?: boolean;
+  userId?: string;
 }
 
 export default function ExpensesClient({
   initialExpenses,
   initialCompanies,
   isComponent,
+  userId,
 }: ExpensesClientProps) {
   const { t } = useLanguage();
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [companies] = useState<{ id: string; name: string }[]>(initialCompanies);
+  const [companies] =
+    useState<{ id: string; name: string }[]>(initialCompanies);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { performAction, loading: actionLoading } = useIPCAction();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -82,81 +87,45 @@ export default function ExpensesClient({
 
   const fetchExpenses = useCallback(async () => {
     try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const res = await fetch("/api/expenses", {
-        headers: { Authorization: `Bearer ${user.token}` },
-        cache: "no-store",
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setExpenses(data);
+      const result = await (window as any).electronAPI.getData("expenses", userId);
+      if (result.success) {
+        setExpenses(result.data.expenses);
       }
     } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Error fetching expenses", error);
     }
-  }, []);
+  }, [userId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
+    const method = editingId ? "update" : "create";
 
-      const method = editingId ? "PUT" : "POST";
-      const url = editingId ? `/api/expenses/${editingId}` : "/api/expenses";
+    const payload = {
+      ...formData,
+      amount: parseFloat(formData.amount),
+      date: new Date(formData.date).toISOString(),
+      companyId: formData.companyId === "none" ? null : formData.companyId,
+    };
 
-      const payload = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        date: new Date(formData.date).toISOString(),
-        companyId: formData.companyId === "none" ? null : formData.companyId,
-      };
+    const params = editingId ? [editingId, payload] : [payload];
+    const res = await performAction("expenses", method, ...params);
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
-        setIsDialogOpen(false);
-        resetForm();
-        fetchExpenses();
-      } else {
-        toast.error(t("saveErrorExpense"));
-      }
-    } catch (error) {
-      console.error("Error saving expense", error);
+    if (res.success) {
+      toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
+      setIsDialogOpen(false);
+      resetForm();
+      fetchExpenses();
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(t("expenseDeleteWarning").replace("{title}", title))) return;
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
 
-      const res = await fetch(`/api/expenses/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+    const res = await performAction("expenses", "delete", id);
 
-      if (res.ok) {
-        toast.success(t("expenseDeleted"));
-        fetchExpenses();
-      }
-    } catch (error) {
-      console.error("Error deleting expense", error);
+    if (res.success) {
+      toast.success(t("expenseDeleted"));
+      fetchExpenses();
     }
   };
 
@@ -190,26 +159,34 @@ export default function ExpensesClient({
   };
 
   const handleExport = async () => {
+    setIsExporting(true);
     try {
       const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const response = await fetch("/api/export/expenses", {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "depenses_export.csv";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
+      const userId = userStr ? JSON.parse(userStr).id : null;
+      // @ts-ignore
+      const res = await window.electronAPI.getData(
+        "export",
+        userId,
+        "expenses",
+      );
+      if (res.success) {
+        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "expenses_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success(t("exportSuccess"));
+      } else {
+        throw new Error(res.error);
       }
-    } catch (err) {
-      console.error("Export error", err);
+    } catch (error) {
+      console.error("Export error", error);
+      toast.error(t("authError"));
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -288,7 +265,9 @@ export default function ExpensesClient({
                   <DialogTitle>
                     {editingId ? t("editExpense") : t("recordExpense")}
                   </DialogTitle>
-                  <DialogDescription>{t("expenseDetailsDesc")}</DialogDescription>
+                  <DialogDescription>
+                    {t("expenseDetailsDesc")}
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-5 py-4">
                   <div className="space-y-2">
@@ -472,21 +451,14 @@ export default function ExpensesClient({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
               {[
                 {
-                  label: "Total Dépenses",
+                  label: t("totalExpenses"),
                   value: `${expenses.reduce((acc, e) => acc + e.amount, 0).toLocaleString()} ${expenses[0]?.currency || "XOF"}`,
                   icon: TrendingDown,
                   color: "text-rose-500",
                   bg: "bg-rose-500/10",
                 },
                 {
-                  label: "Catégories",
-                  value: new Set(expenses.map((e) => e.category)).size,
-                  icon: PieChart,
-                  color: "text-amber-500",
-                  bg: "bg-amber-500/10",
-                },
-                {
-                  label: "Déductibles",
+                  label: t("deductibles"),
                   value: (expenses as any).filter((e: any) => e.isDeductible)
                     .length,
                   icon: Building,
@@ -494,7 +466,7 @@ export default function ExpensesClient({
                   bg: "bg-emerald-500/10",
                 },
                 {
-                  label: "Mois en cours",
+                  label: t("currentMonth"),
                   value: expenses.filter(
                     (e) =>
                       new Date(e.date).getMonth() === new Date().getMonth(),
@@ -592,7 +564,9 @@ export default function ExpensesClient({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          onClick={() => handleDelete(expense.id, expense.title)}
+                          onClick={() =>
+                            handleDelete(expense.id, expense.title)
+                          }
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../src/p_client";
 
 const prismaClientSingleton = () => {
   return new PrismaClient();

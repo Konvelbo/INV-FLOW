@@ -16,7 +16,7 @@ interface StatsCardProps {
   trendUp?: boolean;
   trends?: TrendItem[]; // New prop for multiple trends
   icon: LucideIcon;
-  variant?: "blue" | "indigo" | "emerald" | "amber" | "slate";
+  variant?: "blue" | "indigo" | "emerald" | "amber" | "slate" | "rose";
   className?: string;
   subtitle?: string;
   href?: string;
@@ -57,6 +57,13 @@ const variants = {
     hover: "hover:border-slate-500/30",
     iconBg: "bg-slate-500/10",
     iconColor: "text-slate-500",
+  },
+  rose: {
+    bg: "bg-rose-500/5",
+    border: "border-rose-500/10",
+    hover: "hover:border-rose-500/30",
+    iconBg: "bg-rose-500/10",
+    iconColor: "text-rose-500",
   },
 };
 

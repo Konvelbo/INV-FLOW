@@ -1,0 +1,11 @@
+- [x] Integrate Prisma and port data-fetching logic to Electron Main (`electron/data-handlers.js`)
+- [x] Create a unified IPC bridge (`getData`) and a React- [x] Analyze the conflict between `output: export` and dynamic auth
+- [x] Research best practices for NextAuth in Electron with static export
+- [x] Propose a solution to move auth to client-side or handle it via Electron main process
+- [x] Implement the fix
+- [x] Verify the build
+- [ ] Migrate all Client Component `fetch()` calls (POST, PUT, DELETE) to IPC.
+- [ ] Update `electron/preload.js` and `electron/main.js` to support IPC write actions.
+- [ ] Disable DevTools and window menus in production for hardening.
+- [ ] Final verification of all CRUD operations in Electron.
+static page generation in the `out` directory

@@ -6,7 +6,8 @@
 /* Base Layout Enhancements */
 html,
 body {
-  background: oklch(0.2126 0.0066 314.6771); /* Fixed dark background */
+  background: oklch(0.2126 0.0066 314.6771);
+  /* Fixed dark background */
   color-scheme: dark;
 }
 
@@ -21,12 +22,11 @@ body {
 }
 
 #main-page::-webkit-scrollbar-thumb {
-  background: rgba(
-    16,
-    185,
-    129,
-    0.2
-  ); /* Slightly more visible since it's thinner */
+  background: rgba(16,
+      185,
+      129,
+      0.2);
+  /* Slightly more visible since it's thinner */
   border-radius: 20px;
   border: 1px solid transparent;
   background-clip: content-box;
@@ -48,6 +48,7 @@ button {
   scrollbar-width: thin;
   scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
 }
+
 /* Chrome, Safari and Opera */
 
 .h-150 {
@@ -66,7 +67,8 @@ button {
   min-height: 1123px;
   margin: 0 auto;
   background: #fff;
-  padding: 160px 40px 40px 40px; /* Increased top padding for the "big margin" */
+  padding: 160px 40px 40px 40px;
+  /* Increased top padding for the "big margin" */
   box-sizing: border-box;
   display: inline-block;
   border-radius: 4px;
@@ -778,15 +780,13 @@ td {
     100% 100%,
     0 100%;
   /* Ton dégradé RGB */
-  background-image: conic-gradient(
-    from 0deg,
-    #ff0000,
-    #00ff00,
-    #00ffff,
-    #0000ff,
-    #ff00ff,
-    #ff0000
-  );
+  background-image: conic-gradient(from 0deg,
+      #ff0000,
+      #00ff00,
+      #00ffff,
+      #0000ff,
+      #ff00ff,
+      #ff0000);
   animation: rotate 4s linear infinite;
 }
 
@@ -953,8 +953,7 @@ td {
   color: var(--color-neutral-900);
 }
 
-#dashboard::-webkit-scrollbar {
-}
+#dashboard::-webkit-scrollbar {}
 
 #NotificationBell {
   cursor: pointer;

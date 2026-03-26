@@ -1,40 +1,36 @@
-import { getServerSession } from "@/lib/session";
-import { getClientsData } from "@/lib/data-fetching/clients";
-import { getProductsData } from "@/lib/data-fetching/products";
-import { getExpensesData } from "@/lib/data-fetching/expenses";
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { useIPCData } from "@/hooks/useIPCData";
 import ManagementClient from "./ManagementClient";
+import Loading from "./loading";
 import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
 
-export default async function ManagementPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const session = await getServerSession();
+function ManagementContent() {
+  const searchParams = useSearchParams();
+  const companyId = searchParams.get("companyId") || undefined;
 
-  if (!session?.userId) {
-    redirect("/");
+  const { session, data, loading } = useIPCData<any>("management", companyId);
+
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const { companyId } = (await searchParams) as { companyId?: string };
+  return (
+    <ManagementClient
+      initialClients={data?.clients || []}
+      initialProducts={data?.products || []}
+      initialExpenses={data?.expenses || []}
+      initialCompanies={data?.companies || []}
+      userId={session.userId}
+    />
+  );
+}
 
-  // Pre-fetch all data to make tab switching instant
-  const [clients, products, expensesData] = await Promise.all([
-    getClientsData(session.userId, companyId),
-    getProductsData(session.userId),
-    getExpensesData(session.userId),
-  ]);
-
+export default function ManagementPage() {
   return (
     <Suspense fallback={<Loading />}>
-      <ManagementClient
-        initialClients={clients}
-        initialProducts={products}
-        initialExpenses={expensesData.expenses}
-        initialCompanies={expensesData.companies}
-      />
+      <ManagementContent />
     </Suspense>
   );
 }

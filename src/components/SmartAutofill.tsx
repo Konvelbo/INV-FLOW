@@ -15,6 +15,8 @@ interface Client {
     email: string | null;
     phone: string | null;
     address: string | null;
+    firstName?: string | null;
+    companyName?: string | null;
 }
 
 interface Product {
@@ -50,15 +52,29 @@ export default function SmartAutofill() {
                 if (!userStr) return;
                 const user = JSON.parse(userStr);
 
-                const url = activeTab === "clients" ? "/api/clients" : "/api/products";
-                const res = await fetch(url, {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    if (activeTab === "clients") setClients(data);
-                    else setProducts(data);
+                const endpoint = activeTab === "clients" ? "clients" : "products";
+                
+                // Use Electron IPC bridge instead of fetch API to avoid 404 offline
+                // @ts-ignore
+                if (window.electronAPI) {
+                    // @ts-ignore
+                    const res = await window.electronAPI.getData(endpoint);
+                    if (res.success) {
+                        if (activeTab === "clients") setClients(res.data);
+                        else setProducts(res.data);
+                    }
+                } else {
+                    // Fallback to HTTP for purely web environments (if any)
+                    const url = activeTab === "clients" ? "/api/clients" : "/api/products";
+                    const res = await fetch(url, {
+                        headers: { Authorization: `Bearer ${user.token}` }
+                    });
+    
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (activeTab === "clients") setClients(data);
+                        else setProducts(data);
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch autofill data", err);
@@ -71,7 +87,8 @@ export default function SmartAutofill() {
     }, [isOpen, activeTab]);
 
     const fillClient = (client: Client) => {
-        setClientName(client.name);
+        const fullName = `${client.firstName ? client.firstName + ' ' : ''}${client.name}${client.companyName ? ` - ${client.companyName}` : ''}`;
+        setClientName(fullName);
         setClientAddress(client.address || "");
         setClientContact(client.phone || client.email || "");
         setClientPOBox("");
@@ -92,17 +109,26 @@ export default function SmartAutofill() {
         setIsOpen(false);
     };
 
-    const filteredClients = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+    const filteredClients = clients.filter(c => {
+        const searchString = search.toLowerCase();
+        const fullName = `${c.firstName || ""} ${c.name || ""}`.toLowerCase();
+        return (
+            fullName.includes(searchString) ||
+            (c.companyName && c.companyName.toLowerCase().includes(searchString)) ||
+            (c.email && c.email.toLowerCase().includes(searchString)) ||
+            (c.phone && c.phone.toLowerCase().includes(searchString))
+        );
+    });
     const filteredProducts = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 
     if (!isOpen) {
         return (
             <Button
                 onClick={() => setIsOpen(true)}
-                className="fixed right-6 top-32 z-50 rounded-full h-14 px-6 shadow-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-2 animate-bounce-slow border-2 border-indigo-400/30"
+                className="fixed right-6 top-32 z-50 rounded-full size-12 shadow-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-0 border-2 border-indigo-400/30 transition-all hover:scale-110"
+                title={t("quickAssistant")}
             >
-                <Sparkles className="w-5 h-5 text-amber-300" />
-                {t("quickAssistant")}
+                <Sparkles className="w-6 h-6 text-amber-300" />
             </Button>
         );
     }
@@ -156,7 +182,7 @@ export default function SmartAutofill() {
                     filteredClients.length > 0 ? filteredClients.map(c => (
                         <button key={c.id} onClick={() => fillClient(c)} className="w-full text-left p-3 rounded-xl hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-colors group flex items-center justify-between">
                             <div>
-                                <p className="font-bold text-sm text-foreground group-hover:text-indigo-900">{c.name}</p>
+                                <p className="font-bold text-sm text-foreground group-hover:text-indigo-900 break-words mb-0.5">{`${c.firstName ? c.firstName + ' ' : ''}${c.name}${c.companyName ? ` (${c.companyName})` : ''}`}</p>
                                 <p className="text-xs text-muted-foreground truncate max-w-[200px]">{c.email || c.phone || t("noContact")}</p>
                             </div>
                             <ChevronRight className="w-4 h-4 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />

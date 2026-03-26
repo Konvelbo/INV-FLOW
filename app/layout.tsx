@@ -8,8 +8,6 @@ import { Toaster } from "react-hot-toast";
 import CanvasProvider from "@/src/context/canvasContext";
 import { NotificationProvider } from "@/src/context/NotificationContext";
 import { ThemeProvider } from "@/src/components/theme-provider";
-import { SessionProvider } from "next-auth/react";
-import SessionSync from "@/src/components/SessionSync";
 
 // Fallback variables for system fonts
 const jakarta = { variable: "font-jakarta" };
@@ -37,8 +35,6 @@ export default function RootLayout({
       >
         <Toaster />
         <LanguageProvider>
-          <SessionProvider>
-            <SessionSync />
             <NotificationProvider>
               <CanvasProvider>
                 <ThemeProvider
@@ -51,7 +47,6 @@ export default function RootLayout({
                 </ThemeProvider>
               </CanvasProvider>
             </NotificationProvider>
-          </SessionProvider>
         </LanguageProvider>
       </body>
     </html>

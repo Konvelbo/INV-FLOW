@@ -1,22 +1,17 @@
-import { getServerSession } from "@/lib/session";
-import { getHistoryData } from "@/lib/data-fetching/history";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import HistoryClient from "./HistoryClient";
-import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
+import Loading from "./loading";
 
-export default async function HistoryPage() {
-  const session = await getServerSession();
+export default function HistoryPage() {
+  const { session, data: items, loading } = useIPCData<any[]>("history");
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const items = await getHistoryData(session.userId);
-
   return (
-    <Suspense fallback={<Loading />}>
-      <HistoryClient initialInvoices={items} />
-    </Suspense>
+    <HistoryClient initialInvoices={items || []} />
   );
 }

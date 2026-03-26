@@ -47,6 +47,9 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { toast } from "react-hot-toast";
+import { useIPCAction } from "@/hooks/useIPCAction";
+
+import { handleActionRequest } from "@/electron/data-handlers";
 
 export const AppSidebar = React.memo(function AppSidebar() {
   const { clearInvoiceData } = useInvoiceActions();
@@ -58,6 +61,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
   const [rating, setRating] = useState(5);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { performAction, loading: actionLoading } = useIPCAction();
 
   const handleSendFeedback = async () => {
     if (!feedback.trim()) return;
@@ -67,16 +71,20 @@ export const AppSidebar = React.memo(function AppSidebar() {
       const userStr = localStorage.getItem("user");
       const token = userStr ? JSON.parse(userStr).token : null;
 
-      const res = await fetch("/api/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ content: feedback, rating }),
+      // const res = await fetch("/api/feedback", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     ...(token && { Authorization: `Bearer ${token}` }),
+      //   },
+      //   body: JSON.stringify({ content: feedback, rating }),
+      const res = await performAction("feedback", "create", {
+        content: feedback,
+        rating,
+        contactEmail: "",
       });
 
-      if (res.ok) {
+      if (res.success) {
         toast.success("Mérci pour votre retour !");
         setIsFeedbackOpen(false);
         setFeedback("");
@@ -277,12 +285,15 @@ export const AppSidebar = React.memo(function AppSidebar() {
                     Envoyer un retour
                   </DialogTitle>
                   <DialogDescription>
-                    Votre avis nous aide à améliorer l&apos;application. Décrivez votre problème ou suggestion ci-dessous.
+                    Votre avis nous aide à améliorer l&apos;application.
+                    Décrivez votre problème ou suggestion ci-dessous.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-6 text-foreground">
                   <div className="space-y-4 text-center">
-                    <Label className="text-sm font-bold opacity-70">Quelle note donneriez-vous à l&apos;application ?</Label>
+                    <Label className="text-sm font-bold opacity-70">
+                      Quelle note donneriez-vous à l&apos;application ?
+                    </Label>
                     <div className="flex items-center justify-center gap-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -295,7 +306,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                               "size-8 transition-colors",
                               star <= rating
                                 ? "fill-amber-500 text-amber-500"
-                                : "text-muted-foreground/30"
+                                : "text-muted-foreground/30",
                             )}
                           />
                         </button>
@@ -304,7 +315,9 @@ export const AppSidebar = React.memo(function AppSidebar() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-widest opacity-60">Votre message</Label>
+                    <Label className="text-xs font-bold uppercase tracking-widest opacity-60">
+                      Votre message
+                    </Label>
                     <Textarea
                       placeholder="Comment pouvons-nous nous améliorer ?"
                       className="min-h-[120px] bg-background border-border/50 shadow-inner rounded-xl resize-none focus:ring-primary/20"
@@ -313,7 +326,8 @@ export const AppSidebar = React.memo(function AppSidebar() {
                     />
                   </div>
                   <p className="text-[10px] text-muted-foreground italic bg-primary/5 p-3 rounded-lg border border-primary/10">
-                    Note : Votre retour sera directement enregistré et envoyé à notre équipe.
+                    Note : Votre retour sera directement enregistré et envoyé à
+                    notre équipe.
                   </p>
                 </div>
                 <DialogFooter>

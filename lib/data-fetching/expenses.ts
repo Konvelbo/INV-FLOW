@@ -12,5 +12,15 @@ export async function getExpensesData(userId: string) {
     }),
   ]);
 
-  return { expenses, companies };
+  return { 
+    expenses: expenses.map(e => ({ 
+      ...e, 
+      currency: "XOF",
+      createdAt: e.createdAt ? e.createdAt.toISOString() : "",
+      updatedAt: e.updatedAt ? e.updatedAt.toISOString() : "",
+      description: e.description || "",
+      companyId: e.companyId || ""
+    })), 
+    companies 
+  };
 }

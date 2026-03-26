@@ -1,22 +1,17 @@
-import { getServerSession } from "@/lib/session";
-import { getPlanningData } from "@/lib/data-fetching/planning";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import PlanningClient from "./PlanningClient";
-import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
+import Loading from "./loading";
 
-export default async function PlanningPage() {
-  const session = await getServerSession();
+export default function PlanningPage() {
+  const { session, data: todos, loading } = useIPCData<any[]>("planning");
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const { todos } = await getPlanningData(session.userId);
-
   return (
-    <Suspense fallback={<Loading />}>
-      <PlanningClient initialTodos={todos} />
-    </Suspense>
+    <PlanningClient initialTodos={todos || []} />
   );
 }

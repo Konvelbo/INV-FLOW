@@ -1,30 +1,38 @@
-import { getServerSession } from "@/lib/session";
-import { getClientsData } from "@/lib/data-fetching/clients";
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { useIPCData } from "@/hooks/useIPCData";
 import ClientsClient from "./ClientsClient";
+import Loading from "./loading";
 import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
 
-export default async function ClientsPage({
-  searchParams,
-  isComponent = false,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-  isComponent?: boolean;
-}) {
-  const session = await getServerSession();
+function ClientsContent({ isComponent }: { isComponent: boolean }) {
+  const searchParams = useSearchParams();
+  const companyId = searchParams.get("companyId") || undefined;
 
-  if (!session?.userId) {
-    redirect("/");
+  const { session, data: clients, loading } = useIPCData<any[]>("clients", companyId);
+
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const { companyId } = (await searchParams) as { companyId?: string };
+  return (
+    <ClientsClient
+      initialClients={clients || []}
+      userId={session.userId}
+      isComponent={isComponent}
+    />
+  );
+}
 
-  const clients = await getClientsData(session.userId, companyId);
-
+export default function ClientsPage({
+  isComponent = false,
+}: {
+  isComponent?: boolean;
+}) {
   return (
     <Suspense fallback={<Loading />}>
-      <ClientsClient initialClients={clients} isComponent={isComponent} />
+      <ClientsContent isComponent={isComponent} />
     </Suspense>
   );
 }

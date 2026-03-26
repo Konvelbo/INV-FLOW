@@ -1,22 +1,17 @@
-import { getServerSession } from "@/lib/session";
-import { getCompaniesData } from "@/lib/data-fetching/companies";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import CompaniesClient from "./CompaniesClient";
-import { Suspense } from "react";
-import Loading from "../loading";
-import { redirect } from "next/navigation";
+import Loading from "./loading";
 
-export default async function SettingsPage() {
-  const session = await getServerSession();
+export default function SettingsPage() {
+  const { session, data: companies, loading } = useIPCData<any[]>("companies");
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
-  const companies = await getCompaniesData(session.userId);
-
   return (
-    <Suspense fallback={<Loading />}>
-      <CompaniesClient initialCompanies={companies} />
-    </Suspense>
+    <CompaniesClient initialCompanies={companies || []} />
   );
 }

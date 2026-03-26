@@ -10,4 +10,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("login-success", subscription);
     return () => ipcRenderer.removeListener("login-success", subscription);
   },
+  getData: (type, ...params) => ipcRenderer.invoke("get-data", type, params),
+  actionData: (type, method, ...params) => ipcRenderer.invoke("action-data", type, method, params),
+  generatePDF: (html) => ipcRenderer.invoke("generate-pdf", html),
+  getLocale: () => ipcRenderer.invoke("get-locale"),
 });

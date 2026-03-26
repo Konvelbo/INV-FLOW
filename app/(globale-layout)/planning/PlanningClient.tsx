@@ -34,6 +34,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
+import { useIPCAction } from "@/hooks/useIPCAction";
 
 interface PlanningClientProps {
   initialTodos: any[];
@@ -49,6 +50,7 @@ export default function PlanningClient({ initialTodos }: PlanningClientProps) {
   const [searchDate, setSearchDate] = useState("");
   const { addNotification } = useNotifications();
   const { t, language } = useLanguage();
+  const { performAction, loading: actionLoading } = useIPCAction();
 
   const locale = useMemo(() => (language === "fr" ? fr : enUS), [language]);
 
@@ -86,92 +88,58 @@ export default function PlanningClient({ initialTodos }: PlanningClientProps) {
 
   const handleTaskSubmit = useCallback(
     async (values: TaskFormValues) => {
-      try {
-        const userStr = localStorage.getItem("user");
-        const token = userStr ? JSON.parse(userStr).token : null;
-        if (!token) return;
+      const method = editingTodo && values.id ? "update" : "create";
+      const params = editingTodo && values.id ? [values.id, values] : [values];
 
-        if (editingTodo && values.id) {
-          const response = await fetch(`/api/todos/${values.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(values),
+      const res = await performAction("planning", method, ...params);
+
+      if (res.success) {
+        const resultData = res.data;
+        if (method === "update") {
+          setTodos((prev) =>
+            prev.map((t) => (t.id === resultData.id ? resultData : t)),
+          );
+          addNotification({
+            user: "Système",
+            action: t("editEvent"),
+            target: `${t("task")} "${resultData.title}"`,
+            type: "system",
           });
-          if (response.ok) {
-            const updated = await response.json();
-            setTodos((prev) =>
-              prev.map((t) => (t.id === updated.id ? updated : t)),
-            );
-            addNotification({
-              user: "Système",
-              action: t("editEvent"),
-              target: `${t("task")} "${updated.title}"`,
-              type: "system",
-            });
-          }
         } else {
-          const response = await fetch("/api/todos", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(values),
+          setTodos((prev) => [resultData, ...prev]);
+          addNotification({
+            user: "Système",
+            action: t("createEvent"),
+            target: `${t("task")} "${resultData.title}"`,
+            type: "system",
           });
-          if (response.ok) {
-            const created = await response.json();
-            setTodos((prev) => [created, ...prev]);
-            addNotification({
-              user: "Système",
-              action: t("createEvent"),
-              target: `${t("task")} "${created.title}"`,
-              type: "system",
-            });
-          }
         }
-      } catch (error) {
-        console.error("Failed to submit task", error);
       }
 
       setEditingTodo(null);
       setIsModalOpen(false);
     },
-    [editingTodo, addNotification, t],
+    [editingTodo, addNotification, t, performAction],
   );
 
   const handleDeleteTask = useCallback(
     async (id: string) => {
-      try {
-        const userStr = localStorage.getItem("user");
-        const token = userStr ? JSON.parse(userStr).token : null;
-        if (!token) return;
+      const taskToDelete = todos.find((t) => t.id === id);
+      const res = await performAction("planning", "delete", id);
 
-        const taskToDelete = todos.find((t) => t.id === id);
-        const response = await fetch(`/api/todos/${id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          setTodos((prev) => prev.filter((t) => t.id !== id));
-          if (taskToDelete) {
-            addNotification({
-              user: "Système",
-              action: t("delete"),
-              target: `${t("task")} "${taskToDelete.title}"`,
-              type: "system",
-            });
-          }
+      if (res.success) {
+        setTodos((prev) => prev.filter((t) => t.id !== id));
+        if (taskToDelete) {
+          addNotification({
+            user: "Système",
+            action: t("delete"),
+            target: `${t("task")} "${taskToDelete.title}"`,
+            type: "system",
+          });
         }
-      } catch (error) {
-        console.error("Failed to delete task", error);
       }
     },
-    [todos, addNotification, t],
+    [todos, addNotification, t, performAction],
   );
 
   const handleTodoClick = useCallback((todo: Todo) => {

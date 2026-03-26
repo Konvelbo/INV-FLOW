@@ -1,13 +1,15 @@
-import { getServerSession } from "@/lib/session";
+"use client";
+
+import { useIPCData } from "@/hooks/useIPCData";
 import { ChatInterface } from "@/src/components/ai/ChatInterface";
-import { redirect } from "next/navigation";
 import { ShieldCheck, Zap } from "lucide-react";
+import Loading from "./loading";
 
-export default async function AIAdvisorPage() {
-  const session = await getServerSession();
+export default function AIAdvisorPage() {
+  const { session, loading } = useIPCData<any>("companies"); // Using any valid type just for session
 
-  if (!session?.userId) {
-    redirect("/");
+  if (loading || !session) {
+    return <Loading />;
   }
 
   const initialUser = {

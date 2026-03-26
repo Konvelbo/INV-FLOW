@@ -26,11 +26,40 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguageState] = useState<Language>("fr");
 
   useEffect(() => {
-    // Load saved language on mount to avoid hydration mismatch
-    const savedLang = localStorage.getItem("app_language") as Language;
-    if (savedLang && (savedLang === "fr" || savedLang === "en")) {
-      setLanguageState(savedLang);
-    }
+    const detectLanguage = async () => {
+      // Load saved language on mount to avoid hydration mismatch
+      const savedLang = localStorage.getItem("app_language") as Language;
+      if (savedLang && (savedLang === "fr" || savedLang === "en")) {
+        setLanguageState(savedLang);
+        return;
+      }
+
+      let detectedLocale: string | undefined;
+
+      // 1. Try Electron API if available
+      const electronAPI = (window as any).electronAPI;
+      if (electronAPI?.getLocale) {
+        try {
+          detectedLocale = await electronAPI.getLocale();
+        } catch (e) {
+          console.error("Failed to get locale from Electron:", e);
+        }
+      }
+
+      // 2. Fallback to Browser navigator
+      if (!detectedLocale) {
+        detectedLocale = navigator.language;
+      }
+
+      // 3. Map to supported languages (FR by default, as requested)
+      if (detectedLocale?.toLowerCase().startsWith("en")) {
+        setLanguageState("en");
+      } else {
+        setLanguageState("fr");
+      }
+    };
+
+    detectLanguage();
   }, []);
 
   useEffect(() => {

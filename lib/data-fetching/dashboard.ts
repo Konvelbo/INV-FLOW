@@ -122,7 +122,11 @@ export async function getDashboardData(userId: string, companyId?: string) {
     }),
     // Chart Invoices (Last 6 months)
     prisma.invoice.findMany({
-      where: { ...whereInvoice, createdAt: { gte: sixMonthsAgo } },
+      where: { 
+        ...whereInvoice, 
+        createdAt: { gte: sixMonthsAgo },
+        OR: [{ status: "paid" }, { isScaled: true }],
+      },
       select: { createdAt: true, totalTTC: true, totalHT: true },
     }),
     // Chart Expenses (Last 6 months)
@@ -198,15 +202,31 @@ export async function getDashboardData(userId: string, companyId?: string) {
     expensesCountThisMonth: expensesThisMonth._count,
     profitThisMonth: (revenuesThisMonth._sum.totalTTC || 0) - (expensesThisMonth._sum.amount || 0),
     profitThisYear: (revenuesThisYear._sum.totalTTC || 0) - (expensesThisYear._sum.amount || 0),
-    recentInvoices,
+    recentInvoices: recentInvoices.map(inv => ({
+      ...inv,
+      clientName: inv.clientName || "",
+      totalHT: inv.totalHT || 0,
+      isScaled: inv.isScaled || false,
+      createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+    })),
     revenuesScaledThisMonth: revenuesScaledThisMonth._sum.totalTTC || 0,
     revenuesScaledLastMonth: revenuesScaledLastMonth._sum.totalTTC || 0,
     revenuesScaledAllTime: revenuesScaledAllTime._sum.totalTTC || 0,
     countScaledAllTime: revenuesScaledAllTime._count,
+    revenuesScaledThisYear: 0,
+    lastScaledInvoiceAmount: 0,
+    secondLastScaledInvoiceAmount: 0,
     revenuesNonScaledAllTime: revenuesNonScaledAllTime._sum.totalTTC || 0,
     countNonScaledAllTime: revenuesNonScaledAllTime._count,
     recentProducts,
-    unpaidInvoices,
+    unpaidInvoices: unpaidInvoices.map(inv => ({
+      id: inv.id,
+      reference: inv.reference,
+      clientName: inv.clientName || "",
+      totalHT: inv.totalHT || 0,
+      isScaled: inv.isScaled || false,
+      createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+    })),
     chartData,
     todos,
   };

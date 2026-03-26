@@ -2,30 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { useLanguage } from "@/src/context/LanguageContext";
-import { cn } from "@/lib/utils";
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
+  CardContent,
 } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import {
-  Download,
-  Users2,
-  TrendingUp,
-  ShieldCheck,
-  Building,
-  Search,
-  Plus,
-  Users,
-  Edit,
-  Trash2,
-  Mail,
-  Phone,
-  MapPin,
-} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +20,25 @@ import {
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Label } from "@/src/components/ui/label";
+import { toast } from "react-hot-toast";
+import {
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
+  MapPin,
+  Users,
+  Users2,
+  Building,
+  TrendingUp,
+  ShieldCheck,
+  Search,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useIPCAction } from "@/hooks/useIPCAction";
+import { PhoneInput } from "@/src/components/ui/phone-input";
 
 interface Client {
   id: string;
@@ -46,6 +49,8 @@ interface Client {
   contact: string | null;
   poBox: string | null;
   firstName: string | null;
+  age: string | null;
+  sexe: string | null;
   city: string | null;
   country: string | null;
   companyName: string | null;
@@ -59,23 +64,26 @@ interface Client {
   totalSpent?: number;
   paidInvoicesCount?: number;
   unpaidInvoicesCount?: number;
-  createdAt: string;
   _count?: { invoices: number };
 }
 
 interface ClientsClientProps {
   initialClients: Client[];
   isComponent?: boolean;
+  userId?: string;
 }
 
 export default function ClientsClient({
   initialClients,
   isComponent,
+  userId,
 }: ClientsClientProps) {
   const { t } = useLanguage();
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const { performAction, loading: actionLoading } = useIPCAction();
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -87,6 +95,8 @@ export default function ClientsClient({
     contact: "",
     poBox: "",
     firstName: "",
+    age: "",
+    sexe: "M",
     city: "",
     country: "",
     companyName: "",
@@ -101,69 +111,36 @@ export default function ClientsClient({
 
   const fetchClients = useCallback(async () => {
     try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-
-      const user = JSON.parse(userStr);
-      const res = await fetch(`/api/clients?t=${Date.now()}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setClients(data);
+      const result = await (window as any).electronAPI.getData("clients", userId);
+      if (result.success) {
+        setClients(result.data);
       }
     } catch (error) {
       console.error("Error fetching clients", error);
     }
-  }, []);
+  }, [userId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
+    const method = editingId ? "update" : "create";
+    const params = editingId ? [editingId, formData] : [formData];
 
-      const method = editingId ? "PUT" : "POST";
-      const url = editingId ? `/api/clients/${editingId}` : "/api/clients";
+    const res = await performAction("clients", method, ...params);
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        setIsDialogOpen(false);
-        resetForm();
-        fetchClients();
-      }
-    } catch (error) {
-      console.error("Error saving client", error);
+    if (res.success) {
+      setIsDialogOpen(false);
+      resetForm();
+      fetchClients();
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t("clientDeleteWarning").replace("{name}", name))) return;
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
 
-      const res = await fetch(`/api/clients/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+    const res = await performAction("clients", "delete", id);
 
-      if (res.ok) {
-        fetchClients();
-      }
-    } catch (error) {
-      console.error("Error deleting client", error);
+    if (res.success) {
+      fetchClients();
     }
   };
 
@@ -177,6 +154,8 @@ export default function ClientsClient({
       contact: client.contact || "",
       poBox: client.poBox || "",
       firstName: client.firstName || "",
+      age: client.age || "",
+      sexe: client.sexe || "M",
       city: client.city || "",
       country: client.country || "",
       companyName: client.companyName || "",
@@ -201,6 +180,8 @@ export default function ClientsClient({
       contact: "",
       poBox: "",
       firstName: "",
+      age: "",
+      sexe: "M",
       city: "",
       country: "",
       companyName: "",
@@ -215,35 +196,44 @@ export default function ClientsClient({
   };
 
   const handleExport = async () => {
+    setIsExporting(true);
     try {
       const userStr = localStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-
-      const response = await fetch("/api/export/clients", {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "clients_export.csv";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
+      const userId = userStr ? JSON.parse(userStr).id : null;
+      // @ts-ignore
+      const res = await window.electronAPI.getData("export", userId, "clients");
+      if (res.success) {
+        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "clients_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success(t("exportSuccess"));
+      } else {
+        throw new Error(res.error);
       }
-    } catch (err) {
-      console.error("Export error", err);
+    } catch (error) {
+      console.error("Export error", error);
+      toast.error(t("authError"));
+    } finally {
+      setIsExporting(false);
     }
   };
 
-  const filteredClients = clients.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.email && c.email.toLowerCase().includes(search.toLowerCase())) ||
-      (c.contact && c.contact.toLowerCase().includes(search.toLowerCase())),
-  );
+  const filteredClients = clients.filter((c) => {
+    const searchString = search.toLowerCase();
+    const fullName = `${c.firstName || ""} ${c.name || ""}`.toLowerCase();
+    return (
+      fullName.includes(searchString) ||
+      (c.companyName && c.companyName.toLowerCase().includes(searchString)) ||
+      (c.email && c.email.toLowerCase().includes(searchString)) ||
+      (c.phone && c.phone.toLowerCase().includes(searchString)) ||
+      (c.contact && c.contact.toLowerCase().includes(searchString))
+    );
+  });
 
   return (
     <div
@@ -351,6 +341,37 @@ export default function ClientsClient({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
+                        <Label htmlFor="age">{"Âge"}</Label>
+                        <Input
+                          id="age"
+                          type="text"
+                          value={formData.age}
+                          onChange={(e) =>
+                            setFormData({ ...formData, age: e.target.value })
+                          }
+                          className="bg-background/50 border-border/50"
+                          placeholder="Ex: 35 ans"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sexe">{"Sexe"}</Label>
+                        <select
+                          id="sexe"
+                          value={formData.sexe}
+                          onChange={(e) =>
+                            setFormData({ ...formData, sexe: e.target.value })
+                          }
+                          className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="M">Masculin</option>
+                          <option value="F">Féminin</option>
+                          <option value="Autre">Autre</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
                         <Label htmlFor="email">{t("emailAddress")}</Label>
                         <Input
                           id="email"
@@ -365,14 +386,11 @@ export default function ClientsClient({
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">{t("phoneNumber")}</Label>
-                        <Input
-                          id="phone"
+                        <PhoneInput
                           value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
+                          onChange={(val) =>
+                            setFormData({ ...formData, phone: val })
                           }
-                          className="bg-background/50 border-border/50"
-                          placeholder="+33 6 00 00 00 00"
                         />
                       </div>
                     </div>
@@ -413,7 +431,10 @@ export default function ClientsClient({
                           id="zipCode"
                           value={formData.zipCode}
                           onChange={(e) =>
-                            setFormData({ ...formData, zipCode: e.target.value })
+                            setFormData({
+                              ...formData,
+                              zipCode: e.target.value,
+                            })
                           }
                           className="bg-background/50 border-border/50"
                           placeholder="75000"
@@ -486,32 +507,18 @@ export default function ClientsClient({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
             {[
               {
-                label: "Total Clients",
+                label: t("totalClients"),
                 value: clients.length,
                 icon: Users2,
                 color: "text-blue-500",
                 bg: "bg-blue-500/10",
               },
               {
-                label: "Entreprises",
-                value: clients.filter((c) => c.type === "company").length,
-                icon: Building,
-                color: "text-emerald-500",
-                bg: "bg-emerald-500/10",
-              },
-              {
-                label: "Valeur Totale",
+                label: t("totalValue"),
                 value: `${clients.reduce((acc, c) => acc + (c.totalSpent || 0), 0).toLocaleString()} CFA`,
                 icon: TrendingUp,
                 color: "text-amber-500",
                 bg: "bg-amber-500/10",
-              },
-              {
-                label: "Clients Actifs",
-                value: clients.length,
-                icon: ShieldCheck,
-                color: "text-teal-500",
-                bg: "bg-teal-500/10",
               },
             ].map((stat, i) => (
               <div

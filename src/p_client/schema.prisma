@@ -1,0 +1,318 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/p_client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  email             String             @unique
+  name              String
+  password          String?
+  avatar            String?
+  emailVerified     DateTime?
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  invoices          Invoice[]
+  todos             Todo[]
+  pushSubscriptions PushSubscription[]
+  companies         Company[]
+  clients           Client[]
+  products          Product[]
+  expenses          Expense[]
+  feedbacks         Feedback[]
+  activeCompanyId   String?            @db.ObjectId
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  resetOtp       String?
+  resetOtpExpiry DateTime?
+}
+
+model Company {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  legalName String?
+  taxId     String?
+  address   String?
+  email     String?
+  phone     String?
+  logoUrl   String?
+  website   String?
+
+  // New fields
+  leaderName         String?
+  legalForm          String?
+  registrationNumber String?
+  sector             String?
+  description        String?
+  productsServices   String?
+  targetMarket       String?
+  annualRevenue      Float?
+  monthlyRevenue     Float?
+  employeeCount      Int?
+  departments        String?
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  invoices Invoice[]
+  clients  Client[]
+  expenses Expense[]
+  products Product[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+}
+
+model Client {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  email   String?
+  phone   String?
+  address String?
+  poBox   String?
+  contact String?
+
+  // New fields
+  firstName              String?
+  age                    String?
+  sexe                   String?
+  city                   String?
+  country                String?
+  companyName            String?
+  jobTitle               String?
+  type                   String? @default("particulier") // particulier ou entreprise
+  status                 String? @default("actif") // actif, inactif, prospect
+  preferredPaymentMethod String? // cash ou virement
+  notes                  String?
+  zipCode                String?
+  taxId                  String?
+
+  // Financial info (auto-managed)
+  totalSpent          Float? @default(0)
+  paidInvoicesCount   Int?   @default(0)
+  unpaidInvoicesCount Int?   @default(0)
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  invoices Invoice[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Product {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  price       Float
+  taxRate     Float   @default(0) // Percentage (e.g., 18 for 18%)
+  unit        String  @default("U")
+  type        String? @default("product") // "product" or "service"
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+}
+
+model Expense {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  amount      Float
+  date        DateTime @default(now())
+  category    String
+  description String?
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  isDeductible Boolean @default(false)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Todo {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  completed   Boolean @default(false)
+  status      String  @default("todo") // todo, in_progress, done
+  priority    String  @default("medium") // low, medium, high
+  category    String  @default("work") // work, personal, study, etc.
+
+  startTime  DateTime?
+  endTime    DateTime?
+  reminderAt DateTime? // Used for Push/Email Notifications
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+}
+
+model Invoice {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  reference     String @unique
+  invoiceNumber Int? // Sequential number
+  type          String @default("invoice") // 'invoice', 'quote'
+  status        String @default("draft") // 'draft', 'pending', 'paid', 'overdue', 'cancelled'
+
+  city          String
+  // Legacy fields (kept for backwards-compatibility)
+  clientName    String
+  object        String
+  clientAddress String?
+  clientContact String?
+  clientPOBox   String?
+  managerName   String
+
+  // New Relations
+  clientId String? @db.ObjectId
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Financial fields
+  totalHT       Float
+  totalMaterial Float
+  amountWords   String?
+  taxAmount     Float?  @default(0)
+  totalTTC      Float?  @default(0)
+
+  // Document attachments
+  pdfUrl      String?
+  pdfPublicId String? // Cloudinary ID
+
+  // Author
+  userId String @db.ObjectId
+  author User   @relation(fields: [userId], references: [id])
+
+  // Recurring & Dates
+  isRecurring    Boolean   @default(false)
+  recurrenceFreq String? // 'daily', 'weekly', 'monthly', 'yearly'
+  nextIssueDate  DateTime?
+  dueDate        DateTime?
+
+  // Payment Tracking
+  paidAmount    Float     @default(0)
+  paymentMethod String?
+  paidAt        DateTime?
+
+  isScaled  Boolean   @default(false)
+  style     String    @default("default")
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now()) @updatedAt
+
+  items InvoiceItem[]
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([companyId])
+}
+
+model InvoiceItem {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  designation String
+  unit        String @default("U")
+  quantity    Float
+  unitPrice   Float
+  totalPrice  Float
+
+  productId String? @db.ObjectId
+
+  invoiceId String  @db.ObjectId
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  endpoint  String    @unique
+  p256dh    String
+  auth      String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime? @default(now())
+
+  @@index([userId])
+}
+
+model Feedback {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  rating    Int      @default(5)
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

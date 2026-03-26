@@ -154,13 +154,13 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
 
   // Memoize aggregates
   const stats = useMemo(() => {
-    const totalCash = filteredData.reduce((sum, item) => sum + (item.revenus || 0), 0);
-    const lastValue = filteredData[filteredData.length - 1]?.revenus || 0;
-    const previousValue = filteredData[filteredData.length - 2]?.revenus || 0;
+    const totalCash = filteredData.reduce((sum, item) => sum + (item.profit || 0), 0);
+    const lastValue = filteredData[filteredData.length - 1]?.profit || 0;
+    const previousValue = filteredData[filteredData.length - 2]?.profit || 0;
     const percentageChange =
-      previousValue > 0
-        ? ((lastValue - previousValue) / previousValue) * 100
-        : 0;
+      previousValue !== 0
+        ? ((lastValue - previousValue) / Math.abs(previousValue)) * 100
+        : (lastValue > 0 ? 100 : 0);
 
     return { totalCash, percentageChange };
   }, [filteredData]);
