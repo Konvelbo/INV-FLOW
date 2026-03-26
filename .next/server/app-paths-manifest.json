@@ -1,0 +1,16 @@
+{
+  "/(globale-layout)/ai-advisor/page": "app/(globale-layout)/ai-advisor/page.js",
+  "/(globale-layout)/clients/page": "app/(globale-layout)/clients/page.js",
+  "/(globale-layout)/companies/page": "app/(globale-layout)/companies/page.js",
+  "/(globale-layout)/dashboard/page": "app/(globale-layout)/dashboard/page.js",
+  "/(globale-layout)/expenses/page": "app/(globale-layout)/expenses/page.js",
+  "/(globale-layout)/history/page": "app/(globale-layout)/history/page.js",
+  "/(globale-layout)/invoice/page": "app/(globale-layout)/invoice/page.js",
+  "/(globale-layout)/management/page": "app/(globale-layout)/management/page.js",
+  "/(globale-layout)/planning/page": "app/(globale-layout)/planning/page.js",
+  "/(globale-layout)/products/page": "app/(globale-layout)/products/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js"
+}

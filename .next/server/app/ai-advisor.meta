@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(globale-layout)/layout,_N_T_/(globale-layout)/ai-advisor/layout,_N_T_/(globale-layout)/ai-advisor/page,_N_T_/ai-advisor"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGdsb2JhbGUtbGF5b3V0KQ/ai-advisor/__PAGE__",
+    "/!KGdsb2JhbGUtbGF5b3V0KQ/ai-advisor",
+    "/!KGdsb2JhbGUtbGF5b3V0KQ",
+    "/_index",
+    "/_head"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(globale-layout)/layout,_N_T_/(globale-layout)/planning/layout,_N_T_/(globale-layout)/planning/page,_N_T_/planning"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGdsb2JhbGUtbGF5b3V0KQ/planning/__PAGE__",
+    "/!KGdsb2JhbGUtbGF5b3V0KQ/planning",
+    "/!KGdsb2JhbGUtbGF5b3V0KQ",
+    "/_index",
+    "/_head"
+  ]
+}

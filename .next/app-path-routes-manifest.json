@@ -1,0 +1,16 @@
+{
+  "/(globale-layout)/ai-advisor/page": "/ai-advisor",
+  "/(globale-layout)/clients/page": "/clients",
+  "/(globale-layout)/companies/page": "/companies",
+  "/(globale-layout)/dashboard/page": "/dashboard",
+  "/(globale-layout)/expenses/page": "/expenses",
+  "/(globale-layout)/history/page": "/history",
+  "/(globale-layout)/invoice/page": "/invoice",
+  "/(globale-layout)/management/page": "/management",
+  "/(globale-layout)/planning/page": "/planning",
+  "/(globale-layout)/products/page": "/products",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/"
+}
