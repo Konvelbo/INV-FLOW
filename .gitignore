@@ -14,7 +14,11 @@
 /coverage
 
 # next.js
+<<<<<<< HEAD
 # /.next/
+=======
+/.next/
+>>>>>>> 7b28ea0 (j ai fait de grosse betise)
 /out/
 
 # production
