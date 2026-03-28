@@ -1,13 +1,13 @@
 {
   "name": "essor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
     "dev": "concurrently \"next dev\" \"npm run electron:dev\"",
     "electron:dev": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "electron:build": "wait-on http://localhost:3000 && cross-env NODE_ENV=production electron-builder --dir",
-    "electron:dist": "powershell -Command \"if (Test-Path app/api) { Remove-Item -Recurse -Force app/api }\" && npx prisma generate && next build && electron-builder",
+    "electron:dist": "node -e \"const fs = require('fs'); if (fs.existsSync('app/api')) fs.rmSync('app/api', { recursive: true, force: true });\" && npx prisma generate && next build && electron-builder",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
