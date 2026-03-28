@@ -49,12 +49,12 @@ const templates = [
     color: "bg-zinc-950",
     border: "border-green-500",
   },
-  {
-    id: "style6",
-    name: "Impact",
-    color: "bg-black",
-    border: "border-gray-900",
-  },
+  // {
+  //   id: "style6",
+  //   name: "Impact",
+  //   color: "bg-black",
+  //   border: "border-gray-900",
+  // },
 ];
 
 export default function InvoiceCanvas({
@@ -104,8 +104,8 @@ export default function InvoiceCanvas({
         return <Style4Template divRef={divRef} scale={scale} />;
       case "style5":
         return <Style5Template divRef={divRef} scale={scale} />;
-      case "style6":
-        return <Style6Template divRef={divRef} scale={scale} />;
+      // case "style6":
+      //   return <Style6Template divRef={divRef} scale={scale} />;
       default:
         return <DefaultTemplate divRef={divRef} scale={scale} />;
     }
