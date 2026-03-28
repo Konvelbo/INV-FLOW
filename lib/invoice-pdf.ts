@@ -77,17 +77,27 @@ const calculateTotals = (items: InvoiceItem[]) => {
 function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const date = new Date().toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US");
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 14;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const itemsFirstPage = 8;
+    const itemsSubsequentPages = 15;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, pageIndex) => {
-      const pageItems = data.items.slice(
-        pageIndex * itemsPerPage,
-        (pageIndex + 1) * itemsPerPage,
-      );
+  const pagesHtml = allPages
+    .map((pageItems, pageIndex) => {
       const isLast = pageIndex === totalPages - 1;
-      const remainingItems = data.items.slice((pageIndex + 1) * itemsPerPage);
+      const remainingItems = data.items.slice(allPages.slice(0, pageIndex + 1).flat().length);
       const remainingTotal = remainingItems.reduce(
         (sum, item) =>
           sum + (item.totalPrice || item.quantity * item.unitPrice),
@@ -189,14 +199,15 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 <head>
 <meta charset="UTF-8" />
 <style>
-  body { margin: 0; padding: 0; background: #eee; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; color: #000; }
-  .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; }
+  body { margin: 0; padding: 0; background: #fff; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; color: #000; }
+  @page { size: A4; margin: 0; }
+  .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; overflow: hidden; }
   .page-break { page-break-before: always; }
-  .pageNumber { position: absolute; bottom: 30px; right: 30px; font-size: 12px; font-weight: 500; color: #4b5563; }
+  .pageNumber { position: absolute; bottom: 24px; right: 48px; font-size: 12px; font-weight: 500; color: #4b5563; }
   .proforma-line { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px; }
   .address-container { border: 1px solid #000; background: #fff; }
   .address-header { display: flex; border-bottom: 1px solid #000; height: 35px; font-size: 14px; }
-  .address-title { width: 50%; padding: 10px; font-weight: 800; border-right: 1px solid #000; text-transform: uppercase; letter-spacing: 0.1em; background: #f8fafc; color: #475569; }
+  .address-title { width: 50%; padding: 10px; font-weight: 800; border-right: 1px solid #000; text-transform: uppercase; letter-spacing: 0.1em; background: #fff; color: #475569; }
   .address-title:last-child { border-right: none; }
   .client-info { padding: 20px; }
   .client-info p { margin-bottom: 10px; font-size: 16px; line-height: 1.5; color: #1e293b; }
@@ -204,7 +215,7 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   table { width: 100%; border-collapse: collapse; margin-top: 15px; }
   th, td { border: 1px solid #000; padding: 10px 8px; font-size: 12px; }
   th { font-weight: bold; text-align: center; font-size: 15px; background: #f3f4f6; text-transform: uppercase; letter-spacing: 0.02em; }
-  .totals { width: 40%; margin-left: auto; margin-top: 10px; background-color: #eee; }
+  .totals { width: 40%; margin-left: auto; margin-top: 10px; background-color: #f9fafb; }
   .signature { margin-top: 30px; text-align: right; font-weight: bold; }
 </style>
 </head>
@@ -217,15 +228,25 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 11;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const itemsFirstPage = 8;
+    const itemsSubsequentPages = 14;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, pageIndex) => {
-      const pageItems = data.items.slice(
-        pageIndex * itemsPerPage,
-        (pageIndex + 1) * itemsPerPage,
-      );
+    const pagesHtml = allPages
+    .map((pageItems, pageIndex) => {
       const isLast = pageIndex === totalPages - 1;
 
       return `
@@ -324,8 +345,9 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   <head>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap');
-    body { margin: 0; background: #eee; font-family: 'Inter', sans-serif; color: #334155; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; padding: 0; position: relative; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    @page { size: A4; margin: 0; }
+    body { margin: 0; background: #fff; font-family: 'Inter', sans-serif; color: #334155; }
+    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; overflow: hidden; }
     .page-break { page-break-before: always; }
     .header { background: #0f172a; color: white; padding: 48px; display: flex; justify-content: space-between; align-items: flex-start; }
     .logo-section h1 { margin: 0; font-weight: 300; font-size: 36px; letter-spacing: 0.05em; margin-bottom: 8px;}
@@ -350,8 +372,8 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     td { padding: 16px 10px; font-size: 14px; color: #334155; border-bottom: 1px solid #f8fafc; }
     .bg-gray { background-color: #f8fafc; }
 
-    .footer-totals { padding: 48px 0; margin-top: 16px; }
-    .footer-bottom { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 48px; gap: 40px; }
+    .footer-totals { padding: 48px 0 32px 0; margin-top: 16px; }
+    .footer-bottom { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 48px 80px 48px; gap: 40px; }
     .signature-area { flex: 1; text-align: left; }
     .sig-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 32px; }
     .sig-name { font-family: 'Inter', cursive; font-size: 24px; font-style: italic; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; display: inline-block; min-width: 200px; }
@@ -362,7 +384,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .total-row.grand { padding-top: 20px; color: #1e293b; font-size: 20px; font-weight: 700; border-bottom: 2px solid #1e293b; }
     .grand-val { font-size: 24px; word-break: break-all; text-align: right; }
 
-    .page-num { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #cbd5e1; }
+    .page-num { position: absolute; bottom: 24px; right: 48px; font-size: 12px; color: #cbd5e1; }
   </style>
   </head>
   <body>${pagesHtml}</body>
@@ -374,15 +396,25 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 14;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const itemsFirstPage = 4;
+    const itemsSubsequentPages = 8;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, i) => {
-      const pageItems = data.items.slice(
-        i * itemsPerPage,
-        (i + 1) * itemsPerPage,
-      );
+    const pagesHtml = allPages
+    .map((pageItems, i) => {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
@@ -468,15 +500,16 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
             <div class="footer-bar"></div>`
           : `<div class="footer-bar" style="position:absolute; bottom:0;"></div>`
         }
-         <div class="page-num" style="position:absolute; bottom:20px; right:40px; font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
+         <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
        </div>`;
     })
     .join("");
 
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap');
-    body { font-family: 'Merriweather', serif; background: #eee; color: #374151; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: white; padding: 0; position: relative; overflow: hidden; }
+    @page { size: A4; margin: 0; }
+    body { font-family: 'Merriweather', serif; background: #fff; color: #374151; }
+    .page { width: 794px; height: 1122px; margin: 0 auto; background: white; padding: 0; position: relative; overflow: hidden; }
     .page-break { page-break-before: always; }
 
     .header-band { position:absolute; top:0; left:0; bottom:0; width: 33%; background: #1e3a8a; color: white; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10; height: 200px; }
@@ -508,7 +541,7 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
     .summary { display: flex; justify-content: flex-end; padding: 40px; }
     .summary-box { background: #f3f4f6; padding: 0; width: 100%; border-radius: 8px; }
-    .footer-layout { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; gap: 40px; }
+    .footer-layout { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px 80px 40px; gap: 40px; }
     .sig-area { flex: 1; }
     .sig-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 32px; font-weight: 700; }
     .sig-name { font-size: 20px; font-style: italic; color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; display: inline-block; min-width: 200px; }
@@ -529,8 +562,22 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
   const date = new Date().toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US");
-  const itemsPerPage = 6;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+  const itemsFirstPage = 4;
+  const itemsSubsequentPages = 8;
+  
+  // Pagination logic
+  const allPages: InvoiceItem[][] = [];
+  if (data.items.length <= itemsFirstPage) {
+    allPages.push(data.items);
+  } else {
+    allPages.push(data.items.slice(0, itemsFirstPage));
+    let currentPos = itemsFirstPage;
+    while (currentPos < data.items.length) {
+      allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+      currentPos += itemsSubsequentPages;
+    }
+  }
+  const totalPages = allPages.length;
 
   // Visual decorations
   const bgDecor = `
@@ -538,12 +585,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         <div style="position: absolute; bottom: 0; left: 0; width: 300px; height: 300px; background: #a855f7; opacity: 0.15; border-top-right-radius: 200px; z-index: 0;"></div>
     `;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, i) => {
-      const pageItems = data.items.slice(
-        i * itemsPerPage,
-        (i + 1) * itemsPerPage,
-      );
+  const pagesHtml = allPages
+    .map((pageItems, i) => {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
@@ -581,7 +624,7 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="desc-text">${data.object}</div>
                 </div>
             </div>`
-          : '<div style="height: 50px;"></div>'
+          : '<div style="height: 60px;"></div>'
         }
 
             <div class="grid-header">
@@ -611,6 +654,10 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
             ${isLast
           ? `
             <div class="footer">
+                <div class="signature-block">
+                    <div class="sig">${data.managerName}</div>
+                    <div class="label">${dict.authorizedSignature}</div>
+                </div>
                 <div class="summary-card">
                     <div class="sum-left">
                         <div class="label">${dict.totalMaterial}</div>
@@ -621,23 +668,20 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                          <div class="val-lg">${formatCurrency(totalht, data.currencyCode, lang)}</div>
                     </div>
                 </div>
-                <div class="signature-block">
-                    <div class="sig">${data.managerName}</div>
-                    <div class="label">${dict.authorizedSignature}</div>
-                </div>
             </div>`
           : ""
         }
         </div>
-        <div class="page-num" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
+        <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
         </div>`;
     })
     .join("");
 
   return `<!DOCTYPE html><html><head><style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Caveat:wght@700&display=swap');
-        body { margin: 0; background: #eee; font-family: 'Outfit', sans-serif; color: #1f2937; }
-        .page { width: 794px; min-height: 1123px; margin: 0 auto; background: white; padding: 0; position: relative; box-sizing: border-box; overflow: hidden; }
+        @page { size: A4; margin: 0; }
+        body { margin: 0; background: #fff; font-family: 'Outfit', sans-serif; color: #1f2937; }
+        .page { width: 794px; height: 1122px; margin: 0 auto; background: white; padding: 0; position: relative; box-sizing: border-box; overflow: hidden; }
         .page-break { page-break-before: always; }
 
         .content-wrapper { position: relative; z-index: 10; padding: 48px; }
@@ -674,8 +718,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         .i-qty span { display: inline-block; background: #faf5ff; color: #7e22ce; font-weight: 700; padding: 2px 8px; border-radius: 6px; font-size: 14px; }
         .i-total { width: auto; min-width: 240px; text-align: right; font-weight: 800; font-size: 14px; color: #1f2937; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-        .footer { margin-top: 64px; display: flex; flex-direction: column; align-items: flex-end; }
-        .summary-card { background: #1e293b; color: white; padding: 32px; border-radius: 24px; min-width: 60%; max-width: 90%; display: flex; justify-content: space-between; gap: 20px; box-shadow: 0 20px 40px -10px rgba(126, 34, 206, 0.3); position: relative; overflow: hidden; font-variant-numeric: tabular-nums; }
+        .footer { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; padding-bottom: 80px; }
+        .summary-card { background: #1e293b; color: white; padding: 24px 32px; border-radius: 20px; width: 400px; display: flex; justify-content: space-between; gap: 20px; box-shadow: 0 20px 40px -10px rgba(126, 34, 206, 0.3); position: relative; overflow: hidden; font-variant-numeric: tabular-nums; }
         .summary-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%; }
 
         .label { font-size: 10px; font-weight: 700; opacity: 0.7; letter-spacing: 0.05em; margin-bottom: 4px; }
@@ -683,9 +727,9 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         .val-lg { font-size: 32px; font-weight: 800; color: #fb923c; word-break: break-all; }
         .sum-right { text-align: right; }
 
-        .signature-block { margin-top: 48px; text-align: center; width: 100%; }
-        .sig { font-family: 'Caveat', cursive; font-size: 32px; color: #7e22ce; margin-bottom: 8px; }
-        .signature-block .label { color: #9ca3af; letter-spacing: 0.2em; }
+        .signature-block { text-align: left; width: 250px; }
+        .sig { font-family: 'Caveat', cursive; font-size: 32px; color: #7e22ce; margin-bottom: 4px; line-height: 1; }
+        .signature-block .label { color: #9ca3af; letter-spacing: 0.2em; font-size: 10px; }
     </style></head><body>${pagesHtml}</body></html>`;
 }
 
@@ -694,15 +738,25 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 11;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const itemsFirstPage = 8;
+    const itemsSubsequentPages = 15;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, i) => {
-      const pageItems = data.items.slice(
-        i * itemsPerPage,
-        (i + 1) * itemsPerPage,
-      );
+    const pagesHtml = allPages
+    .map((pageItems, i) => {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
@@ -802,20 +856,19 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
           : ""
         }
             </div>
-            <div class="page-num" style="position:absolute; bottom:24px; right:60px; font-size:10px; color:#94a3b8;">${i + 1} / ${totalPages}</div>
-            <div class="bottom-accent"></div>
+            <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#94a3b8;">${i + 1} / ${totalPages}</div>
         </div>`;
     })
     .join("");
 
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #eee; color: #334155; margin: 0; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; position: relative; overflow: hidden; }
+    @page { size: A4; margin: 0; }
+    body { font-family: 'Inter', sans-serif; background: #fff; color: #334155; margin: 0; }
+    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; overflow: hidden; }
     .page-break { page-break-before: always; }
 
     .top-accent { height: 8px; background: #1e293b; width: 100%; }
-    .bottom-accent { position: absolute; bottom: 0; left: 0; height: 8px; background: #1e293b; width: 100%; }
 
     .inner-content { padding: 60px; }
 
@@ -844,7 +897,7 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     th { padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #1e293b; border-bottom: 2px solid #1e293b; text-align: center; }
     td { padding: 16px; font-size: 14px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #475569; }
 
-    .footer-area { margin-top: 40px; }
+    .footer-area { margin-top: 40px; padding-bottom: 80px; }
     .totals-section { width: 320px; margin-left: auto; margin-bottom: 60px; }
     .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; font-variant-numeric: tabular-nums; }
     .total-row.subt { color: #64748b; border-bottom: 1px solid #f1f5f9; }
@@ -863,15 +916,25 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 8;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const itemsFirstPage = 6;
+    const itemsSubsequentPages = 10;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, i) => {
-      const pageItems = data.items.slice(
-        i * itemsPerPage,
-        (i + 1) * itemsPerPage,
-      );
+    const pagesHtml = allPages
+    .map((pageItems, i) => {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
@@ -983,8 +1046,9 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #f4f4f5; color: #18181b; margin: 0; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; }
+    @page { size: A4; margin: 0; }
+    body { font-family: 'Inter', sans-serif; background: #fff; color: #18181b; margin: 0; }
+    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
 
     .content { padding: 48px; }
@@ -1007,25 +1071,26 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
     .project-text { font-size: 15px; font-weight: 500; color: #3f3f46; }
 
-    .table-head { background: #18181b; color: #fff; border-radius: 8px; display: flex; padding: 12px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
-    .table-row { display: flex; align-items: center; padding: 12px 16px; border: 1px solid #f4f4f5; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+    .table-head { background: #18181b; color: #fff; border-radius: 8px; display: flex; padding: 12px 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+    .table-row { display: flex; align-items: center; padding: 16px 20px; border: 1px solid #f4f4f5; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
 
-    .col-desc { flex: 1; }
+    .col-desc { flex: 1; min-width: 0; }
     .col-unit { width: 50px; text-align: center; color: #71717a; }
-    .col-qty { width: 50px; text-align: center; font-weight: 600; background: #f4f4f5; border-radius: 6px; padding: 4px 0; margin: 0 4px; }
-    .col-price { width: 110px; text-align: right; font-weight: 500; color: #71717a; }
-    .col-total { width: 130px; text-align: right; font-weight: 700; color: #18181b; }
+    .col-qty { width: 60px; text-align: center; font-weight: 600; border-radius: 6px; padding: 4px 0; margin: 0 4px; }
+    .table-body .col-qty { background: #f4f4f5; }
+    .col-price { width: 130px; text-align: right; font-weight: 500; color: #71717a; }
+    .col-total { width: 160px; text-align: right; font-weight: 700; color: #18181b; }
 
     .item-name { font-weight: 500; color: #18181b; }
 
-    .footer { margin-top: 32px; padding-top: 32px; border-top: 1px solid #f4f4f5; display: flex; justify-content: space-between; align-items: flex-end; }
+    .footer { margin-top: 32px; padding-top: 32px; border-top: 1px solid #f4f4f5; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 80px; }
     .signature-block { width: 300px; }
     .sig-name { font-family: 'Dancing Script', cursive; font-size: 28px; color: #18181b; border-bottom: 1px solid #e4e4e7; padding-bottom: 8px; margin-bottom: 8px; }
 
     .totals-block { width: 400px; font-variant-numeric: tabular-nums; }
     .total-row { display: flex; justify-content: space-between; font-size: 14px; color: #71717a; margin-bottom: 12px; }
-    .total-row.grand { border-top: 1px solid #e4e4e7; padding-top: 16px; margin-top: 16px; color: #18181b; font-weight: 700; font-size: 24px; }
-    .grand-val { font-size: 32px; font-weight: 800; word-break: break-all; text-align: right; margin-left: 10px; }
+    .total-row.grand { border-top: 1px solid #e4e4e7; padding-top: 16px; margin-top: 16px; color: #18181b; font-weight: 700; font-size: 20px; }
+    .grand-val { font-size: 24px; font-weight: 800; word-break: break-all; text-align: right; margin-left: 10px; }
     </style></head><body>${pagesHtml}</body></html>`;
 }
 
@@ -1034,16 +1099,29 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 12;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const itemsFirstPage = 8;
+    const itemsSubsequentPages = 14;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, i) => {
-      const pageItems = data.items.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+    const pagesHtml = allPages
+    .map((pageItems, i) => {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
-            <div class="content" style="padding: 48px; height: 100%; display: flex; flex-direction: column; position: relative; background: #fdfbf7; box-sizing: border-box;">
+            <div class="content" style="padding: 48px; height: 100%; display: flex; flex-direction: column; position: relative; background: #fff; box-sizing: border-box;">
                 ${i === 0
           ? `
                 <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
@@ -1119,7 +1197,7 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
 
-                <div style="margin-top: auto; padding-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="margin-top: auto; padding-top: 50px; padding-bottom: 80px; display: flex; justify-content: space-between; align-items: flex-end;">
                     <div style="font-size: 11px; color: #ccc; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">MERCI DE VOTRE CONFIANCE</div>
                     <div style="text-align: center;">
                         <div style="font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 25px;">${dict.manager}</div>
@@ -1136,8 +1214,9 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+    @page { size: A4; margin: 0; }
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; }
+    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
     </style></head><body>${pagesHtml}</body></html>`;
 }
@@ -1146,13 +1225,26 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // STYLE 7: SUMMIT
 // ==========================================
 function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
-  const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsPerPage = 8;
-  const totalPages = Math.max(1, Math.ceil(data.items.length / itemsPerPage));
+    const { totalht, totalmaterial } = calculateTotals(data.items);
+    const itemsFirstPage = 5;
+    const itemsSubsequentPages = 12;
+    
+    // Pagination logic
+    const allPages: InvoiceItem[][] = [];
+    if (data.items.length <= itemsFirstPage) {
+      allPages.push(data.items);
+    } else {
+      allPages.push(data.items.slice(0, itemsFirstPage));
+      let currentPos = itemsFirstPage;
+      while (currentPos < data.items.length) {
+        allPages.push(data.items.slice(currentPos, currentPos + itemsSubsequentPages));
+        currentPos += itemsSubsequentPages;
+      }
+    }
+    const totalPages = allPages.length;
 
-  const pagesHtml = Array.from({ length: totalPages })
-    .map((_, i) => {
-      const pageItems = data.items.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+    const pagesHtml = allPages
+    .map((pageItems, i) => {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
@@ -1239,7 +1331,7 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     
                     <div>
                         <div style="font-size: 28px; font-weight: 900; text-transform: uppercase; margin-bottom: 40px;">${lang === "fr" ? "Merci pour votre achat !" : "Thank you for purchase!"}</div>
-                        <div style="display: flex; justify-content: flex-end;">
+                        <div style="display: flex; justify-content: flex-end; padding-bottom: 80px;">
                             <div style="text-align: center; width: 200px;">
                                 <div style="font-size: 24px; font-weight: 900; border-bottom: 2px solid #111; padding-bottom: 10px; margin-bottom: 10px;">${data.managerName}</div>
                                 <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase;">${dict.manager}</div>
@@ -1262,8 +1354,9 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+    @page { size: A4; margin: 0; }
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; }
+    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
     </style></head><body>${pagesHtml}</body></html>`;
 }

@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import CanvasProvider from "@/src/context/canvasContext";
 import { NotificationProvider } from "@/src/context/NotificationContext";
 import { ThemeProvider } from "@/src/components/theme-provider";
+import UpdateManager from "@/src/components/UpdateManager";
 
 // Fallback variables for system fonts
 const jakarta = { variable: "font-jakarta" };
@@ -36,6 +37,7 @@ export default function RootLayout({
         <Toaster />
         <LanguageProvider>
             <NotificationProvider>
+              <UpdateManager />
               <CanvasProvider>
                 <ThemeProvider
                   attribute="class"

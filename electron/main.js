@@ -9,6 +9,7 @@ const {
   Menu,
   protocol,
 } = require("electron");
+const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const { handleDataRequest, handleActionRequest } = require("./data-handlers");
 
@@ -179,6 +180,10 @@ if (!gotTheLock) {
       return app.getLocale();
     });
 
+    ipcMain.handle("get-version", () => {
+      return app.getVersion();
+    });
+
     // Handle PDF generation locally
     ipcMain.handle("generate-pdf", async (event, html) => {
       const pdfWin = new BrowserWindow({
@@ -214,7 +219,49 @@ if (!gotTheLock) {
     app.setAsDefaultProtocolClient("essor");
   }
 
-  app.whenReady().then(createWindow);
+  app.whenReady().then(() => {
+    createWindow();
+    
+    // Auto Update configuration
+    autoUpdater.autoDownload = false; // We want users to see the progress
+    
+    autoUpdater.on("checking-for-update", () => {
+      win.webContents.send("update-status", "checking");
+    });
+
+    autoUpdater.on("update-available", (info) => {
+      win.webContents.send("update-status", "available", info);
+    });
+
+    autoUpdater.on("update-not-available", (info) => {
+      win.webContents.send("update-status", "not-available", info);
+    });
+
+    autoUpdater.on("error", (err) => {
+      win.webContents.send("update-status", "error", err.message);
+    });
+
+    autoUpdater.on("download-progress", (progressObj) => {
+      win.webContents.send("update-progress", progressObj);
+    });
+
+    autoUpdater.on("update-downloaded", (info) => {
+      win.webContents.send("update-status", "downloaded", info);
+    });
+
+    // IPC for updates
+    ipcMain.handle("check-for-updates", async () => {
+      return await autoUpdater.checkForUpdatesAndNotify();
+    });
+
+    ipcMain.handle("start-download", async () => {
+      return await autoUpdater.downloadUpdate();
+    });
+
+    ipcMain.handle("quit-and-install", () => {
+      autoUpdater.quitAndInstall();
+    });
+  });
 
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();

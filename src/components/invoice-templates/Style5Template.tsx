@@ -146,7 +146,7 @@ export default function Style5Template({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -155,7 +155,7 @@ export default function Style5Template({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[794px] min-h-[1123px] text-zinc-900 relative shadow-xl font-sans ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[794px] min-h-[1123px] pb-32 text-zinc-900 relative shadow-xl font-sans ${scale < 0.8 ? "scale-small" : ""}`}
       >
         <div className="p-12 h-full flex flex-col">
           {/* Header */}
@@ -258,11 +258,11 @@ export default function Style5Template({
               <div className="col-span-3 text-right">{dict.unitPrice}</div>
               <div className="col-span-3 text-right">{dict.total}</div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {itemsArr.map((item) => (
                 <div
                   key={item.id}
-                  className="grid grid-cols-12 gap-4 px-4 py-3 bg-white border border-zinc-100 rounded-lg items-center hover:border-zinc-300 transition-colors group relative"
+                  className="grid grid-cols-12 gap-4 px-6 py-5 bg-white border border-zinc-100 rounded-lg items-center hover:border-zinc-300 transition-colors group relative"
                 >
                   <div className="col-span-4 font-medium text-zinc-800">
                     <OptimizedInput
@@ -317,7 +317,7 @@ export default function Style5Template({
                 </div>
               ))}
               {/* Add New */}
-              <div className="grid grid-cols-12 gap-4 px-4 py-3 border border-dashed border-zinc-200 rounded-lg items-center hover:bg-zinc-50 transition-colors cursor-text">
+              <div className="grid grid-cols-12 gap-4 px-6 py-5 border border-dashed border-zinc-200 rounded-lg items-center hover:bg-zinc-50 transition-colors cursor-text">
                 <div className="col-span-4 flex items-center gap-2">
                   <Button
                     className="w-6 h-6 rounded bg-zinc-100 flex items-center justify-center text-zinc-400 cursor-pointer"
@@ -408,9 +408,9 @@ export default function Style5Template({
                   <span>{dict.totalMaterial}</span>
                   <span>{totalMaterialGeneral}</span>
                 </div>
-                <div className="flex justify-between pt-4 border-t border-zinc-200 text-lg font-bold text-zinc-900 gap-4">
-                  <span className="whitespace-nowrap">{dict.totalDue}</span>
-                  <span className="font-mono break-all text-right">
+                <div className="flex justify-between pt-4 border-t border-zinc-200 text-base font-bold text-zinc-900 gap-6">
+                  <span className="whitespace-nowrap uppercase tracking-wider">{dict.totalDue}</span>
+                  <span className="font-mono text-xl text-right text-zinc-950">
                     {formatCurrency(totalGeneral)}
                   </span>
                 </div>

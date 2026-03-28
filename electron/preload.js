@@ -14,4 +14,19 @@ contextBridge.exposeInMainWorld("electronAPI", {
   actionData: (type, method, ...params) => ipcRenderer.invoke("action-data", type, method, params),
   generatePDF: (html) => ipcRenderer.invoke("generate-pdf", html),
   getLocale: () => ipcRenderer.invoke("get-locale"),
+  getVersion: () => ipcRenderer.invoke("get-version"),
+  // Updates
+  checkForUpdates: () => ipcRenderer.invoke("check-for-updates"),
+  startDownload: () => ipcRenderer.invoke("start-download"),
+  quitAndInstall: () => ipcRenderer.invoke("quit-and-install"),
+  onUpdateStatus: (callback) => {
+    const subscription = (_event, status, info) => callback(status, info);
+    ipcRenderer.on("update-status", subscription);
+    return () => ipcRenderer.removeListener("update-status", subscription);
+  },
+  onUpdateProgress: (callback) => {
+    const subscription = (_event, progress) => callback(progress);
+    ipcRenderer.on("update-progress", subscription);
+    return () => ipcRenderer.removeListener("update-progress", subscription);
+  },
 });

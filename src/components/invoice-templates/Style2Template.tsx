@@ -130,7 +130,7 @@ export default function Style2Template({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -139,7 +139,7 @@ export default function Style2Template({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[794px] min-h-[1123px] text-gray-800 relative shadow-xl font-serif ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[794px] min-h-[1123px] pb-32 text-gray-800 relative shadow-xl font-serif ${scale < 0.8 ? "scale-small" : ""}`}
       >
         {/* Header with Color Block */}
         <div className="flex h-48">

@@ -134,7 +134,7 @@ export default function Style1Template({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -143,7 +143,7 @@ export default function Style1Template({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[794px] min-h-[1123px] text-slate-800 relative shadow-lg ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[794px] min-h-[1123px] pb-32 text-slate-800 relative shadow-lg ${scale < 0.8 ? "scale-small" : ""}`}
       >
         {/* Header Section */}
         <div className="bg-slate-900 text-white p-12 flex justify-between items-start">

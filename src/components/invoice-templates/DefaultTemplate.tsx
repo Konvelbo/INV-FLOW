@@ -139,7 +139,7 @@ export default function DefaultTemplate({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -148,7 +148,7 @@ export default function DefaultTemplate({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[850px] text-black relative ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[850px] pb-32 text-black relative ${scale < 0.8 ? "scale-small" : ""}`}
       >
         <div className="flex justify-between items-start relative w-full mb-8 pt-10">
           <div className="flex flex-col gap-4">
@@ -165,18 +165,18 @@ export default function DefaultTemplate({
             </div>
           </div>
           <div className="text-right flex flex-col gap-2 p-2">
-             <div className="flex items-center justify-end gap-2">
-                <OptimizedInput
-                  value={city}
-                  dir="rtl"
-                  onValueChange={setCity}
-                  placeholder={dict.city}
-                  className="w-40 font-medium bg-transparent"
-                />
-             </div>
-             <p className="text-gray-600 font-semibold uppercase text-xs tracking-widest border-t pt-2">
-                {dict.date} {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US")}
-             </p>
+            <div className="flex items-center justify-end gap-2">
+              <OptimizedInput
+                value={city}
+                dir="rtl"
+                onValueChange={setCity}
+                placeholder={dict.city}
+                className="w-40 font-medium bg-transparent"
+              />
+            </div>
+            <p className="text-gray-600 font-semibold uppercase text-xs tracking-widest border-t pt-2">
+              {dict.date} {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US")}
+            </p>
           </div>
         </div>
         <div className="border h-35 w-full min-h-70">
@@ -188,55 +188,55 @@ export default function DefaultTemplate({
               <h2>{dict.deliveryAddress}:</h2>
             </div>
           </div>
-            <div className="client-info space-y-3">
-              <div className="editable-field flex items-center gap-2">
-                <span className="label w-24">{dict.client} :</span>
+          <div className="client-info space-y-3">
+            <div className="editable-field flex items-center gap-2">
+              <span className="label w-24">{dict.client} :</span>
+              <OptimizedInput
+                value={clientName}
+                onValueChange={setClientName}
+                placeholder={dict.client}
+                className="flex-1 font-bold text-lg bg-transparent"
+              />
+            </div>
+            <div className="editable-field flex items-center gap-2">
+              <span className="label w-24">{dict.address} :</span>
+              <OptimizedInput
+                value={clientAddress}
+                onValueChange={setClientAddress}
+                placeholder={dict.address}
+                className="flex-1 bg-transparent"
+              />
+            </div>
+            <div className="flex gap-4">
+              <div className="editable-field flex-1 flex items-center gap-2">
+                <span className="label w-24">{dict.contact} :</span>
                 <OptimizedInput
-                  value={clientName}
-                  onValueChange={setClientName}
-                  placeholder={dict.client}
-                  className="flex-1 font-bold text-lg bg-transparent"
-                />
-              </div>
-              <div className="editable-field flex items-center gap-2">
-                <span className="label w-24">{dict.address} :</span>
-                <OptimizedInput
-                  value={clientAddress}
-                  onValueChange={setClientAddress}
-                  placeholder={dict.address}
+                  value={clientContact}
+                  onValueChange={setClientContact}
+                  placeholder={dict.contact}
                   className="flex-1 bg-transparent"
                 />
               </div>
-              <div className="flex gap-4">
-                <div className="editable-field flex-1 flex items-center gap-2">
-                  <span className="label w-24">{dict.contact} :</span>
-                  <OptimizedInput
-                    value={clientContact}
-                    onValueChange={setClientContact}
-                    placeholder={dict.contact}
-                    className="flex-1 bg-transparent"
-                  />
-                </div>
-                <div className="editable-field flex-1 flex items-center gap-2">
-                  <span className="label w-24">{dict.poBox} :</span>
-                  <OptimizedInput
-                    value={clientPOBox}
-                    onValueChange={setClientPOBox}
-                    placeholder={dict.poBox}
-                    className="flex-1 bg-transparent"
-                  />
-                </div>
-              </div>
-              <div className="editable-field flex items-center gap-2 border-t pt-2 mt-2">
-                <span className="label w-24">{dict.object} :</span>
+              <div className="editable-field flex-1 flex items-center gap-2">
+                <span className="label w-24">{dict.poBox} :</span>
                 <OptimizedInput
-                  value={object}
-                  onValueChange={setObject}
-                  placeholder={dict.object}
-                  className="flex-1 font-medium bg-transparent"
+                  value={clientPOBox}
+                  onValueChange={setClientPOBox}
+                  placeholder={dict.poBox}
+                  className="flex-1 bg-transparent"
                 />
               </div>
             </div>
+            <div className="editable-field flex items-center gap-2 border-t pt-2 mt-2">
+              <span className="label w-24">{dict.object} :</span>
+              <OptimizedInput
+                value={object}
+                onValueChange={setObject}
+                placeholder={dict.object}
+                className="flex-1 font-medium bg-transparent"
+              />
+            </div>
+          </div>
         </div>
         <table>
           <thead>

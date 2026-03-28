@@ -33,7 +33,7 @@ import { useLanguage } from "@/src/context/LanguageContext";
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +62,13 @@ export const AppSidebar = React.memo(function AppSidebar() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { performAction, loading: actionLoading } = useIPCAction();
+  const [appVersion, setAppVersion] = useState("v1.0.4");
+
+  useEffect(() => {
+    if (window.electronAPI?.getVersion) {
+      window.electronAPI.getVersion().then((v: string) => setAppVersion(`v${v}`));
+    }
+  }, []);
 
   const handleSendFeedback = async () => {
     if (!feedback.trim()) return;
@@ -357,7 +364,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
             <div className="flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
               <div className="size-1.5 rounded-full bg-primary animate-pulse" />
               <span className="text-[8px] font-mono tracking-widest uppercase">
-                v1.0.4-obsidian
+                {appVersion}-obsidian
               </span>
             </div>
           </SidebarGroupContent>

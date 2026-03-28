@@ -67,8 +67,10 @@ button {
   min-height: 1123px;
   margin: 0 auto;
   background: #fff;
-  padding: 160px 40px 40px 40px;
-  /* Increased top padding for the "big margin" */
+  padding-top: 160px;
+  padding-left: 40px;
+  padding-right: 40px;
+  /* Removed padding-bottom to allow pb-32 class to take effect */
   box-sizing: border-box;
   display: inline-block;
   border-radius: 4px;

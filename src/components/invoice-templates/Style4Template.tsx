@@ -130,7 +130,7 @@ export default function Style4Template({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -139,7 +139,7 @@ export default function Style4Template({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[794px] min-h-[1123px] text-slate-800 relative shadow-xl font-sans ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[794px] min-h-[1123px] pb-32 text-gray-800 relative shadow-xl font-serif ${scale < 0.8 ? "scale-small" : ""}`}
       >
         {/* Elegant Top Border */}
         <div className="h-2 w-full bg-[#1e293b]"></div>
@@ -412,7 +412,6 @@ export default function Style4Template({
         </div>
 
         {/* Elegant Bottom Border */}
-        <div className="absolute bottom-0 left-0 w-full h-2 bg-[#1e293b]"></div>
       </div>
     </div>
   );

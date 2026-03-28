@@ -144,7 +144,7 @@ export default function Style6Template({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -153,7 +153,7 @@ export default function Style6Template({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-[#fdfbf7] w-[794px] min-h-[1123px] text-zinc-900 relative shadow-xl font-sans ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[794px] min-h-[1123px] pb-32 text-slate-800 relative shadow-2xl ${scale < 0.8 ? "scale-small" : ""}`}
       >
         <div className="p-12 h-full flex flex-col">
           {/* Header */}
@@ -204,10 +204,10 @@ export default function Style6Template({
 
           {/* Object Section */}
           <div className="mb-8">
-             <div className="font-bold text-xs uppercase tracking-widest text-zinc-400 mb-2">
-                {dict.object}
-              </div>
-              <p className="text-zinc-800 font-medium">{object}</p>
+            <div className="font-bold text-xs uppercase tracking-widest text-zinc-400 mb-2">
+              {dict.object}
+            </div>
+            <p className="text-zinc-800 font-medium">{object}</p>
           </div>
 
           {/* Table */}
@@ -238,25 +238,25 @@ export default function Style6Template({
                       </button>
                     </td>
                     <td className="py-4 px-4 text-center align-top tabular-nums">
-                        <OptimizedInput
-                          value={item.unitPrice}
-                          onValueChange={(val) => updateItem(item.id, "unitPrice", Number(val))}
-                          className="bg-transparent text-center w-24"
-                        />
+                      <OptimizedInput
+                        value={item.unitPrice}
+                        onValueChange={(val) => updateItem(item.id, "unitPrice", Number(val))}
+                        className="bg-transparent text-center w-24"
+                      />
                     </td>
                     <td className="py-4 px-4 text-center align-top tabular-nums">
-                        <OptimizedInput
-                          value={item.quantity}
-                          onValueChange={(val) => updateItem(item.id, "quantity", Number(val))}
-                          className="bg-transparent text-center w-12"
-                        />
+                      <OptimizedInput
+                        value={item.quantity}
+                        onValueChange={(val) => updateItem(item.id, "quantity", Number(val))}
+                        className="bg-transparent text-center w-12"
+                      />
                     </td>
                     <td className="py-4 px-4 text-right align-top font-bold tabular-nums">
                       {formatCurrency(item.totalPrice)}
                     </td>
                   </tr>
                 ))}
-                
+
                 {/* Add Item */}
                 <tr className="border-dashed border-t-2 border-zinc-200 bg-zinc-50/50">
                   <td className="py-4 px-4 flex items-center gap-2">
@@ -276,18 +276,18 @@ export default function Style6Template({
                     />
                   </td>
                   <td className="py-4 px-4">
-                     <OptimizedInput
-                        value={newItem.unitPrice}
-                        onValueChange={(val) => setNewItem({ ...newItem, unitPrice: Number(val), totalPrice: Number(val) * newItem.quantity })}
-                        className="bg-transparent text-center w-full"
-                      />
+                    <OptimizedInput
+                      value={newItem.unitPrice}
+                      onValueChange={(val) => setNewItem({ ...newItem, unitPrice: Number(val), totalPrice: Number(val) * newItem.quantity })}
+                      className="bg-transparent text-center w-full"
+                    />
                   </td>
                   <td className="py-4 px-4">
-                     <OptimizedInput
-                        value={newItem.quantity}
-                        onValueChange={(val) => setNewItem({ ...newItem, quantity: Number(val), totalPrice: Number(val) * newItem.unitPrice })}
-                        className="bg-transparent text-center w-full"
-                      />
+                    <OptimizedInput
+                      value={newItem.quantity}
+                      onValueChange={(val) => setNewItem({ ...newItem, quantity: Number(val), totalPrice: Number(val) * newItem.unitPrice })}
+                      className="bg-transparent text-center w-full"
+                    />
                   </td>
                   <td className="py-4 px-4 text-right font-medium text-zinc-400">
                     {formatCurrency(newItem.totalPrice)}
@@ -316,7 +316,7 @@ export default function Style6Template({
           {/* Footer */}
           <div className="mt-16 pt-8 border-t border-zinc-200 flex justify-between items-end">
             <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">
-               MERCI DE VOTRE CONFIANCE
+              MERCI DE VOTRE CONFIANCE
             </div>
             <div className="text-right">
               <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 text-center">

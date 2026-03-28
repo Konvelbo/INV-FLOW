@@ -130,7 +130,7 @@ export default function Style3Template({
 
   return (
     <div
-      className="canvas-wrapper overflow-hidden"
+      className="canvas-wrapper"
       style={{
         transform: `scale(${scale})`,
         transition: "transform 150ms ease",
@@ -139,7 +139,7 @@ export default function Style3Template({
       <div
         ref={divRef}
         id="canvas"
-        className={`bg-white w-[794px] min-h-[1123px] text-gray-800 relative shadow-xl ${scale < 0.8 ? "scale-small" : ""}`}
+        className={`bg-white w-[794px] min-h-[1123px] pb-32 text-gray-800 relative shadow-xl ${scale < 0.8 ? "scale-small" : ""}`}
       >
         {/* Decorative Background */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-400 rounded-bl-[100px] opacity-20 z-0"></div>
