@@ -37,9 +37,16 @@ export default function UpdateManager() {
         setShowModal(true);
       } else if (newStatus === "error") {
         setError(info);
-        toast.error(`Erreur mise à jour: ${info}`);
+        // Silent logs for background checks to avoid technical toasts
+        console.error("Update System Error:", info);
+        
+        // Only show toast for critical errors (not for checking failures)
+        if (status === "downloading" || status === "downloaded") {
+          toast.error("Un problème est survenu lors de la mise à jour. Nous réessaierons plus tard.");
+        }
       } else if (newStatus === "not-available") {
-        toast.success("Votre application est à jour !");
+        // Silent for auto-check
+        console.log("App is up to date");
       }
     });
 
