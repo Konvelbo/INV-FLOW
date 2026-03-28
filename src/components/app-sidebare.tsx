@@ -211,7 +211,12 @@ export const AppSidebar = React.memo(function AppSidebar() {
                     >
                       <Link
                         id="sidebare-link"
-                        onClick={() => {
+                        onClick={(e) => {
+                          if (item.id === "Assistant IA") {
+                            e.preventDefault();
+                            toast.error("Cette fonctionnalité est en cours de développement.");
+                            return;
+                          }
                           if (item.id === "Invoice") {
                             clearInvoiceData();
                           }

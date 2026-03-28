@@ -48,6 +48,9 @@ export default function UpdateManager() {
       setStatus("downloading");
     });
 
+    // Initial check on mount
+    window.electronAPI.checkForUpdates?.();
+
     return () => {
       unbindStatus();
       unbindProgress();

@@ -234,6 +234,10 @@ if (!gotTheLock) {
   app.whenReady().then(() => {
     createWindow();
     
+    // Auto-check for updates on startup
+    autoUpdater.checkForUpdatesAndNotify()
+      .catch(err => console.error("AutoUpdater: Initial check failed", err));
+    
     // Auto Update configuration
     autoUpdater.autoDownload = false; // We want users to see the progress
     

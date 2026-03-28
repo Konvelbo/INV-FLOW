@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { PrismaClient } = require("../src/p_client");
 const prisma = new PrismaClient();
+// Start connection immediately in background to reduce first-query latency
+prisma.$connect()
+  .then(() => console.log("Prisma: Database connection established"))
+  .catch(err => console.error("Prisma: Warmup connection failed", err));
+
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
 const { generateExcel } = require("./excel-service");
