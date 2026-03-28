@@ -161,8 +161,8 @@ export function StatsCard({
           <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
             {title}
           </h3>
-          <div className="flex items-baseline gap-2">
-            <div className="text-3xl font-black text-foreground tracking-tighter">
+          <div className="flex items-baseline gap-2 overflow-hidden">
+            <div className="text-3xl font-black text-foreground tracking-tighter truncate">
               {value}
             </div>
             {subtitle && (

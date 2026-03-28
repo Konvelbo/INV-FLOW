@@ -126,7 +126,7 @@ export default function DashboardClient({
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up delay-100">
           <StatsCard
             title={t("monthlyRevenues")}
             value={(() => {
@@ -203,8 +203,8 @@ export default function DashboardClient({
         </div>
 
         {/* Productivity Goals */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in-up delay-150">
-          <Card className="lg:col-span-2 border border-border/40 shadow-2xl bg-card/50 backdrop-blur-xl overflow-hidden rounded-3xl">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 animate-fade-in-up delay-150">
+          <Card className="xl:col-span-2 border border-border/40 shadow-2xl bg-card/50 backdrop-blur-xl overflow-hidden rounded-3xl">
             <div className="px-8 py-6 border-b border-border/40 flex items-center justify-between bg-muted/20">
               <h3 className="font-bold text-lg flex items-center gap-3">
                 <div className="p-2 bg-primary/20 rounded-lg">
@@ -274,8 +274,8 @@ export default function DashboardClient({
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-8 animate-fade-in-up delay-200 pb-10">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 animate-fade-in-up delay-200 pb-10">
+          <div className="xl:col-span-2 space-y-8">
             <LineChart2 externalData={stats.chartData} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <InvoiceCalendar invoices={stats.recentInvoices || []} />
@@ -283,7 +283,7 @@ export default function DashboardClient({
             </div>
           </div>
 
-          <div className="lg:flex flex-col space-y-8">
+          <div className="xl:flex flex-col space-y-8">
             <RecentInvoices invoices={stats.recentInvoices || []} />
             {stats.recentProducts && (
               <Card className="border border-border/40 shadow-2xl bg-card/60 backdrop-blur-xl shrink-0 overflow-hidden flex flex-col h-full rounded-2xl max-h-[600px]">

@@ -110,21 +110,21 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                       key={inv.id}
                       className="p-4 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-primary/40 hover:bg-slate-900/60 transition-all duration-300 flex items-center justify-between group/item cursor-pointer"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="p-2.5 rounded-xl bg-slate-950 border border-white/5 group-hover/item:border-primary/50 transition-colors">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="p-2.5 rounded-xl bg-slate-950 border border-white/5 group-hover/item:border-primary/50 transition-colors shrink-0">
                           <FileText className="w-4 h-4 text-muted-foreground group-hover/item:text-primary" />
                         </div>
-                        <div>
-                          <div className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors font-sans">
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <div className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors font-sans truncate">
                             {inv.reference || t("noRef")}
                           </div>
-                          <div className="text-[11px] text-muted-foreground font-sans">
+                          <div className="text-[11px] text-muted-foreground font-sans truncate">
                             {inv.clientName}
                           </div>
                         </div>
                       </div>
-                      <div className="text-right flex flex-col items-end gap-1">
-                        <div className="text-sm font-bold text-primary font-mono whitespace-nowrap">
+                      <div className="text-right flex flex-col items-end gap-1 shrink-0 ml-4 max-w-[45%]">
+                        <div className="text-sm font-bold text-primary font-mono whitespace-nowrap truncate w-full">
                           {inv.totalHT.toLocaleString()} {currency}
                         </div>
                         <Badge

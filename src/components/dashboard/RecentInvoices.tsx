@@ -68,19 +68,19 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
               <div className="p-3 rounded-xl bg-slate-900 border border-border group-hover:border-primary/50 group-hover:scale-110 transition-all duration-300">
                 <FileText className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
               </div>
-              <div>
-                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors font-sans">
+              <div className="flex flex-col min-w-0 flex-1">
+                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors font-sans truncate">
                   {invoice.reference || t("noRef")}
                 </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                  <User className="w-3 h-3" />
-                  {invoice.clientName}
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5 truncate">
+                  <User className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{invoice.clientName}</span>
                 </div>
               </div>
             </div>
 
-            <div className="text-right flex flex-col items-end gap-1.5 min-w-[120px]">
-              <div className="text-sm font-bold text-primary font-mono tracking-tight">
+            <div className="text-right flex flex-col items-end gap-1.5 shrink-0 ml-4 max-w-[40%]">
+              <div className="text-sm font-bold text-primary font-mono tracking-tight truncate w-full">
                 {invoice.totalHT.toLocaleString()} {currency}
               </div>
               <div className="relative h-6 w-full flex justify-end">

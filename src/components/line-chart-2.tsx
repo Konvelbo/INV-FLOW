@@ -205,8 +205,8 @@ export default function LineChart2({ externalData }: { externalData?: any[] }) {
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">
               {currentPeriod.dateRange}
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-4xl font-black text-foreground font-mono tracking-tighter">
+            <div className="flex items-center gap-4 overflow-hidden">
+              <div className="text-4xl font-black text-foreground font-mono tracking-tighter truncate">
                 {totalCash.toLocaleString()}
                 <span className="text-sm ml-1 text-muted-foreground font-medium uppercase">
                   {currency}
