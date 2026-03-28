@@ -1,6 +1,6 @@
 {
   "name": "essor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
@@ -41,7 +41,10 @@
       "allowToChangeInstallationDirectory": false
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "public/logo-caracterer-bg-non-ESSOR.png",
       "category": "public.app-category.productivity"
     },
@@ -72,13 +75,13 @@
       "src/p_client/**/*"
     ],
     "asarUnpack": [
-      "src/p_client/query_engine-windows.dll.node"
-    ]
-  },
-  "publish": {
-    "provider": "github",
-    "owner": "tonusername",
-    "repo": "tonrepo"
+      "src/p_client/*query_engine*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "Konvelbo",
+      "repo": "INV-FLOW"
+    }
   },
   "asar": true,
   "dependencies": {
