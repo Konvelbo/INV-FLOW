@@ -38,7 +38,6 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/src/context/LanguageContext";
 
-
 import { toast } from "react-hot-toast";
 import { useIPCAction } from "@/hooks/useIPCAction";
 
@@ -85,21 +84,24 @@ export default function UserMenu() {
           const userData = userStr ? JSON.parse(userStr) : null;
           const token = userData?.token;
 
-          const res = await performAction("auth", "avatar", userData.id, { image: base64String });
+          const res = await performAction("auth", "avatar", {
+            image: base64String,
+          });
 
           if (res.success) {
             const avatarUrl = res.data.avatar;
-            const updatedUser = user
-              ? { ...user, avatar: avatarUrl }
-              : { name: "User", email: "", avatar: avatarUrl };
+
+            const updatedUser = {
+              ...userData,
+              avatar: avatarUrl,
+            };
 
             setUser(updatedUser);
-            // Crucial: keep the token when saving back to localStorage
-            localStorage.setItem(
-              "user",
-              JSON.stringify({ ...userData, avatar: avatarUrl }),
-            );
-            window.dispatchEvent(new CustomEvent("session-update"));
+
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            window.dispatchEvent(new Event("storage")); // important
+
             toast.success("Avatar mis à jour !");
           } else {
             toast.error(res.error || "Échec de l'upload de l'avatar");
@@ -139,7 +141,9 @@ export default function UserMenu() {
             <Avatar className="h-full w-full rounded-xl">
               <AvatarImage
                 alt={user?.name}
-                src={user?.avatar}
+                src={
+                  user?.avatar ? `${user.avatar}?t=${Date.now()}` : undefined
+                }
                 className="object-cover"
               />
               <AvatarFallback className="bg-primary/10 text-primary font-bold">

@@ -175,7 +175,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
       // Browser/Desktop/Electron notification
       if (typeof window !== "undefined") {
-        const title = `INV-FLOW: ${notif.user}`;
+        const title = `Essor: ${notif.user}`;
         const options: any = {
           body: `${notif.action} ${notif.target}`,
           icon: "/INV_WEBLOGO.png",

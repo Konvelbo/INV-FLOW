@@ -90,7 +90,7 @@ if (!gotTheLock) {
             responseHeaders: {
               ...details.responseHeaders,
               "Content-Security-Policy": [
-                "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;",
+                "default-src 'self' app:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com https://*.mongodb.net; connect-src 'self' https://*.mongodb.net https://api.cloudinary.com https://api.resend.com https://*.resend.com wss://*; media-src 'self' blob:;",
               ],
             },
           });
@@ -114,6 +114,9 @@ if (!gotTheLock) {
         let finalPath = filePath;
         if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
           finalPath = path.join(filePath, "index.html");
+        } else if (!fs.existsSync(filePath) && fs.existsSync(filePath + ".html")) {
+          // If the file doesn't exist, try appending .html (Standard Next.js export)
+          finalPath = filePath + ".html";
         }
 
         // Final fallback if file doesn't exist (e.g. for client-side routing)

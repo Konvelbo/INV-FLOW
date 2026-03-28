@@ -509,20 +509,30 @@ export default function InvoiceClient({
                     value=""
                   >
                     <option value="" disabled>
-                      {isFetchingClients ? "Chargement des clients..." : "Choisir un client..."}
+                      {isFetchingClients
+                        ? "Chargement des clients..."
+                        : "Choisir un client..."}
                     </option>
-                    {clients.map(client => (
-                      client.email && (
-                        <option key={client.id} value={client.email}>
-                          {client.firstName ? client.firstName + ' ' : ''}{client.name} {client.companyName ? `(${client.companyName})` : ''} - {client.email}
-                        </option>
-                      )
-                    ))}
+                    {clients.map(
+                      (client) =>
+                        client.email && (
+                          <option key={client.id} value={client.email}>
+                            {client.firstName ? client.firstName + " " : ""}
+                            {client.name}{" "}
+                            {client.companyName
+                              ? `(${client.companyName})`
+                              : ""}{" "}
+                            - {client.email}
+                          </option>
+                        ),
+                    )}
                   </select>
-                  
+
                   <div className="flex items-center gap-2">
                     <div className="h-px bg-border/50 flex-1"></div>
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">OU</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                      OU
+                    </span>
                     <div className="h-px bg-border/50 flex-1"></div>
                   </div>
 

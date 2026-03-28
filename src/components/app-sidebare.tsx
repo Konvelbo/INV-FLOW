@@ -176,7 +176,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
             </div>
             {!isCollapsed && (
               <span className="font-bold tracking-tighter text-lg bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-                INV-FLOW
+                Essor
               </span>
             )}
           </motion.div>

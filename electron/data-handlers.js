@@ -6,6 +6,12 @@ const bcrypt = require("bcryptjs");
 const { generateExcel } = require("./excel-service");
 require("dotenv").config();
 const InvoiceEmail = require("../src/components/emails/InvoiceEmail.js");
+const { v2: cloudinary } = require("cloudinary");
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
 
 // Initialize Resend (API key should be in .env)
 const resendAPIKey = process.env.RESEND_API_KEY;
@@ -730,14 +736,30 @@ const actionHandlers = {
       });
     },
     logo: async (userId, { image, companyId }) => {
-      if (companyId) {
-        const company = await prisma.company.update({
-          where: { id: companyId, userId },
-          data: { logoUrl: image },
-        });
-        return { success: true, logoUrl: company.logoUrl };
+      try {
+        const options = {
+          use_filename: true,
+          unique_filename: true,
+          overwrite: true,
+          folder: "logos",
+        };
+
+        // Upload vers Cloudinary
+        const result = await cloudinary.uploader.upload(image, options);
+        const logoUrl = result.secure_url;
+
+        if (companyId) {
+          const company = await prisma.company.update({
+            where: { id: companyId, userId },
+            data: { logoUrl },
+          });
+          return { success: true, logoUrl: company.logoUrl };
+        }
+        return { success: true, logoUrl };
+      } catch (error) {
+        console.error("Logo upload error:", error);
+        return { success: false, message: "Logo upload failed" };
       }
-      return { success: true, logoUrl: image };
     },
     setActive: async (userId, companyId) => {
       return await prisma.user.update({
@@ -994,28 +1016,28 @@ const actionHandlers = {
     create: async (userId, data) => {
       const { content, rating, contactEmail } = data;
       const user = await prisma.user.findUnique({ where: { id: userId } });
-      
+
       // Save to Database
       await prisma.feedback.create({
         data: {
           content,
           rating: rating || 5,
           userId,
-        }
+        },
       });
-      
+
       const emailContent = `
         <div style="font-family: sans-serif; padding: 20px;">
           <h2>Nouveau Retour Utilisateur</h2>
-          <p><strong>Utilisateur:</strong> ${user?.name || 'Inconnu'} (${user?.email || 'Non renseigné'})</p>
-          <p><strong>Email de contact:</strong> ${contactEmail || user?.email || 'Non renseigné'}</p>
+          <p><strong>Utilisateur:</strong> ${user?.name || "Inconnu"} (${user?.email || "Non renseigné"})</p>
+          <p><strong>Email de contact:</strong> ${contactEmail || user?.email || "Non renseigné"}</p>
           <p><strong>Sujet:</strong> <br/>Feedback - Note: ${rating}/5</p>
           <p><strong>Détails:</strong><br/> <div style="background:#f4f4f4;padding:10px;border-radius:5px;">${content}</div></p>
         </div>
       `;
-      
+
       const toEmail = process.env.ADMIN_EMAIL || "contact@essor.com";
-      
+
       try {
         const resendRes = await resend.emails.send({
           from: "Essor Feedback <onboarding@resend.dev>",
@@ -1024,7 +1046,7 @@ const actionHandlers = {
           subject: `Feedback Essor: Note ${rating}/5`,
           html: emailContent,
         });
-        
+
         if (resendRes.error) {
           console.error("Resend Error:", resendRes.error);
           throw new Error(resendRes.error.message);
@@ -1036,9 +1058,12 @@ const actionHandlers = {
         // but throw an error? Let's just return success so user is happy, but log the error
         // Or throw error if they strictly want to know the email failed.
         // The user says "je veux que les feedback sois stocker en backend", so let's allow return success but attach a warning
-        return { success: true, message: "Feedback saved to database, but email notification failed." };
+        return {
+          success: true,
+          message: "Feedback saved to database, but email notification failed.",
+        };
       }
-      
+
       return { success: true, message: "Feedback sent and saved!" };
     },
   },
@@ -1070,11 +1095,36 @@ const actionHandlers = {
       return userWithoutPassword;
     },
     avatar: async (userId, { image }) => {
-      const user = await prisma.user.update({
-        where: { id: userId },
-        data: { avatar: image },
-      });
-      return { success: true, avatar: user.avatar };
+      try {
+        const options = {
+          use_filename: true,
+          unique_filename: false,
+          overwrite: true,
+          folder: "avatars",
+        };
+
+        // Upload vers Cloudinary
+        const result = await cloudinary.uploader.upload(image, options);
+
+        // result.secure_url = URL finale de l'image
+        const user = await prisma.user.update({
+          where: { id: userId },
+          data: {
+            avatar: result.secure_url,
+          },
+        });
+
+        return {
+          success: true,
+          avatar: user.avatar,
+        };
+      } catch (error) {
+        // console.error("Avatar upload error:", error);
+        return {
+          success: false,
+          message: "Upload failed",
+        };
+      }
     },
     forgotPassword: async (data) => {
       const { email, lang = "fr" } = data;

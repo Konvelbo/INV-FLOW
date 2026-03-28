@@ -9453,6 +9453,8 @@ export namespace Prisma {
     paymentMethod: string | null
     paidAt: Date | null
     isScaled: boolean | null
+    isRead: boolean | null
+    readAt: Date | null
     style: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9489,6 +9491,8 @@ export namespace Prisma {
     paymentMethod: string | null
     paidAt: Date | null
     isScaled: boolean | null
+    isRead: boolean | null
+    readAt: Date | null
     style: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9525,6 +9529,8 @@ export namespace Prisma {
     paymentMethod: number
     paidAt: number
     isScaled: number
+    isRead: number
+    readAt: number
     style: number
     createdAt: number
     updatedAt: number
@@ -9581,6 +9587,8 @@ export namespace Prisma {
     paymentMethod?: true
     paidAt?: true
     isScaled?: true
+    isRead?: true
+    readAt?: true
     style?: true
     createdAt?: true
     updatedAt?: true
@@ -9617,6 +9625,8 @@ export namespace Prisma {
     paymentMethod?: true
     paidAt?: true
     isScaled?: true
+    isRead?: true
+    readAt?: true
     style?: true
     createdAt?: true
     updatedAt?: true
@@ -9653,6 +9663,8 @@ export namespace Prisma {
     paymentMethod?: true
     paidAt?: true
     isScaled?: true
+    isRead?: true
+    readAt?: true
     style?: true
     createdAt?: true
     updatedAt?: true
@@ -9776,6 +9788,8 @@ export namespace Prisma {
     paymentMethod: string | null
     paidAt: Date | null
     isScaled: boolean
+    isRead: boolean
+    readAt: Date | null
     style: string
     createdAt: Date | null
     updatedAt: Date | null
@@ -9831,6 +9845,8 @@ export namespace Prisma {
     paymentMethod?: boolean
     paidAt?: boolean
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: boolean
     style?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -9874,12 +9890,14 @@ export namespace Prisma {
     paymentMethod?: boolean
     paidAt?: boolean
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: boolean
     style?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
+  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
   export type InvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | Invoice$clientArgs<ExtArgs>
     company?: boolean | Invoice$companyArgs<ExtArgs>
@@ -9927,6 +9945,8 @@ export namespace Prisma {
       paymentMethod: string | null
       paidAt: Date | null
       isScaled: boolean
+      isRead: boolean
+      readAt: Date | null
       style: string
       createdAt: Date | null
       updatedAt: Date | null
@@ -10356,6 +10376,8 @@ export namespace Prisma {
     readonly paymentMethod: FieldRef<"Invoice", 'String'>
     readonly paidAt: FieldRef<"Invoice", 'DateTime'>
     readonly isScaled: FieldRef<"Invoice", 'Boolean'>
+    readonly isRead: FieldRef<"Invoice", 'Boolean'>
+    readonly readAt: FieldRef<"Invoice", 'DateTime'>
     readonly style: FieldRef<"Invoice", 'String'>
     readonly createdAt: FieldRef<"Invoice", 'DateTime'>
     readonly updatedAt: FieldRef<"Invoice", 'DateTime'>
@@ -17032,6 +17054,8 @@ export namespace Prisma {
     paymentMethod: 'paymentMethod',
     paidAt: 'paidAt',
     isScaled: 'isScaled',
+    isRead: 'isRead',
+    readAt: 'readAt',
     style: 'style',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -17960,6 +17984,8 @@ export namespace Prisma {
     paymentMethod?: StringNullableFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     isScaled?: BoolFilter<"Invoice"> | boolean
+    isRead?: BoolFilter<"Invoice"> | boolean
+    readAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     style?: StringFilter<"Invoice"> | string
     createdAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
@@ -18000,6 +18026,8 @@ export namespace Prisma {
     paymentMethod?: SortOrder
     paidAt?: SortOrder
     isScaled?: SortOrder
+    isRead?: SortOrder
+    readAt?: SortOrder
     style?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18043,6 +18071,8 @@ export namespace Prisma {
     paymentMethod?: StringNullableFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     isScaled?: BoolFilter<"Invoice"> | boolean
+    isRead?: BoolFilter<"Invoice"> | boolean
+    readAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     style?: StringFilter<"Invoice"> | string
     createdAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
@@ -18083,6 +18113,8 @@ export namespace Prisma {
     paymentMethod?: SortOrder
     paidAt?: SortOrder
     isScaled?: SortOrder
+    isRead?: SortOrder
+    readAt?: SortOrder
     style?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18127,6 +18159,8 @@ export namespace Prisma {
     paymentMethod?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
     isScaled?: BoolWithAggregatesFilter<"Invoice"> | boolean
+    isRead?: BoolWithAggregatesFilter<"Invoice"> | boolean
+    readAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
     style?: StringWithAggregatesFilter<"Invoice"> | string
     createdAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
@@ -19373,6 +19407,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -19413,6 +19449,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -19446,6 +19484,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19485,6 +19525,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19522,6 +19564,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -19554,6 +19598,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19589,6 +19635,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20725,6 +20773,8 @@ export namespace Prisma {
     paymentMethod?: SortOrder
     paidAt?: SortOrder
     isScaled?: SortOrder
+    isRead?: SortOrder
+    readAt?: SortOrder
     style?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -20770,6 +20820,8 @@ export namespace Prisma {
     paymentMethod?: SortOrder
     paidAt?: SortOrder
     isScaled?: SortOrder
+    isRead?: SortOrder
+    readAt?: SortOrder
     style?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -20806,6 +20858,8 @@ export namespace Prisma {
     paymentMethod?: SortOrder
     paidAt?: SortOrder
     isScaled?: SortOrder
+    isRead?: SortOrder
+    readAt?: SortOrder
     style?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22357,6 +22411,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -22395,6 +22451,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -22813,6 +22871,8 @@ export namespace Prisma {
     paymentMethod?: StringNullableFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     isScaled?: BoolFilter<"Invoice"> | boolean
+    isRead?: BoolFilter<"Invoice"> | boolean
+    readAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     style?: StringFilter<"Invoice"> | string
     createdAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
@@ -23149,6 +23209,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -23187,6 +23249,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -23606,6 +23670,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -23644,6 +23710,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -24850,6 +24918,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -24889,6 +24959,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -24937,6 +25009,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -24975,6 +25049,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -25470,6 +25546,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -25666,6 +25744,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -25703,6 +25783,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -25738,6 +25820,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26092,6 +26176,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -26179,6 +26265,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26216,6 +26304,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26251,6 +26341,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26444,6 +26536,8 @@ export namespace Prisma {
     paymentMethod?: string | null
     paidAt?: Date | string | null
     isScaled?: boolean
+    isRead?: boolean
+    readAt?: Date | string | null
     style?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -26476,6 +26570,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26513,6 +26609,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26548,6 +26646,8 @@ export namespace Prisma {
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     style?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

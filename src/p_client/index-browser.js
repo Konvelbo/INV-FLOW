@@ -260,6 +260,8 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   paymentMethod: 'paymentMethod',
   paidAt: 'paidAt',
   isScaled: 'isScaled',
+  isRead: 'isRead',
+  readAt: 'readAt',
   style: 'style',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

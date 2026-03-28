@@ -14,8 +14,8 @@ const jakarta = { variable: "font-jakarta" };
 const jetbrains = { variable: "font-jetbrains" };
 
 export const metadata: Metadata = {
-  title: "INV-FLOW | Invoice Management",
-  description: "Modern invoice management system",
+  title: "Essor | Invoice Management",
+  description: "Next-generation invoice management system",
 };
 
 export default function RootLayout({

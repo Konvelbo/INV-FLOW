@@ -18,7 +18,7 @@ self.addEventListener("push", function (event) {
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || "INV-FLOW", options),
+      self.registration.showNotification(data.title || "Essor", options),
     );
   }
 });

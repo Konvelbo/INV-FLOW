@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, Dispatch, SetStateAction, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+} from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
@@ -57,7 +63,8 @@ export default function SignUp({
   const onSubmit = async (data: AuthFormData) => {
     try {
       if (isRegistration) {
-        const res = await performAction("auth", "register", data);
+        const { confirmPassword, otp, ...datas } = data;
+        const res = await performAction("auth", "register", datas);
         if (res.success) {
           toast.success(t("accountCreated"));
           setSignUpChoise(t("loginAction"));
@@ -69,9 +76,9 @@ export default function SignUp({
         choice === "Mot de passe oublié ?" ||
         choice === t("forgotPassword")
       ) {
-        const res = await performAction("auth", "forgotPassword", { 
-          email: data.email, 
-          lang: language 
+        const res = await performAction("auth", "forgotPassword", {
+          email: data.email,
+          lang: language,
         });
         if (res.success) {
           toast.success(t("otpSent"));
@@ -83,7 +90,7 @@ export default function SignUp({
         const res = await performAction("auth", "resetPassword", {
           email: data.email,
           otp: data.otp,
-          newPassword: data.password
+          newPassword: data.password,
         });
         if (res.success) {
           toast.success(t("passwordChanged"));
@@ -104,7 +111,7 @@ export default function SignUp({
           // Redirect to settings if no companies
           if (!user.companies || user.companies.length === 0) {
             toast(t("noCompanyRedirection"), { icon: "🏢" });
-            router.push("/settings");
+            router.push("/companies");
           } else {
             router.push("/dashboard");
           }
@@ -220,7 +227,9 @@ export default function SignUp({
                   htmlFor="password"
                   className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
                 >
-                  {(choice === "Vérification OTP" || choice === t("verifyOtp")) ? t("newPassword") : t("password")}
+                  {choice === "Vérification OTP" || choice === t("verifyOtp")
+                    ? t("newPassword")
+                    : t("password")}
                 </Label>
                 <div className="relative">
                   <Input
@@ -250,7 +259,9 @@ export default function SignUp({
               </div>
             )}
 
-            {(isRegistration || choice === "Vérification OTP" || choice === t("verifyOtp")) && (
+            {(isRegistration ||
+              choice === "Vérification OTP" ||
+              choice === t("verifyOtp")) && (
               <div className="space-y-2.5">
                 <Label
                   htmlFor="confirmPassword"

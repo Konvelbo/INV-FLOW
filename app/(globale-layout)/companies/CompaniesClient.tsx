@@ -3,10 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/src/context/LanguageContext";
-import {
-  Card,
-  CardContent,
-} from "@/src/components/ui/card";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -68,21 +65,25 @@ export default function CompaniesClient({
   initialCompanies,
 }: CompaniesClientProps) {
   const { t } = useLanguage();
-  const [companies, setCompanies] = useState<Company[]>(initialCompanies?.companies || []);
-  const [stats, setStats] = useState(initialCompanies?.stats || {
-    totalRevenue: 0,
-    totalLoss: 0,
-    totalExpenses: 0,
-    totalClients: 0
-  });
+  const [companies, setCompanies] = useState<Company[]>(
+    initialCompanies?.companies || [],
+  );
+  const [stats, setStats] = useState(
+    initialCompanies?.stats || {
+      totalRevenue: 0,
+      totalLoss: 0,
+      totalExpenses: 0,
+      totalClients: 0,
+    },
+  );
   const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const { performAction, loading: actionLoading } = useIPCAction();
+  const userStr = localStorage.getItem("user");
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
     if (userStr) {
       setActiveCompanyId(JSON.parse(userStr).activeCompanyId);
     }
@@ -182,7 +183,7 @@ export default function CompaniesClient({
       setIsDialogOpen(false);
       resetForm();
       fetchCompanies();
-      
+
       // Auto-set as active if this is the first company or none is active
       if (!editingCompany && (!activeCompanyId || companies.length === 0)) {
         setTimeout(() => {
@@ -207,7 +208,7 @@ export default function CompaniesClient({
     const res = await performAction("companies", "setActive", companyId);
     if (res.success) {
       setActiveCompanyId(companyId);
-      const activeCompany = companies.find(c => c.id === companyId);
+      const activeCompany = companies.find((c) => c.id === companyId);
       // Update localStorage
       const userStr = localStorage.getItem("user");
       if (userStr) {
@@ -224,26 +225,32 @@ export default function CompaniesClient({
   const handleExportStats = async () => {
     setIsExporting(true);
     try {
-       const userStr = localStorage.getItem("user");
-       const userId = userStr ? JSON.parse(userStr).id : null;
-       // @ts-ignore
-       const res = await window.electronAPI.getData("export", userId, "overview");
-       if (res.success && res.data) {
-         const blob = new Blob([res.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-         const url = URL.createObjectURL(blob);
-         const link = document.createElement("a");
-         link.href = url;
-         link.download = `overview_export_${new Date().toISOString().split('T')[0]}.xlsx`;
-         document.body.appendChild(link);
-         link.click();
-         document.body.removeChild(link);
-         toast.success("Export réussi");
-       }
+      const userStr = localStorage.getItem("user");
+      const userId = userStr ? JSON.parse(userStr).id : null;
+      // @ts-ignore
+      const res = await window.electronAPI.getData(
+        "export",
+        userId,
+        "overview",
+      );
+      if (res.success && res.data) {
+        const blob = new Blob([res.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `overview_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Export réussi");
+      }
     } catch (error) {
-       console.error(error);
-       toast.error("Erreur lors de l'export");
+      console.error(error);
+      toast.error("Erreur lors de l'export");
     } finally {
-       setIsExporting(false);
+      setIsExporting(false);
     }
   };
 
@@ -460,7 +467,9 @@ export default function CompaniesClient({
                       </Label>
                       <PhoneInput
                         value={formData.phone}
-                        onChange={(val) => setFormData({ ...formData, phone: val })}
+                        onChange={(val) =>
+                          setFormData({ ...formData, phone: val })
+                        }
                       />
                     </div>
                     <div className="space-y-3">
@@ -773,11 +782,13 @@ export default function CompaniesClient({
               key={i}
               className="p-6 rounded-[2rem] bg-card/40 border border-white/5 backdrop-blur-2xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-500 shadow-xl overflow-hidden relative"
             >
-              <div className={cn(
-                "size-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 relative z-10",
-                stat.bg,
-                stat.color
-              )}>
+              <div
+                className={cn(
+                  "size-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 relative z-10",
+                  stat.bg,
+                  stat.color,
+                )}
+              >
                 <stat.icon className="size-6" />
               </div>
               <div className="space-y-1 relative z-10">
@@ -820,14 +831,25 @@ export default function CompaniesClient({
                         size="icon"
                         className={cn(
                           "h-10 w-10 rounded-xl transition-all",
-                          activeCompanyId === company.id 
-                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" 
-                            : "text-slate-400 border-white/10 hover:bg-white/5"
+                          activeCompanyId === company.id
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
+                            : "text-slate-400 border-white/10 hover:bg-white/5",
                         )}
                         onClick={() => handleSetActive(company.id)}
-                        title={activeCompanyId === company.id ? "Entreprise active" : "Définir comme active"}
+                        title={
+                          activeCompanyId === company.id
+                            ? "Entreprise active"
+                            : "Définir comme active"
+                        }
                       >
-                        <CheckCircle2 className={cn("w-5 h-5", activeCompanyId === company.id ? "scale-110" : "opacity-50")} />
+                        <CheckCircle2
+                          className={cn(
+                            "w-5 h-5",
+                            activeCompanyId === company.id
+                              ? "scale-110"
+                              : "opacity-50",
+                          )}
+                        />
                       </Button>
                       <Button
                         variant="ghost"
@@ -853,7 +875,8 @@ export default function CompaniesClient({
                       {company.name}
                     </h3>
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      {company.legalForm || "Entreprise"} • {company.sector || "Secteur non spécifié"}
+                      {company.legalForm || "Entreprise"} •{" "}
+                      {company.sector || "Secteur non spécifié"}
                     </p>
                   </div>
 

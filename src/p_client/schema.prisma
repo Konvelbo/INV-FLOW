@@ -233,6 +233,8 @@ model Invoice {
   paidAt        DateTime?
 
   isScaled  Boolean   @default(false)
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
   style     String    @default("default")
   createdAt DateTime? @default(now())
   updatedAt DateTime? @default(now()) @updatedAt
