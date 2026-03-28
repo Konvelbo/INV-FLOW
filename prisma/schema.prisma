@@ -198,6 +198,7 @@ model Invoice {
   clientContact String?
   clientPOBox   String?
   managerName   String
+  companyName   String? // Newly added field for user company/sender name
 
   // New Relations
   clientId String? @db.ObjectId

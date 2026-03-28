@@ -9435,6 +9435,7 @@ export namespace Prisma {
     clientContact: string | null
     clientPOBox: string | null
     managerName: string | null
+    companyName: string | null
     clientId: string | null
     companyId: string | null
     totalHT: number | null
@@ -9473,6 +9474,7 @@ export namespace Prisma {
     clientContact: string | null
     clientPOBox: string | null
     managerName: string | null
+    companyName: string | null
     clientId: string | null
     companyId: string | null
     totalHT: number | null
@@ -9511,6 +9513,7 @@ export namespace Prisma {
     clientContact: number
     clientPOBox: number
     managerName: number
+    companyName: number
     clientId: number
     companyId: number
     totalHT: number
@@ -9569,6 +9572,7 @@ export namespace Prisma {
     clientContact?: true
     clientPOBox?: true
     managerName?: true
+    companyName?: true
     clientId?: true
     companyId?: true
     totalHT?: true
@@ -9607,6 +9611,7 @@ export namespace Prisma {
     clientContact?: true
     clientPOBox?: true
     managerName?: true
+    companyName?: true
     clientId?: true
     companyId?: true
     totalHT?: true
@@ -9645,6 +9650,7 @@ export namespace Prisma {
     clientContact?: true
     clientPOBox?: true
     managerName?: true
+    companyName?: true
     clientId?: true
     companyId?: true
     totalHT?: true
@@ -9770,6 +9776,7 @@ export namespace Prisma {
     clientContact: string | null
     clientPOBox: string | null
     managerName: string
+    companyName: string | null
     clientId: string | null
     companyId: string | null
     totalHT: number
@@ -9827,6 +9834,7 @@ export namespace Prisma {
     clientContact?: boolean
     clientPOBox?: boolean
     managerName?: boolean
+    companyName?: boolean
     clientId?: boolean
     companyId?: boolean
     totalHT?: boolean
@@ -9872,6 +9880,7 @@ export namespace Prisma {
     clientContact?: boolean
     clientPOBox?: boolean
     managerName?: boolean
+    companyName?: boolean
     clientId?: boolean
     companyId?: boolean
     totalHT?: boolean
@@ -9897,7 +9906,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
+  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "companyName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
   export type InvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | Invoice$clientArgs<ExtArgs>
     company?: boolean | Invoice$companyArgs<ExtArgs>
@@ -9927,6 +9936,7 @@ export namespace Prisma {
       clientContact: string | null
       clientPOBox: string | null
       managerName: string
+      companyName: string | null
       clientId: string | null
       companyId: string | null
       totalHT: number
@@ -10358,6 +10368,7 @@ export namespace Prisma {
     readonly clientContact: FieldRef<"Invoice", 'String'>
     readonly clientPOBox: FieldRef<"Invoice", 'String'>
     readonly managerName: FieldRef<"Invoice", 'String'>
+    readonly companyName: FieldRef<"Invoice", 'String'>
     readonly clientId: FieldRef<"Invoice", 'String'>
     readonly companyId: FieldRef<"Invoice", 'String'>
     readonly totalHT: FieldRef<"Invoice", 'Float'>
@@ -17036,6 +17047,7 @@ export namespace Prisma {
     clientContact: 'clientContact',
     clientPOBox: 'clientPOBox',
     managerName: 'managerName',
+    companyName: 'companyName',
     clientId: 'clientId',
     companyId: 'companyId',
     totalHT: 'totalHT',
@@ -17966,6 +17978,7 @@ export namespace Prisma {
     clientContact?: StringNullableFilter<"Invoice"> | string | null
     clientPOBox?: StringNullableFilter<"Invoice"> | string | null
     managerName?: StringFilter<"Invoice"> | string
+    companyName?: StringNullableFilter<"Invoice"> | string | null
     clientId?: StringNullableFilter<"Invoice"> | string | null
     companyId?: StringNullableFilter<"Invoice"> | string | null
     totalHT?: FloatFilter<"Invoice"> | number
@@ -18008,6 +18021,7 @@ export namespace Prisma {
     clientContact?: SortOrder
     clientPOBox?: SortOrder
     managerName?: SortOrder
+    companyName?: SortOrder
     clientId?: SortOrder
     companyId?: SortOrder
     totalHT?: SortOrder
@@ -18053,6 +18067,7 @@ export namespace Prisma {
     clientContact?: StringNullableFilter<"Invoice"> | string | null
     clientPOBox?: StringNullableFilter<"Invoice"> | string | null
     managerName?: StringFilter<"Invoice"> | string
+    companyName?: StringNullableFilter<"Invoice"> | string | null
     clientId?: StringNullableFilter<"Invoice"> | string | null
     companyId?: StringNullableFilter<"Invoice"> | string | null
     totalHT?: FloatFilter<"Invoice"> | number
@@ -18095,6 +18110,7 @@ export namespace Prisma {
     clientContact?: SortOrder
     clientPOBox?: SortOrder
     managerName?: SortOrder
+    companyName?: SortOrder
     clientId?: SortOrder
     companyId?: SortOrder
     totalHT?: SortOrder
@@ -18141,6 +18157,7 @@ export namespace Prisma {
     clientContact?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     clientPOBox?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     managerName?: StringWithAggregatesFilter<"Invoice"> | string
+    companyName?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     clientId?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     companyId?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     totalHT?: FloatWithAggregatesFilter<"Invoice"> | number
@@ -19392,6 +19409,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
@@ -19431,6 +19449,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     companyId?: string | null
     totalHT: number
@@ -19469,6 +19488,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19507,6 +19527,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
@@ -19546,6 +19567,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     companyId?: string | null
     totalHT: number
@@ -19583,6 +19605,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19617,6 +19640,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
@@ -20755,6 +20779,7 @@ export namespace Prisma {
     clientContact?: SortOrder
     clientPOBox?: SortOrder
     managerName?: SortOrder
+    companyName?: SortOrder
     clientId?: SortOrder
     companyId?: SortOrder
     totalHT?: SortOrder
@@ -20802,6 +20827,7 @@ export namespace Prisma {
     clientContact?: SortOrder
     clientPOBox?: SortOrder
     managerName?: SortOrder
+    companyName?: SortOrder
     clientId?: SortOrder
     companyId?: SortOrder
     totalHT?: SortOrder
@@ -20840,6 +20866,7 @@ export namespace Prisma {
     clientContact?: SortOrder
     clientPOBox?: SortOrder
     managerName?: SortOrder
+    companyName?: SortOrder
     clientId?: SortOrder
     companyId?: SortOrder
     totalHT?: SortOrder
@@ -22396,6 +22423,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
@@ -22434,6 +22462,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     companyId?: string | null
     totalHT: number
@@ -22853,6 +22882,7 @@ export namespace Prisma {
     clientContact?: StringNullableFilter<"Invoice"> | string | null
     clientPOBox?: StringNullableFilter<"Invoice"> | string | null
     managerName?: StringFilter<"Invoice"> | string
+    companyName?: StringNullableFilter<"Invoice"> | string | null
     clientId?: StringNullableFilter<"Invoice"> | string | null
     companyId?: StringNullableFilter<"Invoice"> | string | null
     totalHT?: FloatFilter<"Invoice"> | number
@@ -23194,6 +23224,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
@@ -23232,6 +23263,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     totalHT: number
     totalMaterial: number
@@ -23655,6 +23687,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
@@ -23693,6 +23726,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     companyId?: string | null
     totalHT: number
     totalMaterial: number
@@ -24903,6 +24937,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
@@ -24941,6 +24976,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     companyId?: string | null
     totalHT: number
@@ -24994,6 +25030,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25031,6 +25068,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
@@ -25529,6 +25567,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     companyId?: string | null
     totalHT: number
@@ -25729,6 +25768,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25766,6 +25806,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
@@ -25803,6 +25844,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
@@ -26159,6 +26201,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     clientId?: string | null
     totalHT: number
     totalMaterial: number
@@ -26250,6 +26293,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26287,6 +26331,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
@@ -26324,6 +26369,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
@@ -26519,6 +26565,7 @@ export namespace Prisma {
     clientContact?: string | null
     clientPOBox?: string | null
     managerName: string
+    companyName?: string | null
     companyId?: string | null
     totalHT: number
     totalMaterial: number
@@ -26555,6 +26602,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26592,6 +26640,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
@@ -26629,6 +26678,7 @@ export namespace Prisma {
     clientContact?: NullableStringFieldUpdateOperationsInput | string | null
     clientPOBox?: NullableStringFieldUpdateOperationsInput | string | null
     managerName?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number

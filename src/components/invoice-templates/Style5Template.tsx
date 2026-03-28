@@ -32,6 +32,11 @@ export default function Style5Template({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -102,9 +107,9 @@ export default function Style5Template({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -162,7 +167,7 @@ export default function Style5Template({
           <div className="flex justify-between items-center mb-16 select-none">
             <div className="flex items-center gap-2">
               <span className="font-bold text-2xl tracking-tight uppercase">
-                {dict.invoice}
+                {invoiceType === 'quote' ? dict.proforma : dict.invoice}
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm font-medium text-zinc-500">
@@ -195,7 +200,12 @@ export default function Style5Template({
                 <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3 block">
                   {dict.from}
                 </label>
-                <div className="font-bold text-zinc-900 mb-1">Company Inc.</div>
+                <OptimizedInput
+                  value={companyName}
+                  onValueChange={setCompanyName}
+                  placeholder={dict.companyName || "Company Inc."}
+                  className="bg-transparent font-bold text-zinc-900 w-full mb-1 p-0 h-auto border-none focus:ring-0"
+                />
                 <div className="text-sm text-zinc-500">
                   123 Tech Boulevard
                   <br />
@@ -346,26 +356,30 @@ export default function Style5Template({
                 <div className="col-span-1 text-center">
                   <OptimizedInput
                     value={newItem.quantity}
-                    onValueChange={(val) =>
-                      setNewItem({
-                        ...newItem,
-                        quantity: Number(val),
-                        totalPrice: Number(val) * newItem.unitPrice,
-                      })
-                    }
+                    onValueChange={(val) => {
+                      const numVal = Number(val);
+                      const q = isNaN(numVal) ? newItem.quantity : numVal;
+                      setNewItem((prev) => ({
+                        ...prev,
+                        quantity: q,
+                        totalPrice: q * Number(prev.unitPrice),
+                      }));
+                    }}
                     className="w-full text-center bg-transparent text-sm text-zinc-400"
                   />
                 </div>
                 <div className="col-span-3 flex items-center justify-end gap-1 font-mono font-medium text-zinc-900 overflow-hidden">
                   <OptimizedInput
                     value={newItem.unitPrice}
-                    onValueChange={(val) =>
-                      setNewItem({
-                        ...newItem,
-                        unitPrice: Number(val),
-                        totalPrice: newItem.quantity * Number(val),
-                      })
-                    }
+                    onValueChange={(val) => {
+                      const numVal = Number(val);
+                      const up = isNaN(numVal) ? newItem.unitPrice : numVal;
+                      setNewItem((prev) => ({
+                        ...prev,
+                        unitPrice: up,
+                        totalPrice: up * Number(prev.quantity),
+                      }));
+                    }}
                     className="w-full text-right bg-zinc-50 rounded text-sm py-1 px-1"
                   />
                   {curr()}
@@ -383,21 +397,22 @@ export default function Style5Template({
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Footer Totals */}
           <div className="border-t border-zinc-100 pt-8 mt-8">
-            <div className="flex justify-between items-end">
-              <div className="w-1/2">
-                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-                  {dict.authorizedSignature}
+            <div className="flex justify-between items-end gap-12 mb-12">
+              <div className="flex-1 pb-4">
+                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                  {dict.amountWords}
                 </div>
                 <OptimizedInput
-                  value={managerName}
-                  onValueChange={setManagerName}
-                  placeholder={dict.managerName}
-                  className="bg-transparent text-xl font-handwriting text-zinc-800 w-full border-b border-zinc-200 pb-2"
+                  value={amountWords}
+                  onValueChange={setAmountWords}
+                  placeholder={dict.amountWordsPlaceholder}
+                  className="bg-transparent text-sm italic w-full border-b border-transparent hover:border-zinc-200 focus:border-zinc-300 pb-1 text-zinc-600"
                 />
               </div>
-              <div className="w-2/3">
+
+              <div className="w-[40%] min-w-[300px]">
                 <div className="flex justify-between mb-3 text-sm text-zinc-500">
                   <span>{dict.subtotal}</span>
                   <span className="font-mono">
@@ -414,6 +429,21 @@ export default function Style5Template({
                     {formatCurrency(totalGeneral)}
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Signature Section - Moved Below */}
+            <div className="flex justify-end pt-8 border-t border-dashed border-zinc-100">
+              <div className="w-[30%] text-center">
+                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
+                  {dict.authorizedSignature}
+                </div>
+                <OptimizedInput
+                  value={managerName}
+                  onValueChange={setManagerName}
+                  placeholder={dict.managerName}
+                  className="bg-transparent text-xl font-handwriting text-zinc-800 w-full border-b border-zinc-200 pb-2 text-center"
+                />
               </div>
             </div>
           </div>

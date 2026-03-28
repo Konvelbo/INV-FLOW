@@ -33,6 +33,11 @@ export default function Style2Template({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { dict, language } = useLanguage();
 
@@ -103,9 +108,9 @@ export default function Style2Template({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -147,13 +152,18 @@ export default function Style2Template({
             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
               <div className="w-10 h-10 bg-white rounded-full"></div>
             </div>
-            <h2 className="font-bold text-xl tracking-wider">COMPANY</h2>
+            <OptimizedInput
+              value={companyName}
+              onValueChange={setCompanyName}
+              placeholder={dict.companyName || "COMPANY"}
+              className="font-bold text-xl tracking-wider bg-transparent text-white w-full border-b border-transparent focus:border-white transition-colors"
+            />
           </div>
           <div className="w-2/3 bg-gray-100 p-8 flex flex-col justify-between">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-5xl font-bold text-blue-900 mb-2">
-                  {dict.invoice}
+                <h1 className="text-5xl font-bold text-blue-900 mb-2 uppercase">
+                  {invoiceType === 'quote' ? dict.proforma : dict.invoice}
                 </h1>
                 <div className="flex items-center gap-2 text-gray-500">
                   <span>#</span>
@@ -330,26 +340,30 @@ export default function Style2Template({
                 <td className="py-3 px-4 text-center">
                   <OptimizedInput
                     value={newItem.quantity}
-                    onValueChange={(val) =>
-                      setNewItem({
-                        ...newItem,
-                        quantity: Number(val),
-                        totalPrice: Number(val) * newItem.unitPrice,
-                      })
-                    }
+                    onValueChange={(val) => {
+                      const numVal = Number(val);
+                      const q = isNaN(numVal) ? 0 : numVal;
+                      setNewItem((prev) => ({
+                        ...prev,
+                        quantity: q,
+                        totalPrice: q * Number(prev.unitPrice),
+                      }));
+                    }}
                     className="text-center w-12 mx-auto bg-transparent font-mono"
                   />
                 </td>
                 <td className="py-3 px-4 text-right">
                   <OptimizedInput
                     value={newItem.unitPrice}
-                    onValueChange={(val) =>
-                      setNewItem({
-                        ...newItem,
-                        unitPrice: Number(val),
-                        totalPrice: newItem.quantity * Number(val),
-                      })
-                    }
+                    onValueChange={(val) => {
+                      const numVal = Number(val);
+                      const up = isNaN(numVal) ? 0 : numVal;
+                      setNewItem((prev) => ({
+                        ...prev,
+                        unitPrice: up,
+                        totalPrice: up * Number(prev.quantity),
+                      }));
+                    }}
                     className="text-right w-24 ml-auto bg-transparent font-mono"
                   />
                 </td>
@@ -372,21 +386,19 @@ export default function Style2Template({
           </div>
         </div>
 
-        {/* Totals & Signature Section */}
-        <div className="px-10 mt-12 flex justify-between items-end gap-12 pb-16">
-          <div className="flex-1">
-            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-              {dict.authorizedSignature}
-            </div>
+        {/* Totals & Amount Words */}
+        <div className="px-10 mt-12 flex justify-between items-end gap-8 pb-8">
+          <div className="flex-1 flex flex-col items-start gap-1 pb-4">
+            <span className="text-xs uppercase font-bold text-gray-400 tracking-widest">{dict.amountWords}</span>
             <OptimizedInput
-              value={managerName}
-              onValueChange={setManagerName}
-              placeholder={dict.managerName}
-              className="text-lg font-serif italic text-gray-800 border-b border-gray-200 pb-1 w-full max-w-[250px]"
+              value={amountWords}
+              onValueChange={setAmountWords}
+              placeholder={dict.amountWordsPlaceholder}
+              className="bg-transparent font-medium text-sm w-full italic text-gray-700 border-b border-transparent hover:border-gray-200 focus:border-gray-400 pb-1"
             />
           </div>
 
-          <div className="min-w-[400px] max-w-[50%] bg-blue-900 text-white p-8 rounded-2xl shadow-xl space-y-4 tabular-nums">
+          <div className="min-w-[400px] max-w-[30%] bg-blue-900 text-white p-8 rounded-2xl shadow-xl space-y-4 tabular-nums">
             <div className="flex justify-between items-center gap-4 text-blue-100/70">
               <span className="text-sm font-medium uppercase tracking-wider">
                 {dict.totalMaterial}
@@ -403,6 +415,21 @@ export default function Style2Template({
                 {formatCurrency(totalGeneral)}
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Signature Section - Moved Below */}
+        <div className="px-10 mb-16 flex justify-end">
+          <div className="max-w-[35%] text-center">
+            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">
+              {dict.authorizedSignature}
+            </div>
+            <OptimizedInput
+              value={managerName}
+              onValueChange={setManagerName}
+              placeholder={dict.managerName}
+              className="text-lg font-serif italic text-gray-800 border-b border-gray-200 pb-1 w-full max-w-[250px] text-center"
+            />
           </div>
         </div>
 

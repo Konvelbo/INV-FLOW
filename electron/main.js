@@ -104,20 +104,32 @@ if (!gotTheLock) {
     } else {
       const fs = require("fs");
       protocol.handle("app", (request) => {
-        let url = request.url.replace("app://", "");
+        let urlPath = "";
+        try {
+          const parsedUrl = new URL(request.url);
+          urlPath = decodeURIComponent(parsedUrl.pathname);
+        } catch (e) {
+          urlPath = request.url.replace("app://", "");
+        }
+        
         // Remove query strings or hashes
-        url = url.split("?")[0].split("#")[0];
-        if (url.startsWith("./")) url = url.slice(2);
-        if (url === "." || url === "") url = "index.html";
+        urlPath = urlPath.split("?")[0].split("#")[0];
+        
+        // Remove leading prefixes
+        if (urlPath.startsWith("./")) urlPath = urlPath.slice(2);
+        if (urlPath.startsWith("/")) urlPath = urlPath.slice(1);
+        if (urlPath === "." || urlPath === "") urlPath = "index.html";
 
-        const filePath = path.join(__dirname, "../out", url);
+        let finalPath = path.join(__dirname, "../out", urlPath);
 
-        let finalPath = filePath;
-        if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-          finalPath = path.join(filePath, "index.html");
-        } else if (!fs.existsSync(filePath) && fs.existsSync(filePath + ".html")) {
-          // If the file doesn't exist, try appending .html (Standard Next.js export)
-          finalPath = filePath + ".html";
+        // Next.js App Router creates both a .html file and a directory for the RSC chunks
+        // Check for .html first to avoid incorrectly serving directory contents
+        if (fs.existsSync(`${finalPath}.html`)) {
+          finalPath = `${finalPath}.html`;
+        } else if (fs.existsSync(finalPath) && fs.statSync(finalPath).isDirectory()) {
+          if (fs.existsSync(path.join(finalPath, "index.html"))) {
+            finalPath = path.join(finalPath, "index.html");
+          }
         }
 
         // Final fallback if file doesn't exist (e.g. for client-side routing)

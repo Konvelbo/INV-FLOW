@@ -17,6 +17,7 @@ export default function Style6Template({
     reference,
     setReference,
     city,
+    setCity,
     clientName,
     setClientName,
     clientAddress,
@@ -32,6 +33,11 @@ export default function Style6Template({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -102,9 +108,9 @@ export default function Style6Template({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -159,21 +165,23 @@ export default function Style6Template({
           {/* Header */}
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-7xl font-bold tracking-tighter text-zinc-900 mb-4">
-                {language === "fr" ? "FACTURE" : "INVOICE"}
+              <h1 className="text-7xl font-bold tracking-tighter text-zinc-900 mb-4 uppercase">
+                {invoiceType === 'quote' ? dict.proforma : dict.invoice}
               </h1>
               <div className="flex gap-2">
-                <div className="px-4 py-1 border border-zinc-900 rounded-full text-sm font-medium">
-                  {dict.invoice} n°{reference}
+                <div className="flex items-center px-4 py-1 border border-zinc-900 rounded-full text-sm font-medium gap-1">
+                  <span>{dict.invoice} n°</span>
+                  <OptimizedInput
+                    value={reference}
+                    onValueChange={setReference}
+                    placeholder="2024-001"
+                    className="bg-transparent border-none p-0 w-24 focus:ring-0 text-sm font-medium h-auto"
+                  />
                 </div>
                 <div className="px-4 py-1 border border-zinc-900 rounded-full text-sm font-medium">
                   {new Date().toLocaleDateString(language === "fr" ? "fr-FR" : "en-US")}
                 </div>
               </div>
-            </div>
-            <div className="relative w-24 h-24">
-              <div className="absolute inset-0 border-2 border-dashed border-zinc-300 rounded-full animate-spin-slow"></div>
-              <div className="absolute inset-2 border border-zinc-200 rounded-full"></div>
             </div>
           </div>
 
@@ -182,9 +190,19 @@ export default function Style6Template({
           {/* Contact Info */}
           <div className="flex justify-between mb-12 text-sm">
             <div className="w-1/2">
-              <div className="font-bold text-lg mb-2">Compagnie Essor</div>
+              <OptimizedInput
+                value={companyName}
+                onValueChange={setCompanyName}
+                placeholder={dict.companyName || "Compagnie Essor"}
+                className="font-bold text-lg mb-2 bg-transparent w-full p-0 border-none focus:ring-0"
+              />
               <div className="text-zinc-600 space-y-1">
-                <p>Abidjan, Côte d&apos;Ivoire</p>
+                <OptimizedInput
+                  value={city}
+                  onValueChange={setCity}
+                  placeholder="Abidjan, Côte d'Ivoire"
+                  className="bg-transparent text-sm w-full p-0 border-none focus:ring-0"
+                />
                 <p>contact@essor.ci</p>
                 <p>+225 01 02 03 04 05</p>
               </div>
@@ -193,11 +211,31 @@ export default function Style6Template({
               <div className="font-bold text-xs uppercase tracking-widest text-zinc-400 mb-2">
                 {dict.billedTo}
               </div>
-              <div className="font-bold text-lg mb-1">{clientName || dict.client}</div>
+              <OptimizedInput
+                value={clientName}
+                onValueChange={setClientName}
+                placeholder={dict.client}
+                className="font-bold text-lg mb-1 bg-transparent w-full p-0 border-none focus:ring-0 text-right"
+              />
               <div className="text-zinc-600 space-y-1">
-                <p>{clientAddress || dict.address}</p>
-                <p>{clientContact}</p>
-                <p>{clientPOBox}</p>
+                <OptimizedInput
+                  value={clientAddress}
+                  onValueChange={setClientAddress}
+                  placeholder={dict.address}
+                  className="bg-transparent text-sm w-full p-0 border-none focus:ring-0 text-right"
+                />
+                <OptimizedInput
+                  value={clientContact}
+                  onValueChange={setClientContact}
+                  placeholder={dict.clientContact}
+                  className="bg-transparent text-sm w-full p-0 border-none focus:ring-0 text-right"
+                />
+                <OptimizedInput
+                  value={clientPOBox}
+                  onValueChange={setClientPOBox}
+                  placeholder={dict.poBox}
+                  className="bg-transparent text-sm w-full p-0 border-none focus:ring-0 text-right"
+                />
               </div>
             </div>
           </div>
@@ -207,7 +245,12 @@ export default function Style6Template({
             <div className="font-bold text-xs uppercase tracking-widest text-zinc-400 mb-2">
               {dict.object}
             </div>
-            <p className="text-zinc-800 font-medium">{object}</p>
+            <OptimizedInput
+              value={object}
+              onValueChange={setObject}
+              placeholder={dict.object}
+              className="text-zinc-800 font-medium bg-transparent border-none p-0 w-full focus:ring-0"
+            />
           </div>
 
           {/* Table */}
@@ -278,14 +321,22 @@ export default function Style6Template({
                   <td className="py-4 px-4">
                     <OptimizedInput
                       value={newItem.unitPrice}
-                      onValueChange={(val) => setNewItem({ ...newItem, unitPrice: Number(val), totalPrice: Number(val) * newItem.quantity })}
+                      onValueChange={(val) => {
+                      const numVal = Number(val);
+                      const up = isNaN(numVal) ? newItem.unitPrice : numVal;
+                      setNewItem({ ...newItem, unitPrice: up, totalPrice: up * newItem.quantity });
+                    }}
                       className="bg-transparent text-center w-full"
                     />
                   </td>
                   <td className="py-4 px-4">
                     <OptimizedInput
                       value={newItem.quantity}
-                      onValueChange={(val) => setNewItem({ ...newItem, quantity: Number(val), totalPrice: Number(val) * newItem.unitPrice })}
+                      onValueChange={(val) => {
+                      const numVal = Number(val);
+                      const q = isNaN(numVal) ? newItem.quantity : numVal;
+                      setNewItem({ ...newItem, quantity: q, totalPrice: q * newItem.unitPrice });
+                    }}
                       className="bg-transparent text-center w-full"
                     />
                   </td>
@@ -297,7 +348,18 @@ export default function Style6Template({
             </table>
 
             {/* Totals */}
-            <div className="mt-8 flex flex-col items-end gap-2">
+            <div className="mt-8 flex justify-between items-end gap-12">
+              <div className="flex-1 flex flex-col items-start gap-1 pb-4">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">{dict.amountWords}</span>
+                <OptimizedInput
+                  value={amountWords}
+                  onValueChange={setAmountWords}
+                  placeholder={dict.amountWordsPlaceholder}
+                  className="bg-transparent text-sm w-full italic text-zinc-600 border-b border-transparent hover:border-zinc-200 focus:border-zinc-300 pb-1"
+                />
+              </div>
+
+              <div className="flex flex-col items-end gap-2 w-[50%] min-w-[300px]">
               <div className="flex justify-between w-64 text-sm">
                 <span className="text-zinc-500 font-bold uppercase tracking-wider">{dict.subtotal} :</span>
                 <span className="font-bold tabular-nums">{formatCurrency(totalGeneral)}</span>
@@ -309,6 +371,7 @@ export default function Style6Template({
               <div className="bg-zinc-900 text-white w-full py-4 px-8 flex justify-between items-center rounded-lg">
                 <span className="font-bold text-xl uppercase tracking-tighter">TOTAL :</span>
                 <span className="font-black text-3xl tabular-nums">{formatCurrency(totalGeneral)}</span>
+              </div>
               </div>
             </div>
           </div>

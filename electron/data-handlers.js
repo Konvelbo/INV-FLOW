@@ -866,24 +866,61 @@ const actionHandlers = {
         invoiceData.isScaled = false;
       }
 
-      return await prisma.invoice.create({
-        data: {
-          ...invoiceData,
-          userId,
-          companyId: invoiceData.companyId || activeCompanyId,
-          dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
-          items: {
-            create: (items || []).map((item) => ({
-              designation: item.designation,
-              unit: item.unit || "U",
-              quantity: Number(item.quantity),
-              unitPrice: Number(item.unitPrice),
-              totalPrice: Number(item.totalPrice),
-              productId: item.productId || null,
-            })),
-          },
-        },
+      // Ensure reference is unique — if duplicate, append a suffix
+      const baseReference = invoiceData.reference;
+      const existing = await prisma.invoice.findUnique({
+        where: { reference: baseReference },
       });
+      if (existing) {
+        const suffix = `-${Date.now().toString().slice(-4)}`;
+        invoiceData.reference = `${baseReference}${suffix}`;
+      }
+
+      try {
+        return await prisma.invoice.create({
+          data: {
+            ...invoiceData,
+            userId,
+            companyId: invoiceData.companyId || activeCompanyId,
+            dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+            items: {
+              create: (items || []).map((item) => ({
+                designation: item.designation,
+                unit: item.unit || "U",
+                quantity: Number(item.quantity),
+                unitPrice: Number(item.unitPrice),
+                totalPrice: Number(item.totalPrice),
+                productId: item.productId || null,
+              })),
+            },
+          },
+        });
+      } catch (error) {
+        // Handle duplicate reference constraint gracefully
+        if (error.code === "P2002" && error.meta?.target?.includes("reference")) {
+          const fallbackRef = `${baseReference}-${Date.now().toString().slice(-6)}`;
+          return await prisma.invoice.create({
+            data: {
+              ...invoiceData,
+              reference: fallbackRef,
+              userId,
+              companyId: invoiceData.companyId || activeCompanyId,
+              dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+              items: {
+                create: (items || []).map((item) => ({
+                  designation: item.designation,
+                  unit: item.unit || "U",
+                  quantity: Number(item.quantity),
+                  unitPrice: Number(item.unitPrice),
+                  totalPrice: Number(item.totalPrice),
+                  productId: item.productId || null,
+                })),
+              },
+            },
+          });
+        }
+        throw error;
+      }
     },
     send: async (userId, invoiceId, targetEmail) => {
       try {

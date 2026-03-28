@@ -33,6 +33,11 @@ export default function Style3Template({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -103,9 +108,9 @@ export default function Style3Template({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -152,9 +157,12 @@ export default function Style3Template({
             <div>
               <div className="flex items-center gap-2 mb-4 text-purple-600">
                 <Hexagon className="w-8 h-8 fill-current" />
-                <span className="font-bold text-2xl tracking-tighter">
-                  CREATIVE
-                </span>
+                <OptimizedInput
+                  value={companyName}
+                  onValueChange={setCompanyName}
+                  placeholder={dict.companyName || "CREATIVE"}
+                  className="font-bold text-2xl tracking-tighter bg-transparent border-b border-transparent focus:border-purple-300 w-full"
+                />
               </div>
               <div className="text-gray-500">
                 <OptimizedInput
@@ -169,8 +177,8 @@ export default function Style3Template({
               </div>
             </div>
             <div className="text-right absolute -top-10 right-4 -z-100">
-              <h1 className="text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-orange-400 opacity-80">
-                {dict.invoice}
+              <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-400 opacity-80 uppercase">
+                {invoiceType === 'quote' ? dict.proforma : dict.invoice}
               </h1>
               <div className="flex items-center justify-end gap-2 mt-2">
                 <span className="font-bold text-gray-400">#</span>
@@ -324,11 +332,12 @@ export default function Style3Template({
                   <OptimizedInput
                     value={newItem.quantity}
                     onValueChange={(val) => {
-                      const q = Number(val);
+                      const numVal = Number(val);
+                      const q = isNaN(numVal) ? newItem.quantity : numVal;
                       setNewItem((prev) => ({
                         ...prev,
                         quantity: q,
-                        totalPrice: q * prev.unitPrice,
+                        totalPrice: q * Number(prev.unitPrice),
                       }));
                     }}
                     className="text-center w-14 mx-auto bg-gray-50 rounded py-1"
@@ -338,11 +347,12 @@ export default function Style3Template({
                   <OptimizedInput
                     value={newItem.unitPrice}
                     onValueChange={(val) => {
-                      const p = Number(val);
+                      const numVal = Number(val);
+                      const up = isNaN(numVal) ? newItem.unitPrice : numVal;
                       setNewItem((prev) => ({
                         ...prev,
-                        unitPrice: p,
-                        totalPrice: prev.quantity * p,
+                        unitPrice: up,
+                        totalPrice: up * Number(prev.quantity),
                       }));
                     }}
                     placeholder={dict.price}
@@ -357,7 +367,17 @@ export default function Style3Template({
           </div>
 
           {/* Footer */}
-          <div className="flex flex-col items-end mt-12">
+          <div className="flex justify-between items-end mt-12 gap-8">
+            <div className="flex-1 flex flex-col items-start gap-1 pb-4">
+              <span className="text-xs uppercase font-bold text-gray-400 tracking-widest">{dict.amountWords}</span>
+              <OptimizedInput
+                value={amountWords}
+                onValueChange={setAmountWords}
+                placeholder={dict.amountWordsPlaceholder}
+                className="bg-transparent font-medium text-sm w-full italic text-gray-700 border-b border-transparent hover:border-gray-200 focus:border-gray-400 pb-1"
+              />
+            </div>
+            
             <div className="bg-slate-900 text-white p-8 rounded-2xl min-w-[350px] max-w-full shadow-2xl relative overflow-hidden tabular-nums">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
               <div className="flex flex-col sm:flex-row justify-between gap-8 relative z-10">
@@ -379,17 +399,17 @@ export default function Style3Template({
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="mt-12 text-center w-full">
-              <OptimizedInput
-                value={managerName}
-                onValueChange={setManagerName}
-                placeholder={dict.managerName}
-                className="text-center font-handwriting text-2xl text-purple-800 w-64 mx-auto border-b border-purple-200 pb-2"
-              />
-              <div className="text-xs text-gray-400 uppercase tracking-widest mt-2">
-                {dict.authorizedSignature}
-              </div>
+          <div className="mt-12 text-center w-full">
+            <OptimizedInput
+              value={managerName}
+              onValueChange={setManagerName}
+              placeholder={dict.managerName}
+              className="text-center font-handwriting text-2xl text-purple-800 w-64 mx-auto border-b border-purple-200 pb-2"
+            />
+            <div className="text-xs text-gray-400 uppercase tracking-widest mt-2">
+              {dict.authorizedSignature}
             </div>
           </div>
         </div>

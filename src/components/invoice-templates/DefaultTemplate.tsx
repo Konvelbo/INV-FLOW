@@ -33,6 +33,11 @@ export default function DefaultTemplate({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -103,9 +108,9 @@ export default function DefaultTemplate({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -152,6 +157,9 @@ export default function DefaultTemplate({
       >
         <div className="flex justify-between items-start relative w-full mb-8 pt-10">
           <div className="flex flex-col gap-4">
+            <h1 className="text-4xl font-bold uppercase mb-2">
+              {invoiceType === 'quote' ? dict.proforma : dict.invoice}
+            </h1>
             <div className="editable-field p-2">
               <div className="flex items-center gap-2">
                 <span className="text-gray-500 font-medium uppercase text-xs tracking-wider">REF:</span>
@@ -165,6 +173,15 @@ export default function DefaultTemplate({
             </div>
           </div>
           <div className="text-right flex flex-col gap-2 p-2">
+            <div className="flex items-center justify-end gap-2">
+              <OptimizedInput
+                value={companyName}
+                dir="rtl"
+                onValueChange={setCompanyName}
+                placeholder={dict.companyName || "Company Name"}
+                className="w-48 font-bold text-xl bg-transparent"
+              />
+            </div>
             <div className="flex items-center justify-end gap-2">
               <OptimizedInput
                 value={city}
@@ -339,7 +356,8 @@ export default function DefaultTemplate({
                   <OptimizedInput
                     value={newItem.quantity}
                     onValueChange={(val) => {
-                      const q = Number(val);
+                      const numVal = Number(val);
+                      const q = isNaN(numVal) ? newItem.quantity : numVal;
                       setNewItem((prev) => ({
                         ...prev,
                         quantity: q,
@@ -356,7 +374,8 @@ export default function DefaultTemplate({
                   <OptimizedInput
                     value={newItem.unitPrice}
                     onValueChange={(val) => {
-                      const up = Number(val);
+                      const numVal = Number(val);
+                      const up = isNaN(numVal) ? newItem.unitPrice : numVal;
                       setNewItem((prev) => ({
                         ...prev,
                         unitPrice: up,
@@ -375,18 +394,29 @@ export default function DefaultTemplate({
           </tbody>
         </table>
 
-        <table className="totals">
-          <tbody>
-            <tr>
-              <td>{dict.totalMaterial}</td>
-              <td>{totalmaterial}</td>
-            </tr>
-            <tr>
-              <td>{dict.totalHT}</td>
-              <td>{formatCurrency(totalGeneral)}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="flex justify-between items-end mt-4">
+          <div className="w-2/3 flex flex-col items-start gap-1 px-4">
+            <span className="text-xs uppercase font-bold text-gray-500">{dict.amountWords}</span>
+            <OptimizedInput
+              value={amountWords}
+              onValueChange={setAmountWords}
+              placeholder={dict.amountWordsPlaceholder}
+              className="bg-transparent font-medium text-sm w-full italic border-b border-transparent hover:border-gray-200 focus:border-gray-400 pb-1"
+            />
+          </div>
+          <table className="totals">
+            <tbody>
+              <tr>
+                <td>{dict.totalMaterial}</td>
+                <td>{totalmaterial}</td>
+              </tr>
+              <tr>
+                <td>{dict.totalHT}</td>
+                <td>{formatCurrency(totalGeneral)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <div className="signature">
           <h2 className="font-semibold mb-3">{dict.managerName}</h2>

@@ -33,6 +33,11 @@ export default function Style1Template({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { dict, language } = useLanguage();
 
@@ -103,9 +108,9 @@ export default function Style1Template({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -148,8 +153,8 @@ export default function Style1Template({
         {/* Header Section */}
         <div className="bg-slate-900 text-white p-12 flex justify-between items-start">
           <div className="w-1/2">
-            <h1 className="text-4xl font-light tracking-wide mb-2">
-              {dict.invoice}
+            <h1 className="text-4xl font-light tracking-wide mb-2 uppercase">
+              {invoiceType === 'quote' ? dict.proforma : dict.invoice}
             </h1>
             <div className="flex items-center gap-2 text-slate-400">
               <span className="text-sm uppercase tracking-wider">
@@ -164,6 +169,12 @@ export default function Style1Template({
             </div>
           </div>
           <div className="w-1/2 text-right">
+            <OptimizedInput
+              value={companyName}
+              onValueChange={setCompanyName}
+              placeholder={dict.companyName || "Company Name"}
+              className="bg-transparent text-white text-right w-full font-bold text-xl mb-2 focus:border-b focus:border-white transition-colors"
+            />
             <div className="flex justify-end items-center gap-2 mb-1">
               <OptimizedInput
                 value={city}
@@ -344,11 +355,12 @@ export default function Style1Template({
                   <OptimizedInput
                     value={newItem.quantity}
                     onValueChange={(val) => {
-                      const q = Number(val);
+                      const numVal = Number(val);
+                      const q = isNaN(numVal) ? newItem.quantity : numVal;
                       setNewItem((prev) => ({
                         ...prev,
                         quantity: q,
-                        totalPrice: q * prev.unitPrice,
+                        totalPrice: q * Number(prev.unitPrice),
                       }));
                     }}
                     className="text-center text-slate-400 w-16 mx-auto bg-transparent"
@@ -358,11 +370,12 @@ export default function Style1Template({
                   <OptimizedInput
                     value={newItem.unitPrice}
                     onValueChange={(val) => {
-                      const p = Number(val);
+                      const numVal = Number(val);
+                      const up = isNaN(numVal) ? newItem.unitPrice : numVal;
                       setNewItem((prev) => ({
                         ...prev,
-                        unitPrice: p,
-                        totalPrice: prev.quantity * p,
+                        unitPrice: up,
+                        totalPrice: up * Number(prev.quantity),
                       }));
                     }}
                     className="text-right text-slate-400 w-24 ml-auto bg-transparent"
@@ -376,21 +389,19 @@ export default function Style1Template({
           </table>
         </div>
 
-        {/* Footer / Totals & Signature Section */}
-        <div className="px-12 mt-12 flex justify-between items-end gap-12">
-          <div className="flex-1">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
-              {dict.authorizedSignature}
-            </p>
+        {/* Footer / Totals & Amount Words */}
+        <div className="px-12 mt-12 flex justify-between items-end gap-8">
+          <div className="flex-1 flex flex-col items-start gap-1 mb-2">
+            <span className="text-xs uppercase font-bold text-slate-400 tracking-widest">{dict.amountWords}</span>
             <OptimizedInput
-              value={managerName}
-              onValueChange={setManagerName}
-              placeholder={dict.managerName}
-              className="font-script text-2xl text-slate-800 w-full max-w-[250px] border-b border-slate-200 pb-2"
+              value={amountWords}
+              onValueChange={setAmountWords}
+              placeholder={dict.amountWordsPlaceholder}
+              className="bg-transparent font-medium text-sm w-full italic text-slate-700 border-b border-transparent hover:border-slate-200 focus:border-slate-400 pb-1"
             />
           </div>
 
-          <div className="min-w-[300px] max-w-[50%] space-y-3">
+          <div className="min-w-[300px] max-w-[35%] space-y-3">
             <div className="flex justify-between items-center gap-4 text-slate-500 text-sm tabular-nums">
               <span className="whitespace-nowrap">{dict.totalMaterial}</span>
               <span className="text-right break-all font-medium">
@@ -405,6 +416,21 @@ export default function Style1Template({
                 {formatCurrency(totalGeneral)}
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Signature Section - Moved Below */}
+        <div className="px-12 mt-16 flex justify-end">
+          <div className="max-w-[35%] text-center">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+              {dict.authorizedSignature}
+            </p>
+            <OptimizedInput
+              value={managerName}
+              onValueChange={setManagerName}
+              placeholder={dict.managerName}
+              className="font-script text-2xl text-slate-800 w-full max-w-[250px] border-b border-slate-200 pb-2 text-center"
+            />
           </div>
         </div>
       </div>

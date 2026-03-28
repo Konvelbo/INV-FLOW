@@ -142,9 +142,7 @@ export default function UserMenu() {
             <Avatar className="h-full w-full rounded-xl">
               <AvatarImage
                 alt={user?.name}
-                src={
-                  user?.avatar ? `${user.avatar}?t=${Date.now()}` : undefined
-                }
+                src={user?.avatar || undefined}
                 className="object-cover"
               />
               <AvatarFallback className="bg-primary/10 text-primary font-bold">

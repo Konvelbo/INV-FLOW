@@ -6,6 +6,7 @@ export const translations = {
     // Invoices
     proforma: "PROFORMA",
     reference: "Référence",
+    companyName: "Nom de l'entreprise",
     from: "De",
     city: "Ville",
     date: "le",
@@ -56,6 +57,8 @@ export const translations = {
     dashboard: "Tableau de Bord",
     invoice: "Facture",
     history: "Historique",
+    amountWords: "Arrêté à la somme de :",
+    amountWordsPlaceholder: "Saisir le montant en lettres...",
     aiAssistant: "Assistant IA",
     language: "Langue",
     currency: "Devise de Facture",
@@ -586,6 +589,7 @@ export const translations = {
     // Invoices
     proforma: "PROFORMA",
     reference: "Reference",
+    companyName: "Company Name",
     from: "From",
     city: "City",
     date: "on",
@@ -636,6 +640,8 @@ export const translations = {
     dashboard: "Dashboard",
     invoice: "Invoice",
     history: "History",
+    amountWords: "Amount in words:",
+    amountWordsPlaceholder: "Enter amount in words...",
     aiAssistant: "AI Assistant",
     language: "Language",
     currency: "Invoice Currency",

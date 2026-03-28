@@ -59,12 +59,12 @@ export default function InvoiceClient({
     clientId,
     totalMaterial,
     totalHT,
+    invoiceType,
+    setInvoiceType,
+    companyName,
   } = useInvoice();
 
   // Advanced Settings State
-  const [invoiceType, setInvoiceType] = useState(
-    initialData?.type || "invoice",
-  );
   const [invoiceStatus, setInvoiceStatus] = useState(
     initialData?.status || "draft",
   );
@@ -92,7 +92,11 @@ export default function InvoiceClient({
   // Initialize with initialData if provided
   useEffect(() => {
     if (initialData) {
-      setInvoiceData(initialData);
+      setInvoiceData({ 
+        ...initialData, 
+        invoiceType: initialData.type || "invoice",
+        companyName: initialData.companyName || "" 
+      });
     }
   }, [initialData, setInvoiceData]);
 
@@ -152,6 +156,7 @@ export default function InvoiceClient({
         amountWords,
         style,
         type: invoiceType,
+        companyName,
         currencyCode: currency,
         language,
       };
@@ -183,6 +188,7 @@ export default function InvoiceClient({
     const data = {
       reference: reference || "",
       type: invoiceType,
+      companyName,
       status: invoiceStatus,
       city: city || "",
       clientName: clientName || "",

@@ -44,6 +44,8 @@ export interface InvoiceActionsType {
   ) => void;
   clearInvoiceData: () => void;
   setClientId: (value: string | null) => void;
+  setInvoiceType: (value: string) => void;
+  setCompanyName: (value: string) => void;
 }
 
 export interface InvoiceStateContextType {
@@ -67,6 +69,8 @@ export interface InvoiceStateContextType {
   currency: string;
   style: string;
   clientId: string | null;
+  invoiceType: string;
+  companyName: string;
 }
 
 const InvoiceStateContext = createContext<InvoiceStateContextType | undefined>(
@@ -100,6 +104,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   });
   const [style, setStyle] = useState<string>("default");
   const [clientId, setClientId] = useState<string | null>(null);
+  const [invoiceType, setInvoiceType] = useState<string>("invoice");
+  const [companyName, setCompanyName] = useState<string>("");
 
   const setCurrency = useCallback((val: string) => {
     setCurrencyState(val);
@@ -136,6 +142,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setItemsArr(data.items || []);
       setStyle(data.style || "default");
       setClientId(data.clientId || null);
+      setInvoiceType(data.invoiceType || "invoice");
+      setCompanyName(data.companyName || "");
     },
     [],
   );
@@ -153,6 +161,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     setItemsArr([]);
     setStyle("default");
     setClientId(null);
+    setInvoiceType("invoice");
+    setCompanyName("");
   }, []);
 
   const stateValue = useMemo(
@@ -177,6 +187,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       currency,
       style,
       clientId,
+      invoiceType,
+      companyName,
     }),
     [
       reference,
@@ -199,6 +211,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       currency,
       style,
       clientId,
+      invoiceType,
+      companyName,
     ],
   );
 
@@ -224,8 +238,10 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setInvoiceData,
       clearInvoiceData,
       setClientId,
+      setInvoiceType,
+      setCompanyName,
     }),
-    [setCurrency, setStyle, setInvoiceData, clearInvoiceData, setClientId],
+    [setCurrency, setStyle, setInvoiceData, clearInvoiceData, setClientId, setInvoiceType, setCompanyName],
   );
 
   return (

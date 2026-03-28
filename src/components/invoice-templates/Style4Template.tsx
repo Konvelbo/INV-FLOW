@@ -33,6 +33,11 @@ export default function Style4Template({
     itemsArr,
     setItemsArr,
     currency,
+    invoiceType,
+    companyName,
+    setCompanyName,
+    amountWords,
+    setAmountWords,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -103,9 +108,9 @@ export default function Style4Template({
               ? String(value)
               : item.unit,
           quantity:
-            field === "quantity" ? Number(value) : Number(item.quantity),
+            field === "quantity" ? (isNaN(Number(value)) ? item.quantity : Number(value)) : Number(item.quantity),
           unitPrice:
-            field === "unitPrice" ? Number(value) : Number(item.unitPrice),
+            field === "unitPrice" ? (isNaN(Number(value)) ? item.unitPrice : Number(value)) : Number(item.unitPrice),
           totalPrice: 0,
           id: item.id,
         };
@@ -148,8 +153,8 @@ export default function Style4Template({
           {/* Header */}
           <div className="flex justify-between items-start mb-16">
             <div>
-              <h1 className="text-4xl font-serif text-[#1e293b] tracking-tight mb-2">
-                {dict.invoice}
+              <h1 className="text-4xl font-serif text-[#1e293b] tracking-tight mb-2 uppercase">
+                {invoiceType === 'quote' ? dict.proforma : dict.invoice}
               </h1>
               <div className="text-sm text-slate-500 uppercase tracking-widest font-medium">
                 {dict.reference}:{" "}
@@ -162,9 +167,12 @@ export default function Style4Template({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-serif text-[#1e293b] mb-1">
-                Company Name
-              </div>
+              <OptimizedInput
+                value={companyName}
+                onValueChange={setCompanyName}
+                placeholder={dict.companyName || "Company Name"}
+                className="text-right text-2xl font-serif text-[#1e293b] mb-1 bg-transparent border-b border-transparent focus:border-gray-300 w-full"
+              />
               <div className="text-sm text-slate-500">
                 <OptimizedInput
                   value={city}
@@ -333,27 +341,31 @@ export default function Style4Template({
                   </td>
                   <td className="py-3">
                     <OptimizedInput
-                      value={newItem.quantity}
-                      onValueChange={(val) =>
-                        setNewItem({
-                          ...newItem,
-                          quantity: Number(val),
-                          totalPrice: Number(val) * newItem.unitPrice,
-                        })
-                      }
+                        value={newItem.quantity}
+                        onValueChange={(val) => {
+                          const numVal = Number(val);
+                          const q = isNaN(numVal) ? 0 : numVal;
+                          setNewItem((prev) => ({
+                            ...prev,
+                            quantity: q,
+                            totalPrice: q * Number(prev.unitPrice),
+                          }));
+                        }}
                       className="w-full text-center bg-transparent text-sm text-slate-400"
                     />
                   </td>
                   <td className="py-3 text-right">
                     <OptimizedInput
-                      value={newItem.unitPrice}
-                      onValueChange={(val) =>
-                        setNewItem({
-                          ...newItem,
-                          unitPrice: Number(val),
-                          totalPrice: newItem.quantity * Number(val),
-                        })
-                      }
+                        value={newItem.unitPrice}
+                        onValueChange={(val) => {
+                          const numVal = Number(val);
+                          const up = isNaN(numVal) ? 0 : numVal;
+                          setNewItem((prev) => ({
+                            ...prev,
+                            unitPrice: up,
+                            totalPrice: up * Number(prev.quantity),
+                          }));
+                        }}
                       className="w-full text-right bg-transparent text-sm text-slate-400"
                     />
                   </td>
@@ -366,8 +378,17 @@ export default function Style4Template({
           </div>
 
           {/* Footer Totals */}
-          <div className="flex justify-end mb-20">
-            <div className="min-w-[320px] max-w-full space-y-1 tabular-nums">
+          <div className="flex justify-between items-end mb-20 gap-8">
+            <div className="flex-1 flex flex-col items-start gap-1">
+              <span className="text-xs uppercase font-bold text-slate-400 tracking-widest border-b border-slate-200 pb-2 mb-2 w-full">{dict.amountWords}</span>
+              <OptimizedInput
+                value={amountWords}
+                onValueChange={setAmountWords}
+                placeholder={dict.amountWordsPlaceholder}
+                className="bg-transparent font-serif text-sm w-full italic text-slate-700 border-b border-transparent hover:border-slate-200 focus:border-slate-400 pb-1"
+              />
+            </div>
+            <div className="min-w-[320px] max-w-[50%] space-y-1 tabular-nums">
               <div className="flex justify-between items-center gap-6 py-2 border-b border-slate-100 text-sm text-slate-500">
                 <span className="whitespace-nowrap">{dict.subtotal}</span>
                 <span className="text-right break-all">

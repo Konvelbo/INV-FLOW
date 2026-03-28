@@ -242,6 +242,7 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   clientContact: 'clientContact',
   clientPOBox: 'clientPOBox',
   managerName: 'managerName',
+  companyName: 'companyName',
   clientId: 'clientId',
   companyId: 'companyId',
   totalHT: 'totalHT',
