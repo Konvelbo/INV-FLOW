@@ -36,8 +36,8 @@ export default function DefaultTemplate({
     invoiceType,
     companyName,
     setCompanyName,
-    amountWords,
-    setAmountWords,
+    description,
+    setDescription,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -396,11 +396,11 @@ export default function DefaultTemplate({
 
         <div className="flex justify-between items-end mt-4">
           <div className="w-2/3 flex flex-col items-start gap-1 px-4">
-            <span className="text-xs uppercase font-bold text-gray-500">{dict.amountWords}</span>
+            <span className="text-xs uppercase font-bold text-gray-500">{dict.description}</span>
             <OptimizedInput
-              value={amountWords}
-              onValueChange={setAmountWords}
-              placeholder={dict.amountWordsPlaceholder}
+              value={description}
+              onValueChange={setDescription}
+              placeholder={dict.description}
               className="bg-transparent font-medium text-sm w-full italic border-b border-transparent hover:border-gray-200 focus:border-gray-400 pb-1"
             />
           </div>

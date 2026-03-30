@@ -36,8 +36,8 @@ export default function Style1Template({
     invoiceType,
     companyName,
     setCompanyName,
-    amountWords,
-    setAmountWords,
+    description,
+    setDescription,
   } = useInvoice();
   const { dict, language } = useLanguage();
 
@@ -392,11 +392,11 @@ export default function Style1Template({
         {/* Footer / Totals & Amount Words */}
         <div className="px-12 mt-12 flex justify-between items-end gap-8">
           <div className="flex-1 flex flex-col items-start gap-1 mb-2">
-            <span className="text-xs uppercase font-bold text-slate-400 tracking-widest">{dict.amountWords}</span>
+            <span className="text-xs uppercase font-bold text-slate-400 tracking-widest">{dict.description}</span>
             <OptimizedInput
-              value={amountWords}
-              onValueChange={setAmountWords}
-              placeholder={dict.amountWordsPlaceholder}
+              value={description}
+              onValueChange={setDescription}
+              placeholder={dict.description}
               className="bg-transparent font-medium text-sm w-full italic text-slate-700 border-b border-transparent hover:border-slate-200 focus:border-slate-400 pb-1"
             />
           </div>

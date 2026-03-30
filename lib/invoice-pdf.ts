@@ -24,6 +24,7 @@ export type InvoiceProps = {
   totalMaterial: number;
   managerName: string;
   amountWords: string;
+  description?: string;
   style?: string;
   type?: "invoice" | "quote";
   companyName?: string;
@@ -49,6 +50,10 @@ export function invoiceTemplate(data: InvoiceProps) {
       return renderStyle4(data, dict, lang);
     case "style5":
       return renderStyle5(data, dict, lang);
+    case "style6":
+      return renderStyle6(data, dict, lang);
+    case "style7":
+      return renderStyle7(data, dict, lang);
     default:
       return renderDefault(data, dict, lang);
   }
@@ -58,7 +63,7 @@ const formatCurrency = (value: number, currency = "XOF", lang = "fr") => {
   const code = currency.toUpperCase();
   const config = CURRENCY_SETTINGS[code];
   const locale = lang === "fr" ? "fr-FR" : "en-US";
-  
+
   try {
     return new Intl.NumberFormat(config?.locale || locale, {
       style: "currency",
@@ -121,9 +126,8 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `
   <div class="page ${pageIndex > 0 ? "page-break" : ""}">
-    ${
-      pageIndex === 0
-        ? `
+    ${pageIndex === 0
+          ? `
     <div class="proforma-line" style="margin-top: 140px;">
       <div style="display: flex; flex-direction: column; gap: 4px;">
         <div style="font-size: 14px; font-weight: 500; color: #4b5563;">
@@ -160,8 +164,8 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         </div>
       </div>
     </div>`
-        : ""
-    }
+          : ""
+        }
 
     <div style="${pageIndex > 0 ? "padding: 20px 30px;" : ""}">
       <table>
@@ -176,8 +180,8 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         </thead>
         <tbody>
           ${pageItems
-            .map(
-              (item) => `
+          .map(
+            (item) => `
           <tr>
             <td>${item.designation}</td>
             <td>${item.unit}</td>
@@ -185,32 +189,30 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
             <td>${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
             <td>${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
           </tr>`,
-            )
-            .join("")}
+          )
+          .join("")}
         </tbody>
       </table>
 
       ${isLast && remainingTotal > 0 ? `<div style="margin-top:8px; text-align:right; font-weight:bold;">${dict.amountRemaining} : ${formatCurrency(remainingTotal, data.currencyCode, lang)}</div>` : ""}
 
-      ${
-        isLast
+      ${isLast
           ? `
-      ${
-        data.amountWords
-          ? `
-      <div style="margin-top: 20px; font-style: italic; color: #4b5563; width: 60%;">
-        <span style="font-weight: bold; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 4px; color: #9ca3af;">${dict.amountWords}</span>
-        <div style="font-size: 13px; color: #1f2937; line-height: 1.4;">${data.amountWords}</div>
+      ${data.description
+            ? `
+      <div style="margin-top: 20px; font-style: italic; color: #4b5563; width: 60%; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;">
+        <span style="font-weight: bold; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 4px; color: #9ca3af;">${dict.description}</span>
+        <div style="font-size: 13px; color: #1f2937; line-height: 1.4;">${data.description}</div>
       </div>`
-          : ""
-      }
+            : ""
+          }
       <table class="totals">
         <tr><td>${dict.totalMaterial}</td><td>${totalmaterial}</td></tr>
         <tr><td>${dict.totalHT}</td><td>${formatCurrency(totalht, data.currencyCode, lang)}</td></tr>
         <tr><td style="text-align:center; padding-top:12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; border-top: 1px dashed #e5e7eb;">${dict.manager}</td><td style="text-align:center; padding-top:12px; font-weight:bold; font-size:14px; border-top: 1px dashed #e5e7eb;">${data.managerName}</td></tr>
       </table>`
           : ""
-      }
+        }
     </div>
     <div class="pageNumber">${pageIndex + 1} / ${totalPages}</div>
   </div>`;
@@ -277,8 +279,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `
     <div class="page ${pageIndex > 0 ? "page-break" : ""}">
-      ${
-        pageIndex === 0
+      ${pageIndex === 0
           ? `
       <div class="header">
           <div class="logo-section">
@@ -311,7 +312,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
           </div>
       </div>`
           : `<div style="height: 50px;"></div>`
-      }
+        }
 
       <table>
           <thead>
@@ -325,8 +326,8 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
           </thead>
           <tbody>
             ${pageItems
-              .map(
-                (item, idx) => `
+          .map(
+            (item, idx) => `
             <tr class="${idx % 2 === 0 ? "" : "bg-gray"}">
               <td style="text-align:left; word-break: break-word; max-width: 300px;">${item.designation}</td>
               <td style="text-align:center">${item.unit}</td>
@@ -334,26 +335,32 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
               <td style="text-align:right; white-space: nowrap;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
               <td style="text-align:right; font-weight:bold; white-space: nowrap;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
             </tr>`,
-              )
-              .join("")}
+          )
+          .join("")}
           </tbody>
       </table>
 
-      ${
-        isLast
+      ${isLast
           ? `
       <div class="footer-totals">
             <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; margin-bottom: 40px;">
                 <div style="flex: 1; margin-bottom: 10px;">
-                    ${
-                      data.amountWords
-                        ? `
-                    <div style="font-style: italic; color: #64748b; margin-top: 10px;">
+                    ${data.description
+            ? `
+                    <div style="font-style: italic; color: #64748b; margin-top: 10px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
+                        <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 5px; color: #94a3b8; letter-spacing: 0.05em;">${dict.description}</span>
+                        <div style="font-size: 13px; color: #334155; line-height: 1.4; border-left: 2px solid #f1f5f9; padding-left: 10px;">${data.description}</div>
+                    </div>`
+            : ""
+          }
+                    ${data.amountWords
+            ? `
+                    <div style="font-style: italic; color: #64748b; margin-top: 10px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
                         <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 5px; color: #94a3b8; letter-spacing: 0.05em;">${dict.amountWords}</span>
                         <div style="font-size: 13px; color: #334155; line-height: 1.4; border-left: 2px solid #f1f5f9; padding-left: 10px;">${data.amountWords}</div>
                     </div>`
-                        : ""
-                    }
+            : ""
+          }
                 </div>
                 <div class="totals-section">
                     <div class="total-row subt">
@@ -372,7 +379,7 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
             </div>
       </div>`
           : ""
-      }
+        }
 
       <div class="page-num">${pageIndex + 1} / ${totalPages}</div>
     </div>`;
@@ -436,8 +443,8 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsFirstPage = 14;
-  const itemsSubsequentPages = 16;
+  const itemsFirstPage = 12;
+  const itemsSubsequentPages = 15;
 
   // Pagination logic
   const allPages: InvoiceItem[][] = [];
@@ -460,9 +467,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
       const isLast = i === totalPages - 1;
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
-       ${
-         i === 0
-           ? `
+       ${i === 0
+          ? `
          <div class="header-band">
              <div class="logo-container">
                  <div class="logo-circle"></div>
@@ -494,8 +500,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                  <div class="description-box">${data.object}</div>
              </div>
          </div>`
-           : '<div style="height:40px"></div>'
-       }
+          : '<div style="height:40px"></div>'
+        }
 
          <div class="table-container">
             <table>
@@ -510,8 +516,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </thead>
                 <tbody>
                     ${pageItems
-                      .map(
-                        (item, idx) => `
+          .map(
+            (item, idx) => `
                     <tr class="${idx % 2 === 1 ? "bg-gray" : ""}">
                         <td style="text-align:left; word-break: break-word; max-width: 300px;">${item.designation}</td>
                         <td class="center">${item.unit}</td>
@@ -519,28 +525,26 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                         <td style="text-align:right; white-space: nowrap;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
                         <td style="text-align:right; font-weight:bold; color:#1e293b; white-space: nowrap;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
                     </tr>`,
-                      )
-                      .join("")}
+          )
+          .join("")}
                 </tbody>
             </table>
          </div>
 
-          ${
-            isLast
-              ? `
+          ${isLast
+          ? `
           <div class="summary">
               <div class="summary-box">
                   <div class="footer-layout" style="display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 40px;">
                     <div style="flex: 1; margin-right: 40px;">
-                        ${
-                          data.amountWords
-                            ? `
-                        <div style="font-style: italic; color: #64748b; margin-bottom: 20px;">
-                            <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 8px; color: #1e3a8a; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">${dict.amountWords}</span>
-                            <div style="font-size: 13px; color: #374151; line-height: 1.5;">${data.amountWords}</div>
+                        ${data.description
+            ? `
+                        <div style="font-style: italic; color: #64748b; margin-bottom: 20px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
+                            <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 8px; color: #1e3a8a; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">${dict.description}</span>
+                            <div style="font-size: 13px; color: #374151; line-height: 1.5;">${data.description}</div>
                         </div>`
-                            : ""
-                        }
+            : ""
+          }
                     </div>
                     <div class="totals-area">
                         <div class="total-row subt"><span>${dict.totalMaterial}</span> <span>${totalmaterial}</span></div>
@@ -554,8 +558,8 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </div>
             </div>
             <div class="footer-bar"></div>`
-              : `<div class="footer-bar" style="position:absolute; bottom:0;"></div>`
-          }
+          : `<div class="footer-bar" style="position:absolute; bottom:0;"></div>`
+        }
          <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
        </div>`;
     })
@@ -618,7 +622,7 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
   const date = new Date().toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US");
-  const itemsFirstPage = 7;
+  const itemsFirstPage = 5;
   const itemsSubsequentPages = 9;
 
   // Pagination logic
@@ -650,9 +654,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
       return `<div class="page ${i > 0 ? "page-break" : ""}">
         ${bgDecor}
         <div class="content-wrapper">
-            ${
-              i === 0
-                ? `
+            ${i === 0
+          ? `
             <div class="header">
                 <div>
                     <div class="brand">
@@ -683,8 +686,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="desc-text">${data.object}</div>
                 </div>
             </div>`
-                : '<div style="height: 60px;"></div>'
-            }
+          : '<div style="height: 60px;"></div>'
+        }
 
             <div class="grid-header">
                 <div class="c-desc">${dict.description}</div>
@@ -695,8 +698,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
             <div class="items-grid">
                 ${pageItems
-                  .map(
-                    (item) => `
+          .map(
+            (item) => `
                 <div class="item-card">
                     <div class="i-desc">
                         <div class="name">${item.designation}</div>
@@ -706,25 +709,23 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="i-qty"><span>${item.quantity}</span></div>
                     <div class="i-total">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</div>
                 </div>`,
-                  )
-                  .join("")}
+          )
+          .join("")}
             </div>
 
-            ${
-              isLast
-                ? `
+            ${isLast
+          ? `
             <div class="footer" style="display: flex; flex-direction: column; align-items: flex-end; gap: 40px; margin-top: 40px; width: 100%; padding-bottom: 80px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
                     <div style="flex: 1; padding-right: 32px;">
-                        ${
-                          data.amountWords
-                            ? `
-                        <div style="font-style: italic; margin-bottom: 20px;">
-                            <span style="font-weight: 800; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 6px; color: #a855f7; letter-spacing: 0.05em;">${dict.amountWords}</span>
-                            <div style="font-size: 13px; color: #4b5563; line-height: 1.4; border-bottom: 1px solid #f3f4f6; padding-bottom: 8px;">${data.amountWords}</div>
+                        ${data.description
+            ? `
+                        <div style="font-style: italic; margin-bottom: 20px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
+                            <span style="font-weight: 800; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 6px; color: #a855f7; letter-spacing: 0.05em;">${dict.description}</span>
+                            <div style="font-size: 13px; color: #4b5563; line-height: 1.4; border-bottom: 1px solid #f3f4f6; padding-bottom: 8px;">${data.description}</div>
                         </div>`
-                            : ""
-                        }
+            : ""
+          }
                     </div>
     
                     <div class="summary-card">
@@ -743,8 +744,8 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
             </div>`
-                : ""
-            }
+          : ""
+        }
         </div>
         <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#9ca3af; z-index:20;">${i + 1} / ${totalPages}</div>
         </div>`;
@@ -838,9 +839,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
       return `<div class="page ${i > 0 ? "page-break" : ""}">
             <div class="top-accent"></div>
             <div class="inner-content">
-            ${
-              i === 0
-                ? `
+            ${i === 0
+          ? `
             <div class="header">
                 <div class="header-left">
                     <h1 class="main-title">${data.type === "quote" ? dict.proforma : dict.invoice}</h1>
@@ -871,8 +871,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="object-box">${data.object}</div>
                 </div>
             </div>`
-                : '<div style="height:60px"></div>'
-            }
+          : '<div style="height:60px"></div>'
+        }
 
             <div class="table-wrapper">
                 <table>
@@ -887,8 +887,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </thead>
                     <tbody>
                         ${pageItems
-                          .map(
-                            (item) => `
+          .map(
+            (item) => `
                         <tr>
                             <td style="text-align:left; font-weight: 500;">${item.designation}</td>
                             <td>${item.unit}</td>
@@ -896,26 +896,24 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                             <td style="text-align:right; color: #64748b;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
                             <td style="text-align:right; font-weight: 600; color: #0f172a;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
                         </tr>`,
-                          )
-                          .join("")}
+          )
+          .join("")}
                     </tbody>
                 </table>
             </div>
 
-            ${
-              isLast
-                ? `
+            ${isLast
+          ? `
             <div class="footer-area" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 40px;">
                 <div style="flex: 1;">
-                    ${
-                      data.amountWords
-                        ? `
-                    <div style="font-style: italic; color: #64748b; margin-top: 10px;">
-                        <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 5px; color: #94a3b8; letter-spacing: 0.1em; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">${dict.amountWords}</span>
-                        <div style="font-size: 13px; color: #334155; line-height: 1.4; font-family: 'Playfair Display', serif;">${data.amountWords}</div>
+                    ${data.description
+            ? `
+                    <div style="font-style: italic; color: #64748b; margin-top: 20px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
+                        <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 5px; color: #94a3b8; letter-spacing: 0.1em; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">${dict.description}</span>
+                        <div style="font-size: 13px; color: #334155; line-height: 1.4; font-family: 'Playfair Display', serif;">${data.description}</div>
                     </div>`
-                        : ""
-                    }
+            : ""
+          }
                 </div>
                 <div class="totals-section">
                     <div class="total-row subt">
@@ -936,8 +934,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
             </div>`
-                : ""
-            }
+          : ""
+        }
             </div>
             <div class="page-num" style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#94a3b8;">${i + 1} / ${totalPages}</div>
         </div>`;
@@ -999,8 +997,8 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 // ==========================================
 function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   const { totalht, totalmaterial } = calculateTotals(data.items);
-  const itemsFirstPage = 10;
-  const itemsSubsequentPages = 16;
+  const itemsFirstPage = 7;
+  const itemsSubsequentPages = 9;
 
   // Pagination logic
   const allPages: InvoiceItem[][] = [];
@@ -1024,9 +1022,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
             <div class="content">
-            ${
-              i === 0
-                ? `
+            ${i === 0
+          ? `
             <div class="header">
                 <div class="meta-tags">
                     <div class="tag">
@@ -1065,8 +1062,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="project-text">${data.object}</div>
                 </div>
             </div>`
-                : '<div style="height:40px"></div>'
-            }
+          : '<div style="height:40px"></div>'
+        }
 
             <div class="table-container">
                 <div class="table-head">
@@ -1078,8 +1075,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </div>
                 <div class="table-body">
                     ${pageItems
-                      .map(
-                        (item) => `
+          .map(
+            (item) => `
                     <div class="table-row">
                         <div class="col-desc">
                             <div class="item-name">${item.designation}</div>
@@ -1089,25 +1086,23 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                         <div class="col-price">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</div>
                         <div class="col-total">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</div>
                     </div>`,
-                      )
-                      .join("")}
+          )
+          .join("")}
                 </div>
             </div>
 
-            ${
-              isLast
-                ? `
+            ${isLast
+          ? `
             <div class="footer" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; margin-top: 40px; margin-bottom: 40px;">
                 <div style="flex: 1; padding-bottom: 10px;">
-                    ${
-                      data.amountWords
-                        ? `
-                    <div style="margin-top: 20px; font-style: italic;">
-                        <label style="color: #a1a1aa; font-size: 10px; display: block; margin-bottom: 5px;">${dict.amountWords}</label>
-                        <div style="font-size: 13px; color: #3f3f46; line-height: 1.4; border-left: 2px solid #18181b; padding-left: 12px; margin-top: 4px;">${data.amountWords}</div>
+                    ${data.description
+            ? `
+                    <div style="margin-top: 20px; font-style: italic; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
+                        <label style="color: #a1a1aa; font-size: 10px; display: block; margin-bottom: 5px;">${dict.description}</label>
+                        <div style="font-size: 13px; color: #3f3f46; line-height: 1.4; border-left: 2px solid #18181b; padding-left: 12px; margin-top: 4px;">${data.description}</div>
                     </div>`
-                        : ""
-                    }
+            : ""
+          }
                 </div>
                 <div class="totals-block">
                     <div class="total-row">
@@ -1128,8 +1123,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </div>
                 </div>
             </div>`
-                : ""
-            }
+          : ""
+        }
 
         </div>
         <div style="position:absolute; bottom:24px; right:48px; font-size:10px; color:#a1a1aa;">${i + 1} / ${totalPages}</div>
@@ -1214,9 +1209,8 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 
       return `<div class="page ${i > 0 ? "page-break" : ""}">
             <div class="content" style="padding: 48px; height: 100%; display: flex; flex-direction: column; position: relative; background: #fff; box-sizing: border-box;">
-                ${
-                  i === 0
-                    ? `
+                ${i === 0
+          ? `
                 <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                     <div>
                         <h1 style="font-size: 72px; font-weight: 800; margin: 0; line-height: 1; letter-spacing: -4px; text-transform: uppercase;">${data.type === "quote" ? dict.proforma : dict.invoice}</h1>
@@ -1243,8 +1237,8 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div style="font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">${dict.object}</div>
                     <div style="font-weight: 600; color: #333;">${data.object}</div>
                 </div>`
-                    : '<div style="height: 40px;"></div>'
-                }
+          : '<div style="height: 40px;"></div>'
+        }
 
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                     <thead style="background: #000; color: #fff;">
@@ -1257,33 +1251,31 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     </thead>
                     <tbody style="border: 1px solid #eee;">
                         ${pageItems
-                          .map(
-                            (item) => `
+          .map(
+            (item) => `
                         <tr style="border-bottom: 1px solid #f9f9f9;">
                             <td style="padding: 15px; font-size: 14px; font-weight: 600; vertical-align: top;">${item.designation}</td>
                             <td style="padding: 15px; font-size: 14px; text-align: center; vertical-align: top;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
                             <td style="padding: 15px; font-size: 14px; text-align: center; vertical-align: top;">${item.quantity}</td>
                             <td style="padding: 15px; font-size: 14px; text-align: right; font-weight: 700; vertical-align: top;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
                         </tr>`,
-                          )
-                          .join("")}
+          )
+          .join("")}
                     </tbody>
                 </table>
 
-                ${
-                  isLast
-                    ? `
+                ${isLast
+          ? `
                 <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; gap: 40px;">
                     <div style="flex: 1; padding-bottom: 10px;">
-                        ${
-                          data.amountWords
-                            ? `
-                        <div style="font-style: italic;">
-                            <span style="font-weight: 800; color: #999; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; display: block; margin-bottom: 5px;">${dict.amountWords}</span>
-                            <div style="font-size: 13px; color: #333; line-height: 1.4; border-bottom: 1px solid #eee; padding-bottom: 8px;">${data.amountWords}</div>
+                        ${data.description
+            ? `
+                        <div style="font-style: italic; margin-bottom: 20px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 350px;">
+                            <span style="font-weight: 800; color: #999; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; display: block; margin-bottom: 5px;">${dict.description}</span>
+                            <div style="font-size: 13px; color: #333; line-height: 1.4; border-bottom: 1px solid #eee; padding-bottom: 8px;">${data.description}</div>
                         </div>`
-                            : ""
-                        }
+            : ""
+          }
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end;">
                     <div style="display: flex; justify-content: space-between; width: 250px; font-size: 14px; margin-bottom: 10px;">
@@ -1303,8 +1295,8 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                         <div style="font-weight: 800; font-size: 24px; border-bottom: 1px solid #eee; padding-bottom: 10px; min-width: 200px; display: inline-block;">${data.managerName}</div>
                     </div>
                 </div>`
-                    : ""
-                }
+          : ""
+        }
             </div>
             <div style="position: absolute; bottom: 24px; right: 48px; font-size: 10px; color: #aaa;">${dict.page} ${i + 1} / ${totalPages}</div>
         </div>`;
@@ -1356,9 +1348,8 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                 </div>
 
                 <div style="padding: 48px; flex: 1;">
-                ${
-                  i === 0
-                    ? `
+                ${i === 0
+          ? `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 50px;">
                         <div style="width: 50%;">
                             <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 15px;">${lang === "fr" ? "À L'ATTENTION DE" : "INVOICE TO"} :</div>
@@ -1374,8 +1365,8 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                             </div>
                         </div>
                     </div>`
-                    : '<div style="height: 40px;"></div>'
-                }
+          : '<div style="height: 40px;"></div>'
+        }
 
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                         <thead style="background: #111; color: #fff;">
@@ -1388,22 +1379,21 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                         </thead>
                         <tbody>
                             ${pageItems
-                              .map(
-                                (item) => `
+          .map(
+            (item) => `
                             <tr style="border-bottom: 1px solid #eee;">
                                 <td style="padding: 15px; font-size: 14px; font-weight: 800;">${item.designation}</td>
                                 <td style="padding: 15px; font-size: 14px; text-align: center;">${item.quantity}</td>
                                 <td style="padding: 15px; font-size: 14px; text-align: center; color: #666;">${formatCurrency(item.unitPrice, data.currencyCode, lang)}</td>
                                 <td style="padding: 15px; font-size: 14px; text-align: right; font-weight: 800;">${formatCurrency(item.totalPrice || item.quantity * item.unitPrice, data.currencyCode, lang)}</td>
                             </tr>`,
-                              )
-                              .join("")}
+          )
+          .join("")}
                         </tbody>
                     </table>
 
-                    ${
-                      isLast
-                        ? `
+                    ${isLast
+          ? `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px; gap: 30px;">
                         <div style="flex: 1;">
                             <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 15px;">${lang === "fr" ? "MODE DE PAIEMENT" : "PAYMENT METHOD"} :</div>
@@ -1412,15 +1402,14 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                                 <div><span style="color: #999;">${lang === "fr" ? "Compte" : "Bank Account"} :</span> <span style="font-weight: 800; font-style: italic; text-decoration: underline;">1234567890</span></div>
                             </div>
 
-                            ${
-                              data.amountWords
-                                ? `
-                            <div style="font-style: italic;">
-                                <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 8px;">${dict.amountWords} :</div>
-                                <div style="font-size: 13px; color: #333; line-height: 1.4; border-left: 3px solid #111; padding-left: 12px;">${data.amountWords}</div>
+                            ${data.description
+            ? `
+                            <div style="font-style: italic; margin-bottom: 20px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 300px;">
+                                <div style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 8px;">${dict.description} :</div>
+                                <div style="font-size: 13px; color: #333; line-height: 1.4; border-left: 3px solid #111; padding-left: 12px;">${data.description}</div>
                             </div>`
-                                : ""
-                            }
+            : ""
+          }
                         </div>
                         <div style="width: 40%; background: #f9f9f9; padding: 25px; border: 1px solid #eee;">
                             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px;">
@@ -1448,8 +1437,8 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                             </div>
                         </div>
                     </div>`
-                        : ""
-                    }
+          : ""
+        }
                 </div>
 
                 <div style="height: 60px; background: #111; position: relative; overflow: hidden;">

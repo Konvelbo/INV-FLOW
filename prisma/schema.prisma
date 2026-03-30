@@ -238,6 +238,7 @@ model Invoice {
   totalHT       Float
   totalMaterial Float
   amountWords   String?
+  description   String?
   taxAmount     Float?  @default(0)
   totalTTC      Float?  @default(0)
 

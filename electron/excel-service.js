@@ -31,7 +31,7 @@ async function generateExcel(title, columns, rows) {
   // Add rows and style them
   rows.forEach((rowData, index) => {
     const row = worksheet.addRow(rowData);
-    
+
     // Alternating row colors
     if (index % 2 === 1) {
       row.fill = {
@@ -49,7 +49,7 @@ async function generateExcel(title, columns, rows) {
         bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
         right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
       };
-      
+
       // Auto-formatting for numbers
       if (typeof cell.value === 'number') {
         cell.numFmt = '#,##0';

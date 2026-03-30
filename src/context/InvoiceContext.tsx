@@ -35,6 +35,7 @@ export interface InvoiceActionsType {
   setUnitPrice: (value: number) => void;
   setTotalPrice: (value: number) => void;
   setAmountWords: (value: string) => void;
+  setDescription: (value: string) => void;
   setManagerName: (value: string) => void;
   setItemsArr: (value: InvoiceItemWithId[]) => void;
   setCurrency: (value: string) => void;
@@ -44,7 +45,7 @@ export interface InvoiceActionsType {
   ) => void;
   clearInvoiceData: () => void;
   setClientId: (value: string | null) => void;
-  setInvoiceType: (value: string) => void;
+  setInvoiceType: (value: "invoice" | "quote") => void;
   setCompanyName: (value: string) => void;
 }
 
@@ -64,12 +65,13 @@ export interface InvoiceStateContextType {
   totalMaterial: number;
   totalHT: number;
   amountWords: string;
+  description: string;
   managerName: string;
   itemsArr: InvoiceItemWithId[];
   currency: string;
   style: string;
   clientId: string | null;
-  invoiceType: string;
+  invoiceType: "invoice" | "quote";
   companyName: string;
 }
 
@@ -93,8 +95,9 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [quantity, setQuantity] = useState<number>(0);
   const [unitPrice, setUnitPrice] = useState<number>(0);
   const [totalPrice, setTotalPrice] = useState<number>(0);
-  const [managerName, setManagerName] = useState<string>("");
   const [amountWords, setAmountWords] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [managerName, setManagerName] = useState<string>("");
   const [itemsArr, setItemsArr] = useState<InvoiceItemWithId[]>([]);
   const [currency, setCurrencyState] = useState<string>(() => {
     if (typeof window !== "undefined") {
@@ -104,7 +107,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   });
   const [style, setStyle] = useState<string>("default");
   const [clientId, setClientId] = useState<string | null>(null);
-  const [invoiceType, setInvoiceType] = useState<string>("invoice");
+  const [invoiceType, setInvoiceType] = useState<"invoice" | "quote">("invoice");
   const [companyName, setCompanyName] = useState<string>("");
 
   const setCurrency = useCallback((val: string) => {
@@ -139,10 +142,11 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setManagerName(data.managerName || "");
       // totalHT and totalMaterial are derived
       setAmountWords(data.amountWords || "");
+      setDescription(data.description || "");
       setItemsArr(data.items || []);
       setStyle(data.style || "default");
       setClientId(data.clientId || null);
-      setInvoiceType(data.invoiceType || "invoice");
+      setInvoiceType((data.invoiceType as "invoice" | "quote") || "invoice");
       setCompanyName(data.companyName || "");
     },
     [],
@@ -158,6 +162,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     setObject("");
     setManagerName("");
     setAmountWords("");
+    setDescription("");
     setItemsArr([]);
     setStyle("default");
     setClientId(null);
@@ -182,6 +187,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       totalMaterial,
       totalHT,
       amountWords,
+      description,
       managerName,
       itemsArr,
       currency,
@@ -206,6 +212,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       totalMaterial,
       totalHT,
       amountWords,
+      description,
       managerName,
       itemsArr,
       currency,
@@ -231,6 +238,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setUnitPrice,
       setTotalPrice,
       setAmountWords,
+      setDescription,
       setManagerName,
       setItemsArr,
       setCurrency,
@@ -241,7 +249,19 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setInvoiceType,
       setCompanyName,
     }),
-    [setCurrency, setStyle, setInvoiceData, clearInvoiceData, setClientId, setInvoiceType, setCompanyName],
+    [
+      setAmountWords,
+      setDescription,
+      setManagerName,
+      setItemsArr,
+      setCurrency,
+      setStyle,
+      setInvoiceData,
+      clearInvoiceData,
+      setClientId,
+      setInvoiceType,
+      setCompanyName,
+    ],
   );
 
   return (

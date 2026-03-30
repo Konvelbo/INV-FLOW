@@ -267,6 +267,7 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   totalHT: 'totalHT',
   totalMaterial: 'totalMaterial',
   amountWords: 'amountWords',
+  description: 'description',
   taxAmount: 'taxAmount',
   totalTTC: 'totalTTC',
   pdfUrl: 'pdfUrl',

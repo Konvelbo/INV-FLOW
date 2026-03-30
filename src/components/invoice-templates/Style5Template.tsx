@@ -35,8 +35,8 @@ export default function Style5Template({
     invoiceType,
     companyName,
     setCompanyName,
-    amountWords,
-    setAmountWords,
+    description,
+    setDescription,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -402,12 +402,12 @@ export default function Style5Template({
             <div className="flex justify-between items-end gap-12 mb-12">
               <div className="flex-1 pb-4">
                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                  {dict.amountWords}
+                  {dict.description}
                 </div>
                 <OptimizedInput
-                  value={amountWords}
-                  onValueChange={setAmountWords}
-                  placeholder={dict.amountWordsPlaceholder}
+                  value={description}
+                  onValueChange={setDescription}
+                  placeholder={dict.description}
                   className="bg-transparent text-sm italic w-full border-b border-transparent hover:border-zinc-200 focus:border-zinc-300 pb-1 text-zinc-600"
                 />
               </div>

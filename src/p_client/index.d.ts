@@ -10741,6 +10741,7 @@ export namespace Prisma {
     totalHT: number | null
     totalMaterial: number | null
     amountWords: string | null
+    description: string | null
     taxAmount: number | null
     totalTTC: number | null
     pdfUrl: string | null
@@ -10780,6 +10781,7 @@ export namespace Prisma {
     totalHT: number | null
     totalMaterial: number | null
     amountWords: string | null
+    description: string | null
     taxAmount: number | null
     totalTTC: number | null
     pdfUrl: string | null
@@ -10819,6 +10821,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords: number
+    description: number
     taxAmount: number
     totalTTC: number
     pdfUrl: number
@@ -10878,6 +10881,7 @@ export namespace Prisma {
     totalHT?: true
     totalMaterial?: true
     amountWords?: true
+    description?: true
     taxAmount?: true
     totalTTC?: true
     pdfUrl?: true
@@ -10917,6 +10921,7 @@ export namespace Prisma {
     totalHT?: true
     totalMaterial?: true
     amountWords?: true
+    description?: true
     taxAmount?: true
     totalTTC?: true
     pdfUrl?: true
@@ -10956,6 +10961,7 @@ export namespace Prisma {
     totalHT?: true
     totalMaterial?: true
     amountWords?: true
+    description?: true
     taxAmount?: true
     totalTTC?: true
     pdfUrl?: true
@@ -11082,6 +11088,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords: string | null
+    description: string | null
     taxAmount: number | null
     totalTTC: number | null
     pdfUrl: string | null
@@ -11140,6 +11147,7 @@ export namespace Prisma {
     totalHT?: boolean
     totalMaterial?: boolean
     amountWords?: boolean
+    description?: boolean
     taxAmount?: boolean
     totalTTC?: boolean
     pdfUrl?: boolean
@@ -11186,6 +11194,7 @@ export namespace Prisma {
     totalHT?: boolean
     totalMaterial?: boolean
     amountWords?: boolean
+    description?: boolean
     taxAmount?: boolean
     totalTTC?: boolean
     pdfUrl?: boolean
@@ -11206,7 +11215,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "companyName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
+  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "companyName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "description" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
   export type InvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | Invoice$clientArgs<ExtArgs>
     company?: boolean | Invoice$companyArgs<ExtArgs>
@@ -11242,6 +11251,7 @@ export namespace Prisma {
       totalHT: number
       totalMaterial: number
       amountWords: string | null
+      description: string | null
       taxAmount: number | null
       totalTTC: number | null
       pdfUrl: string | null
@@ -11674,6 +11684,7 @@ export namespace Prisma {
     readonly totalHT: FieldRef<"Invoice", 'Float'>
     readonly totalMaterial: FieldRef<"Invoice", 'Float'>
     readonly amountWords: FieldRef<"Invoice", 'String'>
+    readonly description: FieldRef<"Invoice", 'String'>
     readonly taxAmount: FieldRef<"Invoice", 'Float'>
     readonly totalTTC: FieldRef<"Invoice", 'Float'>
     readonly pdfUrl: FieldRef<"Invoice", 'String'>
@@ -18375,6 +18386,7 @@ export namespace Prisma {
     totalHT: 'totalHT',
     totalMaterial: 'totalMaterial',
     amountWords: 'amountWords',
+    description: 'description',
     taxAmount: 'taxAmount',
     totalTTC: 'totalTTC',
     pdfUrl: 'pdfUrl',
@@ -19423,6 +19435,7 @@ export namespace Prisma {
     totalHT?: FloatFilter<"Invoice"> | number
     totalMaterial?: FloatFilter<"Invoice"> | number
     amountWords?: StringNullableFilter<"Invoice"> | string | null
+    description?: StringNullableFilter<"Invoice"> | string | null
     taxAmount?: FloatNullableFilter<"Invoice"> | number | null
     totalTTC?: FloatNullableFilter<"Invoice"> | number | null
     pdfUrl?: StringNullableFilter<"Invoice"> | string | null
@@ -19466,6 +19479,7 @@ export namespace Prisma {
     totalHT?: SortOrder
     totalMaterial?: SortOrder
     amountWords?: SortOrder
+    description?: SortOrder
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     pdfUrl?: SortOrder
@@ -19512,6 +19526,7 @@ export namespace Prisma {
     totalHT?: FloatFilter<"Invoice"> | number
     totalMaterial?: FloatFilter<"Invoice"> | number
     amountWords?: StringNullableFilter<"Invoice"> | string | null
+    description?: StringNullableFilter<"Invoice"> | string | null
     taxAmount?: FloatNullableFilter<"Invoice"> | number | null
     totalTTC?: FloatNullableFilter<"Invoice"> | number | null
     pdfUrl?: StringNullableFilter<"Invoice"> | string | null
@@ -19555,6 +19570,7 @@ export namespace Prisma {
     totalHT?: SortOrder
     totalMaterial?: SortOrder
     amountWords?: SortOrder
+    description?: SortOrder
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     pdfUrl?: SortOrder
@@ -19602,6 +19618,7 @@ export namespace Prisma {
     totalHT?: FloatWithAggregatesFilter<"Invoice"> | number
     totalMaterial?: FloatWithAggregatesFilter<"Invoice"> | number
     amountWords?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
+    description?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     taxAmount?: FloatNullableWithAggregatesFilter<"Invoice"> | number | null
     totalTTC?: FloatNullableWithAggregatesFilter<"Invoice"> | number | null
     pdfUrl?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
@@ -20984,6 +21001,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -21026,6 +21044,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -21063,6 +21082,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21104,6 +21124,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21144,6 +21165,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -21180,6 +21202,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21217,6 +21240,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22468,6 +22492,7 @@ export namespace Prisma {
     totalHT?: SortOrder
     totalMaterial?: SortOrder
     amountWords?: SortOrder
+    description?: SortOrder
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     pdfUrl?: SortOrder
@@ -22516,6 +22541,7 @@ export namespace Prisma {
     totalHT?: SortOrder
     totalMaterial?: SortOrder
     amountWords?: SortOrder
+    description?: SortOrder
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     pdfUrl?: SortOrder
@@ -22555,6 +22581,7 @@ export namespace Prisma {
     totalHT?: SortOrder
     totalMaterial?: SortOrder
     amountWords?: SortOrder
+    description?: SortOrder
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     pdfUrl?: SortOrder
@@ -24139,6 +24166,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -24180,6 +24208,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -24633,6 +24662,7 @@ export namespace Prisma {
     totalHT?: FloatFilter<"Invoice"> | number
     totalMaterial?: FloatFilter<"Invoice"> | number
     amountWords?: StringNullableFilter<"Invoice"> | string | null
+    description?: StringNullableFilter<"Invoice"> | string | null
     taxAmount?: FloatNullableFilter<"Invoice"> | number | null
     totalTTC?: FloatNullableFilter<"Invoice"> | number | null
     pdfUrl?: StringNullableFilter<"Invoice"> | string | null
@@ -25157,6 +25187,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -25197,6 +25228,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -25648,6 +25680,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -25688,6 +25721,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -27024,6 +27058,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -27065,6 +27100,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -27117,6 +27153,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27157,6 +27194,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27768,6 +27806,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -27979,6 +28018,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28019,6 +28059,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28057,6 +28098,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28446,6 +28488,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -28537,6 +28580,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28576,6 +28620,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28614,6 +28659,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28810,6 +28856,7 @@ export namespace Prisma {
     totalHT: number
     totalMaterial: number
     amountWords?: string | null
+    description?: string | null
     taxAmount?: number | null
     totalTTC?: number | null
     pdfUrl?: string | null
@@ -28846,6 +28893,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28885,6 +28933,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28923,6 +28972,7 @@ export namespace Prisma {
     totalHT?: FloatFieldUpdateOperationsInput | number
     totalMaterial?: FloatFieldUpdateOperationsInput | number
     amountWords?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     taxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalTTC?: NullableFloatFieldUpdateOperationsInput | number | null
     pdfUrl?: NullableStringFieldUpdateOperationsInput | string | null

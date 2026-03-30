@@ -36,8 +36,8 @@ export default function Style2Template({
     invoiceType,
     companyName,
     setCompanyName,
-    amountWords,
-    setAmountWords,
+    description,
+    setDescription,
   } = useInvoice();
   const { dict, language } = useLanguage();
 
@@ -389,11 +389,11 @@ export default function Style2Template({
         {/* Totals & Amount Words */}
         <div className="px-10 mt-12 flex justify-between items-end gap-8 pb-8">
           <div className="flex-1 flex flex-col items-start gap-1 pb-4">
-            <span className="text-xs uppercase font-bold text-gray-400 tracking-widest">{dict.amountWords}</span>
+            <span className="text-xs uppercase font-bold text-gray-400 tracking-widest">{dict.description}</span>
             <OptimizedInput
-              value={amountWords}
-              onValueChange={setAmountWords}
-              placeholder={dict.amountWordsPlaceholder}
+              value={description}
+              onValueChange={setDescription}
+              placeholder={dict.description}
               className="bg-transparent font-medium text-sm w-full italic text-gray-700 border-b border-transparent hover:border-gray-200 focus:border-gray-400 pb-1"
             />
           </div>

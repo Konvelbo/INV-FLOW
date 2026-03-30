@@ -665,6 +665,58 @@ const handlers = {
     };
   },
 
+  companiesReport: async (userId) => {
+    if (!userId) return null;
+    const companies = await prisma.company.findMany({ where: { userId } });
+    const rows = [];
+    let totalRevenue = 0;
+    let totalExpenses = 0;
+    let totalClients = 0;
+
+    for (const company of companies) {
+      const [rev, exp, clients] = await Promise.all([
+        prisma.invoice.aggregate({
+          where: {
+            companyId: company.id,
+            OR: [{ status: "paid" }, { isScaled: true }],
+          },
+          _sum: { totalTTC: true, totalHT: true },
+        }),
+        prisma.expense.aggregate({
+          where: { companyId: company.id },
+          _sum: { amount: true },
+        }),
+        prisma.client.count({ where: { companyId: company.id } }),
+      ]);
+
+      const companyRev = rev._sum.totalTTC || rev._sum.totalHT || 0;
+      const companyExp = exp._sum.amount || 0;
+      const companyNet = companyRev - companyExp;
+
+      rows.push({
+        name: company.name,
+        revenue: companyRev,
+        expenses: companyExp,
+        net: companyNet,
+        clients: clients,
+      });
+
+      totalRevenue += companyRev;
+      totalExpenses += companyExp;
+      totalClients += clients;
+    }
+
+    return {
+      rows,
+      totals: {
+        revenue: totalRevenue,
+        expenses: totalExpenses,
+        net: totalRevenue - totalExpenses,
+        clients: totalClients,
+      },
+    };
+  },
+
   getActiveCompany: async (userId) => {
     if (!userId) return null;
     const activeId = await getActiveCompanyId(userId);
@@ -791,6 +843,29 @@ const handlers = {
           { label: "Somme des Dépenses", value: statsRes.stats.totalExpenses },
           { label: "Total Clients", value: statsRes.stats.totalClients },
         ];
+        break;
+      case "companies_report":
+        title = "Rapport Financier par Entreprise";
+        columns = [
+          { header: "Entreprise", key: "name", width: 30 },
+          { header: "Chiffre d'Affaires", key: "revenue", width: 25 },
+          { header: "Dépenses", key: "expenses", width: 20 },
+          { header: "Résultat Net", key: "net", width: 25 },
+          { header: "Clients", key: "clients", width: 15 },
+        ];
+        const report = await handlers.companiesReport(userId);
+        if (!report) return null;
+        
+        rows = report.rows;
+        // Adding the Global Total row
+        rows.push({
+          name: "TOTAL GLOBAL",
+          revenue: report.totals.revenue,
+          expenses: report.totals.expenses,
+          net: report.totals.net,
+          clients: report.totals.clients,
+          isTotalRow: true // Custom flag for styling if needed, though generateExcel doesn't use it yet
+        });
         break;
       default:
         throw new Error("Invalid export type");

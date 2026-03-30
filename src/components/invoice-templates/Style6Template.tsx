@@ -36,8 +36,8 @@ export default function Style6Template({
     invoiceType,
     companyName,
     setCompanyName,
-    amountWords,
-    setAmountWords,
+    description,
+    setDescription,
   } = useInvoice();
   const { language, dict } = useLanguage();
 
@@ -350,11 +350,11 @@ export default function Style6Template({
             {/* Totals */}
             <div className="mt-8 flex justify-between items-end gap-12">
               <div className="flex-1 flex flex-col items-start gap-1 pb-4">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">{dict.amountWords}</span>
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">{dict.description}</span>
                 <OptimizedInput
-                  value={amountWords}
-                  onValueChange={setAmountWords}
-                  placeholder={dict.amountWordsPlaceholder}
+                  value={description}
+                  onValueChange={setDescription}
+                  placeholder={dict.description}
                   className="bg-transparent text-sm w-full italic text-zinc-600 border-b border-transparent hover:border-zinc-200 focus:border-zinc-300 pb-1"
                 />
               </div>
