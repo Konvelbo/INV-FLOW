@@ -34,6 +34,32 @@ model User {
 
   resetOtp       String?
   resetOtpExpiry DateTime?
+
+  // Subscription
+  subscriptionStatus    String    @default("free") // "free" | "active" | "expired"
+  subscriptionPlan      String    @default("free") // "free" | "monthly" | "yearly"
+  subscriptionExpiresAt DateTime?
+  dailyInvoiceCount     Int       @default(0)
+  dailyInvoiceResetAt   DateTime?
+  ligdicashCustomerId   String?
+
+  paymentTransactions PaymentTransaction[]
+}
+
+model PaymentTransaction {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  user         User      @relation(fields: [userId], references: [id])
+  ligdicashRef String    @unique
+  plan         String // "monthly" | "yearly"
+  amountUsd    Float
+  amountLocal  Float
+  currency     String
+  status       String    @default("pending") // "pending" | "success" | "failed"
+  processedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Company {

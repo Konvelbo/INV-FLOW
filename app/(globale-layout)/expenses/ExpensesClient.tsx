@@ -38,6 +38,8 @@ import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { useIPCAction } from "@/hooks/useIPCAction";
+import { useInvoice } from "@/src/context/InvoiceContext";
+import { formatPrice } from "@/lib/currency";
 
 interface Expense {
   id: string;
@@ -71,6 +73,7 @@ export default function ExpensesClient({
     useState<{ id: string; name: string }[]>(initialCompanies);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { currency } = useInvoice();
   const [editingId, setEditingId] = useState<string | null>(null);
   const { performAction, loading: actionLoading } = useIPCAction();
 
@@ -87,7 +90,10 @@ export default function ExpensesClient({
 
   const fetchExpenses = useCallback(async () => {
     try {
-      const result = await (window as any).electronAPI.getData("expenses", userId);
+      const result = await (window as any).electronAPI.getData(
+        "expenses",
+        userId,
+      );
       if (result.success) {
         setExpenses(result.data.expenses);
       }
@@ -452,7 +458,10 @@ export default function ExpensesClient({
               {[
                 {
                   label: t("totalExpenses"),
-                  value: `${expenses.reduce((acc, e) => acc + e.amount, 0).toLocaleString()} ${expenses[0]?.currency || "XOF"}`,
+                  value: formatPrice(
+                    expenses.reduce((acc, e) => acc + e.amount, 0),
+                    currency,
+                  ),
                   icon: TrendingDown,
                   color: "text-rose-500",
                   bg: "bg-rose-500/10",
@@ -521,7 +530,9 @@ export default function ExpensesClient({
                   </span>
                   <span className="text-2xl font-black text-rose-500 font-mono tracking-tight leading-none">
                     {totalFiltered.toLocaleString()}{" "}
-                    <span className="text-xs opacity-70">XOF</span>
+                    <span className="text-xs opacity-70 uppercase">
+                      {currency}
+                    </span>
                   </span>
                 </div>
               </div>

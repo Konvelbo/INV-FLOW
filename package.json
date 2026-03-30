@@ -7,7 +7,7 @@
     "dev": "concurrently \"next dev\" \"npm run electron:dev\"",
     "electron:dev": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "electron:build": "wait-on http://localhost:3000 && cross-env NODE_ENV=production electron-builder --dir",
-    "electron:dist": "node -e \"const fs = require('fs'); if (fs.existsSync('app/api')) fs.rmSync('app/api', { recursive: true, force: true });\" && npx prisma generate && next build && electron-builder",
+    "electron:dist": "node -e \"const fs = require('fs'); let moved = false; if (fs.existsSync('app/api')) { fs.renameSync('app/api', 'app/_api'); moved = true; } try { require('child_process').execSync('npx prisma generate && next build', {stdio: 'inherit'}); } finally { if (moved && fs.existsSync('app/_api')) fs.renameSync('app/_api', 'app/api'); }\" && electron-builder",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

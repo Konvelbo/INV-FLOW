@@ -16,6 +16,7 @@ import {
   Send,
 } from "lucide-react";
 import { useInvoice } from "@/src/context/InvoiceContext";
+import { formatPrice } from "@/lib/currency";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -125,8 +126,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
 
     const invoiceId = selectedInvoiceForEmail.id;
 
-    const params = invoiceId ? [invoiceId, targetEmail] : [targetEmail];
-    const res = await performAction("invoices", "send", ...params);
+    const res = await performAction("invoices", "send", invoiceId, targetEmail, currency);
 
     if (res.success) {
       toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
@@ -368,8 +368,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                       </span>
                     </div>
                     <span className="text-xl font-black text-primary font-mono tracking-tighter">
-                      {invoice.totalHT.toLocaleString()}{" "}
-                      <span className="text-[10px] ml-0.5">{currency}</span>
+                      {formatPrice(invoice.totalHT, currency)}
                     </span>
                   </div>
                 </div>

@@ -1,15 +1,145 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { PrismaClient } = require("../src/p_client");
 const prisma = new PrismaClient();
+const crypto = require("crypto");
 // Start connection immediately in background to reduce first-query latency
-prisma.$connect()
+prisma
+  .$connect()
   .then(() => console.log("Prisma: Database connection established"))
-  .catch(err => console.error("Prisma: Warmup connection failed", err));
+  .catch((err) => console.error("Prisma: Warmup connection failed", err));
 
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
 const { generateExcel } = require("./excel-service");
+const { 
+  getPricingForCurrency, 
+  fetchRatesFromUSD: getRatesFromUSD,
+  getCurrencyForCountry,
+  formatPrice,
+  detectCountryFromIP,
+  convertFromUSD,
+  COUNTRY_CURRENCY_MAP
+} = require("../lib/currency-service");
 require("dotenv").config();
+
+// ---- Subscription Helpers (server-side enforcement) ----
+const DAILY_INVOICE_LIMIT = 6;
+
+async function getUserPlan(userId) {
+  if (!userId) {
+    return {
+      plan: "free",
+      status: "active",
+      isActive: true,
+      expiresAt: null,
+      dailyInvoiceCount: 0,
+      dailyInvoiceResetAt: null,
+    };
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      subscriptionStatus: true,
+      subscriptionPlan: true,
+      subscriptionExpiresAt: true,
+      dailyInvoiceCount: true,
+      dailyInvoiceResetAt: true,
+    },
+  });
+  if (!user) {
+    return {
+      plan: "free",
+      status: "active",
+      isActive: true,
+      expiresAt: null,
+      dailyInvoiceCount: 0,
+      dailyInvoiceResetAt: null,
+    };
+  }
+
+  const now = new Date();
+  let status = user.subscriptionStatus;
+  const plan = user.subscriptionPlan;
+
+  // Auto-expire subscription
+  if (
+    plan !== "free" &&
+    user.subscriptionExpiresAt &&
+    user.subscriptionExpiresAt < now &&
+    status === "active"
+  ) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { subscriptionStatus: "expired" },
+    });
+    status = "expired";
+  }
+
+  const isActive = plan === "free" || status === "active";
+  return {
+    plan,
+    status,
+    isActive,
+    expiresAt: user.subscriptionExpiresAt,
+    dailyInvoiceCount: user.dailyInvoiceCount,
+    dailyInvoiceResetAt: user.dailyInvoiceResetAt,
+  };
+}
+
+async function checkInvoiceQuota(userId) {
+  const info = await getUserPlan(userId);
+  if (info.plan !== "free" && info.isActive) return { allowed: true };
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const resetDate = info.dailyInvoiceResetAt
+    ? new Date(info.dailyInvoiceResetAt)
+    : null;
+
+  // Reset counter if it's a new day
+  if (!resetDate || resetDate < today) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { dailyInvoiceCount: 0, dailyInvoiceResetAt: today },
+    });
+    return { allowed: true, remaining: DAILY_INVOICE_LIMIT - 1 };
+  }
+
+  if (info.dailyInvoiceCount >= DAILY_INVOICE_LIMIT) {
+    return {
+      allowed: false,
+      reason: `Limite journalière atteinte (${DAILY_INVOICE_LIMIT} factures/jour sur le plan gratuit). Passez à Premium pour un accès illimité.`,
+    };
+  }
+  return {
+    allowed: true,
+    remaining: DAILY_INVOICE_LIMIT - info.dailyInvoiceCount,
+  };
+}
+
+async function incrementInvoiceCount(userId) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  await prisma.user.update({
+    where: { id: userId },
+    data: { dailyInvoiceCount: { increment: 1 }, dailyInvoiceResetAt: today },
+  });
+}
+
+async function checkCompanyQuota(userId) {
+  const info = await getUserPlan(userId);
+  if (info.plan !== "free" && info.isActive) return { allowed: true };
+  const count = await prisma.company.count({ where: { userId } });
+  if (count >= 1)
+    return {
+      allowed: false,
+      reason:
+        "Plan gratuit limité à 1 compagnie. Passez à Premium pour des compagnies illimitées.",
+    };
+  return { allowed: true };
+}
+
+
 const InvoiceEmail = require("../src/components/emails/InvoiceEmail.js");
 const { v2: cloudinary } = require("cloudinary");
 cloudinary.config({
@@ -79,16 +209,22 @@ const sanitizeError = (error) => {
 
 const getActiveCompanyId = async (userId) => {
   if (!userId) return null;
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { activeCompanyId: true },
-  });
-  return user?.activeCompanyId || null;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { activeCompanyId: true },
+    });
+    return user?.activeCompanyId || null;
+  } catch (err) {
+    console.error("Error in getActiveCompanyId:", err);
+    return null;
+  }
 };
 
 // Ported from lib/data-fetching/
 const handlers = {
   dashboard: async (userId, companyId) => {
+    if (!userId) return null;
     const activeId = companyId || (await getActiveCompanyId(userId));
     const where = { userId };
     if (activeId) {
@@ -354,6 +490,7 @@ const handlers = {
   },
 
   clients: async (userId, companyId) => {
+    if (!userId) return [];
     const activeId = companyId || (await getActiveCompanyId(userId));
     const where = { userId };
     if (activeId) where.companyId = activeId;
@@ -401,6 +538,7 @@ const handlers = {
   },
 
   products: async (userId, companyId) => {
+    if (!userId) return [];
     const activeId = companyId || (await getActiveCompanyId(userId));
     const where = { userId };
     if (activeId) where.companyId = activeId;
@@ -416,6 +554,7 @@ const handlers = {
   },
 
   expenses: async (userId, companyId) => {
+    if (!userId) return { expenses: [], companies: [] };
     const activeId = companyId || (await getActiveCompanyId(userId));
     const where = { userId };
     if (activeId) where.companyId = activeId;
@@ -465,6 +604,7 @@ const handlers = {
       return null;
     } else {
       // List of invoices for history/dashboard
+      if (!userId) return [];
       const activeId = passedCompanyId || (await getActiveCompanyId(userId));
       const where = { userId };
       if (activeId) where.companyId = activeId;
@@ -486,6 +626,16 @@ const handlers = {
   },
 
   companies: async (userId) => {
+    if (!userId)
+      return {
+        companies: [],
+        stats: {
+          totalRevenue: 0,
+          totalLoss: 0,
+          totalExpenses: 0,
+          totalClients: 0,
+        },
+      };
     const [companies, totalInvoices, totalExpenses, totalClients] =
       await Promise.all([
         prisma.company.findMany({ where: { userId } }),
@@ -516,6 +666,7 @@ const handlers = {
   },
 
   getActiveCompany: async (userId) => {
+    if (!userId) return null;
     const activeId = await getActiveCompanyId(userId);
     if (!activeId) return null;
     return await prisma.company.findUnique({
@@ -523,6 +674,7 @@ const handlers = {
     });
   },
   export: async (userId, type, companyId) => {
+    if (!userId) return null;
     const whereClause = { userId };
     if (companyId) whereClause.companyId = companyId;
 
@@ -700,6 +852,10 @@ const sanitizeData = (data, excludeType = false) => {
 const actionHandlers = {
   companies: {
     create: async (userId, data) => {
+      // Subscription enforcement: max 1 company on free plan
+      const companyCheck = await checkCompanyQuota(userId);
+      if (!companyCheck.allowed) throw new Error(companyCheck.reason);
+
       const validData = sanitizeData(data, true);
       return await prisma.company.create({
         data: {
@@ -736,11 +892,13 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.company.delete({
         where: { id, userId },
       });
     },
     logo: async (userId, { image, companyId }) => {
+      if (!userId) throw new Error("Authentification requise.");
       try {
         const options = {
           use_filename: true,
@@ -767,6 +925,7 @@ const actionHandlers = {
       }
     },
     setActive: async (userId, companyId) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.user.update({
         where: { id: userId },
         data: { activeCompanyId: companyId },
@@ -798,6 +957,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.client.delete({
         where: { id, userId },
       });
@@ -821,6 +981,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.product.delete({
         where: { id, userId },
       });
@@ -828,6 +989,7 @@ const actionHandlers = {
   },
   expenses: {
     create: async (userId, data) => {
+      if (!userId) throw new Error("Authentification requise.");
       const activeCompanyId = await getActiveCompanyId(userId);
       return await prisma.expense.create({
         data: {
@@ -839,6 +1001,7 @@ const actionHandlers = {
       });
     },
     update: async (userId, id, data) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.expense.update({
         where: { id, userId },
         data: {
@@ -848,6 +1011,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.expense.delete({
         where: { id, userId },
       });
@@ -855,6 +1019,11 @@ const actionHandlers = {
   },
   invoices: {
     create: async (userId, data) => {
+      if (!userId) throw new Error("Authentification requise.");
+      // Subscription enforcement: daily quota check
+      const quotaCheck = await checkInvoiceQuota(userId);
+      if (!quotaCheck.allowed) throw new Error(quotaCheck.reason);
+
       // Logic from app/api/invoices/route.ts
       const { items, currencyCode, ...invoiceData } = sanitizeData(data, false);
       const activeCompanyId = await getActiveCompanyId(userId);
@@ -882,7 +1051,7 @@ const actionHandlers = {
       }
 
       try {
-        return await prisma.invoice.create({
+        const created = await prisma.invoice.create({
           data: {
             ...invoiceData,
             userId,
@@ -900,9 +1069,15 @@ const actionHandlers = {
             },
           },
         });
+        // Increment daily count AFTER successful creation
+        await incrementInvoiceCount(userId);
+        return created;
       } catch (error) {
         // Handle duplicate reference constraint gracefully
-        if (error.code === "P2002" && error.meta?.target?.includes("reference")) {
+        if (
+          error.code === "P2002" &&
+          error.meta?.target?.includes("reference")
+        ) {
           const fallbackRef = `${baseReference}-${Date.now().toString().slice(-6)}`;
           return await prisma.invoice.create({
             data: {
@@ -910,7 +1085,9 @@ const actionHandlers = {
               reference: fallbackRef,
               userId,
               companyId: invoiceData.companyId || activeCompanyId,
-              dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+              dueDate: invoiceData.dueDate
+                ? new Date(invoiceData.dueDate)
+                : null,
               items: {
                 create: (items || []).map((item) => ({
                   designation: item.designation,
@@ -927,7 +1104,8 @@ const actionHandlers = {
         throw error;
       }
     },
-    send: async (userId, invoiceId, targetEmail) => {
+    send: async (userId, invoiceId, targetEmail, currencyCode = "XOF") => {
+      if (!userId) throw new Error("Authentification requise.");
       try {
         if (!targetEmail) {
           throw new Error(
@@ -953,6 +1131,20 @@ const actionHandlers = {
           process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
         const downloadLink = `${appUrl}/api/public/download/${invoice.id}`;
 
+        // Simple currency formatter for the email (Node.js side)
+        const formatEmailAmount = (val, code) => {
+          const amount = Number(val).toLocaleString("fr-FR");
+          const symbolMap = {
+            XOF: "FCFA",
+            XAF: "FCFA",
+            EUR: "€",
+            USD: "$",
+            GBP: "£",
+          };
+          const symbol = symbolMap[code.toUpperCase()] || code;
+          return `${amount} ${symbol}`;
+        };
+
         // On utilise la dépendance resend pour envoyer l'email
         const { render } = await import("@react-email/components");
         const emailHtml = await render(
@@ -961,9 +1153,10 @@ const actionHandlers = {
             invoiceReference: invoice.reference,
             downloadLink: downloadLink,
             senderName: invoice.author.name || "Votre Partenaire",
-            amount: invoice.totalTTC
-              ? `${invoice.totalTTC} XOF`
-              : `${invoice.totalHT} XOF`,
+            amount: formatEmailAmount(
+              invoice.totalTTC || invoice.totalHT,
+              currencyCode,
+            ),
             invoiceId: invoice.id,
           }),
         );
@@ -982,6 +1175,7 @@ const actionHandlers = {
       }
     },
     update: async (userId, id, data) => {
+      if (!userId) throw new Error("Authentification requise.");
       // Logic from app/api/invoices/[id]/route.ts (PUT)
       const { items, currencyCode, ...invoiceData } = sanitizeData(data, false);
 
@@ -1022,9 +1216,10 @@ const actionHandlers = {
       });
     },
     patch: async (userId, id, data) => {
+      if (!userId) throw new Error("Authentification requise.");
       // Enforce logic for patches too
       const invoice = await prisma.invoice.findUnique({
-        where: { id, userId },
+        where: { id: id || "", userId: userId || "" },
       });
       if (!invoice) throw new Error("Facture non trouvée");
 
@@ -1049,6 +1244,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
+      if (!userId) throw new Error("Authentification requise.");
       return await prisma.invoice.delete({
         where: { id, userId },
       });
@@ -1056,6 +1252,7 @@ const actionHandlers = {
   },
   feedback: {
     create: async (userId, data) => {
+      if (!userId) throw new Error("Authentification requise.");
       const { content, rating, contactEmail } = data;
       const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -1078,7 +1275,7 @@ const actionHandlers = {
         </div>
       `;
 
-      const toEmail = process.env.ADMIN_EMAIL || "contact@essor.com";
+      const toEmail = process.env.ADMIN_EMAIL || "fiatechnologiecam@gmail.com";
 
       try {
         const resendRes = await resend.emails.send({
@@ -1150,7 +1347,7 @@ const actionHandlers = {
 
         // result.secure_url = URL finale de l'image
         const user = await prisma.user.update({
-          where: { id: userId },
+          where: { id: userId || "" },
           data: {
             avatar: result.secure_url,
           },
@@ -1265,6 +1462,222 @@ const actionHandlers = {
       });
     },
   },
+
+  subscription: {
+    initCheckout: async (userId, { plan, countryCode }) => {
+      if (!plan || !["monthly", "yearly"].includes(plan))
+        throw new Error("Plan invalide.");
+
+      const PRICES_USD = { monthly: 10.99, yearly: 109.99 };
+      const amountUSD = PRICES_USD[plan];
+
+      // Currency conversion
+      const COUNTRY_CURRENCY = {
+        BF: "XOF",
+        CI: "XOF",
+        SN: "XOF",
+        ML: "XOF",
+        NE: "XOF",
+        TG: "XOF",
+        BJ: "XOF",
+        GW: "XOF",
+        FR: "EUR",
+        DE: "EUR",
+        BE: "EUR",
+        IT: "EUR",
+        ES: "EUR",
+        PT: "EUR",
+        NL: "EUR",
+        GB: "GBP",
+        CA: "CAD",
+        US: "USD",
+      };
+      const currency = COUNTRY_CURRENCY[countryCode] || "USD";
+      const rates = await getRatesFromUSD();
+      const rate = rates[currency] || 1;
+      const amountLocal = Math.round(amountUSD * rate);
+
+      // Get user email
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+      });
+      if (!user) throw new Error("Utilisateur introuvable.");
+
+      // Generate unique reference
+      const timestamp = Date.now();
+      const hash = crypto
+        .createHash("sha256")
+        .update(`${userId}-${plan}-${timestamp}`)
+        .digest("hex")
+        .substring(0, 8)
+        .toUpperCase();
+      const reference = `ESSOR-${plan.toUpperCase().substring(0, 3)}-${hash}`;
+
+      // Store pending transaction
+      await prisma.paymentTransaction.create({
+        data: {
+          userId,
+          ligdicashRef: reference,
+          plan,
+          amountUsd: amountUSD,
+          amountLocal,
+          currency,
+          status: "pending",
+        },
+      });
+
+      // Build LigdiCash payment request
+      const apiKey = process.env.LIGDICASH_API_KEY;
+      const apiToken = process.env.LIGDICASH_API_TOKEN;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+      const descriptions = {
+        monthly: "Abonnement Mensuel ESSOR Premium",
+        yearly: "Abonnement Annuel ESSOR Premium",
+      };
+
+      if (!apiKey || !apiToken) {
+        // Dev mode: return a simulated payment URL
+        console.warn("LigdiCash keys not configured — returning test URL");
+        return {
+          paymentUrl: `${appUrl}/pricing?test_ref=${reference}&plan=${plan}`,
+          reference,
+          currency,
+          amountLocal,
+          mode: "test",
+        };
+      }
+
+      try {
+        const payload = {
+          apikey: apiKey,
+          site_id: apiKey,
+          notify_url: `${appUrl}/api/subscription/webhook`,
+          return_url: `${appUrl}/pricing?success=1`,
+          cancel_url: `${appUrl}/pricing?cancelled=1`,
+          description: descriptions[plan],
+          montant: amountLocal,
+          devise: currency,
+          reference,
+          env: process.env.LIGDICASH_ENV || "test",
+        };
+
+        const res = await fetch("https://app.ligdicash.com/pay/v01/payin/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (data.token) {
+          return {
+            paymentUrl: `https://app.ligdicash.com/pay/v01/payin/?token=${data.token}`,
+            reference,
+            currency,
+            amountLocal,
+          };
+        }
+        throw new Error(data.response_text || "Erreur LigdiCash");
+      } catch (err) {
+        console.error("LigdiCash error:", err);
+        throw new Error(
+          "Erreur lors de l'initiation du paiement. Veuillez réessayer.",
+        );
+      }
+    },
+
+    verifyPayment: async (userId, { reference }) => {
+      const tx = await prisma.paymentTransaction.findUnique({
+        where: { ligdicashRef: reference },
+      });
+      if (!tx || tx.userId !== userId)
+        throw new Error("Transaction introuvable.");
+
+      // Dev/Test mode: auto-approve if no API keys
+      if (
+        tx.status === "pending" &&
+        (!process.env.LIGDICASH_API_KEY || !process.env.LIGDICASH_API_TOKEN)
+      ) {
+        console.log(`[TEST MODE] Auto-approving transaction ${reference}`);
+        const expiresAt = new Date();
+        if (tx.plan === "monthly") expiresAt.setMonth(expiresAt.getMonth() + 1);
+        else expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+        await prisma.$transaction([
+          prisma.paymentTransaction.update({
+            where: { id: tx.id },
+            data: { status: "success", processedAt: new Date() },
+          }),
+          prisma.user.update({
+            where: { id: userId },
+            data: {
+              subscriptionPlan: tx.plan,
+              subscriptionStatus: "active",
+              subscriptionExpiresAt: expiresAt,
+            },
+          }),
+        ]);
+        tx.status = "success";
+      }
+
+      return {
+        status: tx.status,
+        plan: tx.plan,
+        processedAt: tx.processedAt?.toISOString() || null,
+      };
+    },
+
+    getPricing: async (currencyCode = "XOF") => {
+      try {
+        return await getPricingForCurrency(currencyCode);
+      } catch (err) {
+        console.error("IPC Pricing error:", err);
+        return {
+          currency: { code: "USD", symbol: "$", locale: "en-US", name: "Dollar US" },
+          monthly: { usd: 10.99, local: 10.99, formatted: "$10.99" },
+          yearly: { usd: 109.99, local: 109.99, formatted: "$109.99", savings: 21.89, savingsPercent: 17 },
+        };
+      }
+    },
+    detectPricing: async () => {
+      try {
+        const { detectCountryFromIP, getPricingForCountry } = require("../lib/currency-service");
+        const countryCode = await detectCountryFromIP();
+        return await getPricingForCountry(countryCode);
+      } catch (err) {
+        console.error("IPC Detect Pricing error:", err);
+        return await actionHandlers.subscription.getPricing("USD");
+      }
+    },
+  },
+};
+
+// ---- Subscription data handler ----
+handlers.subscription = async (userId) => {
+  const info = await getUserPlan(userId);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const resetDate = info.dailyInvoiceResetAt
+    ? new Date(info.dailyInvoiceResetAt)
+    : null;
+  const todayCount =
+    resetDate && resetDate >= today ? info.dailyInvoiceCount : 0;
+
+  return {
+    plan: info.plan,
+    status: info.status,
+    isActive: info.isActive,
+    expiresAt: info.expiresAt ? info.expiresAt.toISOString() : null,
+    dailyInvoiceCount: todayCount,
+    dailyInvoiceLimit: info.plan === "free" ? DAILY_INVOICE_LIMIT : null,
+    hasAIAccess: info.plan !== "free" && info.isActive,
+    hasUnlimitedCompanies: info.plan !== "free" && info.isActive,
+    hasUnlimitedInvoices: info.plan !== "free" && info.isActive,
+  };
 };
 
 async function handleDataRequest(type, params) {

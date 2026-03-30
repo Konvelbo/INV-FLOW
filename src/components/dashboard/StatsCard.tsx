@@ -161,9 +161,22 @@ export function StatsCard({
           <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
             {title}
           </h3>
-          <div className="flex items-baseline gap-2 overflow-hidden">
-            <div className="text-3xl font-black text-foreground tracking-tighter truncate">
-              {value}
+          <div className="flex items-baseline gap-1 overflow-visible">
+            <div className="text-2xl lg:text-3xl font-black text-foreground whitespace-nowrap">
+              {(() => {
+                const match = value.match(/^([^0-9\s,.]+)?\s*(.*)$/);
+                if (match && match[1]) {
+                  return (
+                    <span className="flex items-baseline gap-1.5 min-w-0">
+                      <span className="text-primary/70 font-bold text-xl lg:text-2xl select-none">
+                        {match[1]}
+                      </span>
+                      <span className="truncate">{match[2]}</span>
+                    </span>
+                  );
+                }
+                return <span className="truncate">{value}</span>;
+              })()}
             </div>
             {subtitle && (
               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">

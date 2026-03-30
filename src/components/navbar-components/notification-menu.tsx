@@ -17,6 +17,8 @@ import {
 } from "@/src/components/ui/popover";
 import { useNotifications } from "@/src/context/NotificationContext";
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
+
 
 export default function NotificationMenu() {
   const {
@@ -44,21 +46,24 @@ export default function NotificationMenu() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          aria-label="Open notifications"
-          className="relative size-10 rounded-xl text-muted-foreground shadow-none hover:bg-muted/50 transition-all border border-transparent hover:border-border/50 cursor-pointer"
-          size="icon"
-          variant="ghost"
-        >
-          <BellIcon aria-hidden="true" size={18} />
-          {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 flex size-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full size-2.5 bg-primary border-2 border-background"></span>
-            </span>
-          )}
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            aria-label="Open notifications"
+            className="relative size-10 rounded-xl text-muted-foreground shadow-none hover:bg-muted/50 transition-all border border-transparent hover:border-border/50 cursor-pointer"
+            size="icon"
+            variant="ghost"
+          >
+            <BellIcon aria-hidden="true" size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-2 flex size-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full size-2.5 bg-primary border-2 border-background"></span>
+              </span>
+            )}
+          </Button>
+        </motion.div>
       </PopoverTrigger>
+
       <PopoverContent
         className="w-80 p-0 border-border/40 bg-card/80 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden"
         align="end"

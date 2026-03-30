@@ -1,4 +1,5 @@
 import { translations, TranslationKey } from "@/src/lib/translations";
+import { CURRENCY_SETTINGS } from "./currency";
 
 export type InvoiceItem = {
   designation: string;
@@ -53,12 +54,21 @@ export function invoiceTemplate(data: InvoiceProps) {
   }
 }
 
-const formatCurrency = (value: number, currency = "XOF", lang = "fr") =>
-  new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US", {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 2,
-  }).format(value);
+const formatCurrency = (value: number, currency = "XOF", lang = "fr") => {
+  const code = currency.toUpperCase();
+  const config = CURRENCY_SETTINGS[code];
+  const locale = lang === "fr" ? "fr-FR" : "en-US";
+  
+  try {
+    return new Intl.NumberFormat(config?.locale || locale, {
+      style: "currency",
+      currency: code,
+      maximumFractionDigits: code === "XOF" || code === "XAF" ? 0 : 2,
+    }).format(value);
+  } catch {
+    return `${value.toLocaleString(locale)} ${config?.symbol || code}`;
+  }
+};
 
 const calculateTotals = (items: InvoiceItem[]) => {
   const totalht = items.reduce(

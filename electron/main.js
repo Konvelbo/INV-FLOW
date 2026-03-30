@@ -179,12 +179,12 @@ if (!gotTheLock) {
     });
 
     // Handle data fetching via unified handlers
-    ipcMain.handle("get-data", async (event, type, params) => {
+    ipcMain.handle("get-data", async (event, type, ...params) => {
       return await handleDataRequest(type, params);
     });
 
     // Handle data mutations via unified handlers
-    ipcMain.handle("action-data", async (event, type, method, params) => {
+    ipcMain.handle("action-data", async (event, type, method, ...params) => {
       return await handleActionRequest(type, method, params);
     });
 

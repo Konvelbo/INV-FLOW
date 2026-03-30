@@ -10,6 +10,7 @@ import {
   Languages,
   Building2,
   RefreshCw,
+  Crown,
 } from "lucide-react";
 
 import {
@@ -41,12 +42,16 @@ import { useLanguage } from "@/src/context/LanguageContext";
 
 import { toast } from "react-hot-toast";
 import { useIPCAction } from "@/hooks/useIPCAction";
+import { motion } from "motion/react";
+import { useSubscription } from "@/src/context/SubscriptionContext";
 
 export default function UserMenu() {
   const router = useRouter();
   const { performAction, loading: actionLoading } = useIPCAction();
   const { currency, setCurrency } = useInvoice();
   const { language, setLanguage, dict } = useLanguage();
+  const { subscription } = useSubscription();
+  const isPro = subscription?.plan && subscription.plan !== "free";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<{
@@ -135,26 +140,28 @@ export default function UserMenu() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            className="relative h-10 w-10 rounded-xl p-0 border border-white/5 hover:border-primary/20 transition-all bg-card overflow-hidden cursor-pointer"
-            variant="ghost"
-          >
-            <Avatar className="h-full w-full rounded-xl">
-              <AvatarImage
-                alt={user?.name}
-                src={user?.avatar || undefined}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                {user?.name?.substring(0, 2).toUpperCase() || (
-                  <User size={18} />
-                )}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Settings size={14} className="text-white" />
-            </div>
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              className="relative h-10 w-10 rounded-xl p-0 border border-white/5 hover:border-primary/20 transition-all bg-card overflow-hidden cursor-pointer"
+              variant="ghost"
+            >
+              <Avatar className="h-full w-full rounded-xl">
+                <AvatarImage
+                  alt={user?.name}
+                  src={user?.avatar || undefined}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                  {user?.name?.substring(0, 2).toUpperCase() || (
+                    <User size={18} />
+                  )}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Settings size={14} className="text-white" />
+              </div>
+            </Button>
+          </motion.div>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
@@ -195,18 +202,20 @@ export default function UserMenu() {
           <DropdownMenuSeparator className="bg-border/50" />
 
           <DropdownMenuGroup className="space-y-1">
-            <DropdownMenuItem
-              onClick={() => router.push("/dashboard")}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer"
-            >
-              <LayoutDashboard
-                size={18}
-                className="text-muted-foreground group-hover:text-primary transition-colors"
-              />
-              <span className="font-sans font-medium text-sm">
-                Tableau de Bord
-              </span>
-            </DropdownMenuItem>
+            {isPro && (
+              <DropdownMenuItem
+                onClick={() => router.push("/pricing")}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer"
+              >
+                <Crown
+                  size={18}
+                  className="text-yellow-500 transition-colors"
+                />
+                <span className="font-sans font-medium text-sm text-foreground">
+                  {dict.manageSubscription || "Gérer l'abonnement"}
+                </span>
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuItem
               onClick={() => router.push("/clients")}
@@ -332,7 +341,7 @@ export default function UserMenu() {
                 className="text-muted-foreground group-hover:text-primary transition-colors"
               />
               <span className="font-sans font-medium text-sm text-foreground">
-                Mettre à jour l'app
+                {dict.updateApp || "Mettre à jour l'app"}
               </span>
             </DropdownMenuItem>
           </DropdownMenuGroup>

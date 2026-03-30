@@ -126,7 +126,26 @@ exports.Prisma.UserScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   resetOtp: 'resetOtp',
-  resetOtpExpiry: 'resetOtpExpiry'
+  resetOtpExpiry: 'resetOtpExpiry',
+  subscriptionStatus: 'subscriptionStatus',
+  subscriptionPlan: 'subscriptionPlan',
+  subscriptionExpiresAt: 'subscriptionExpiresAt',
+  dailyInvoiceCount: 'dailyInvoiceCount',
+  dailyInvoiceResetAt: 'dailyInvoiceResetAt',
+  ligdicashCustomerId: 'ligdicashCustomerId'
+};
+
+exports.Prisma.PaymentTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  ligdicashRef: 'ligdicashRef',
+  plan: 'plan',
+  amountUsd: 'amountUsd',
+  amountLocal: 'amountLocal',
+  currency: 'currency',
+  status: 'status',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.CompanyScalarFieldEnum = {
@@ -338,6 +357,7 @@ exports.Prisma.QueryMode = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  PaymentTransaction: 'PaymentTransaction',
   Company: 'Company',
   Client: 'Client',
   Product: 'Product',

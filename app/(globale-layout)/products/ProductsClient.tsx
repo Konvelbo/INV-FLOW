@@ -52,6 +52,7 @@ export default function ProductsClient({
   const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [search, setSearch] = useState("");
+  const { currency } = useInvoice();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { performAction, loading: actionLoading } = useIPCAction();
@@ -365,7 +366,7 @@ export default function ProductsClient({
               },
               {
                 label: t("totalValue"),
-                value: `${products.reduce((acc, p) => acc + p.price, 0).toLocaleString()} CFA`,
+                value: formatPrice(products.reduce((acc, p) => acc + p.price, 0), currency),
                 icon: LineChart,
                 color: "text-emerald-500",
                 bg: "bg-emerald-500/10",
@@ -486,7 +487,7 @@ export default function ProductsClient({
                         {product.price.toLocaleString()}
                       </span>
                       <span className="text-xs font-bold text-primary uppercase">
-                        CFA
+                        {currency}
                       </span>
                     </div>
                   </div>

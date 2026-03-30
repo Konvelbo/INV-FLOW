@@ -10,11 +10,8 @@ import {
   Users,
   Package,
   Wallet,
-  Settings,
-  HelpCircle,
-  MessageSquare,
-  Send,
-  Star,
+  Lock,
+  Crown,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,82 +27,29 @@ import {
 import Link from "next/link";
 import { useInvoiceActions } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogDescription,
-} from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
 import { toast } from "react-hot-toast";
-import { useIPCAction } from "@/hooks/useIPCAction";
-
-import { handleActionRequest } from "@/electron/data-handlers";
+import { useSubscription } from "@/src/context/SubscriptionContext";
+import { usePricingRedirect } from "@/hooks/usePricingRedirect";
 
 export const AppSidebar = React.memo(function AppSidebar() {
   const { clearInvoiceData } = useInvoiceActions();
   const { dict, t } = useLanguage();
+  const { redirectToPricing } = usePricingRedirect();
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState(5);
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { performAction, loading: actionLoading } = useIPCAction();
   const [appVersion, setAppVersion] = useState("v1.0.4");
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     if (window.electronAPI?.getVersion) {
       window.electronAPI.getVersion().then((v: string) => setAppVersion(`v${v}`));
     }
   }, []);
-
-  const handleSendFeedback = async () => {
-    if (!feedback.trim()) return;
-    setIsSubmitting(true);
-    try {
-      // 1. Store in Backend
-      const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : null;
-
-      // const res = await fetch("/api/feedback", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     ...(token && { Authorization: `Bearer ${token}` }),
-      //   },
-      //   body: JSON.stringify({ content: feedback, rating }),
-      const res = await performAction("feedback", "create", {
-        content: feedback,
-        rating,
-        contactEmail: "",
-      });
-
-      if (res.success) {
-        toast.success("Mérci pour votre retour !");
-        setIsFeedbackOpen(false);
-        setFeedback("");
-        setRating(5);
-      } else {
-        toast.error("Erreur lors de l'envoi du feedback");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Une erreur est survenue");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const menuItems = [
     {
@@ -172,23 +116,6 @@ export const AppSidebar = React.memo(function AppSidebar() {
       className="border-r border-sidebar-border bg-sidebar sticky top-0 h-screen"
     >
       <SidebarContent className="p-4 space-y-8">
-        {/*<div className="px-2 mb-6">
-          <motion.div
-            initial={false}
-            animate={{ opacity: isCollapsed ? 0 : 1, x: isCollapsed ? -20 : 0 }}
-            className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
-          >
-            <div className="size-8 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-              <span className="text-white font-black text-sm">IF</span>
-            </div>
-            {!isCollapsed && (
-              <span className="font-bold tracking-tighter text-lg bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-                Essor
-              </span>
-            )}
-          </motion.div>
-        </div>*/}
-
         <SidebarGroup>
           {!isCollapsed && (
             <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-muted-foreground/50">
@@ -205,7 +132,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "relative h-12  transition-all duration-300 group overflow-hidden",
+                        "relative h-12 transition-all duration-300 group overflow-hidden",
                         isActive ? "bg-primary/10" : "hover:bg-muted/50",
                       )}
                     >
@@ -214,8 +141,12 @@ export const AppSidebar = React.memo(function AppSidebar() {
                         onClick={(e) => {
                           if (item.id === "Assistant IA") {
                             e.preventDefault();
-                            toast.error("Cette fonctionnalité est en cours de développement.");
-                            return;
+                            if (!subscription?.hasAIAccess) {
+                              redirectToPricing({
+                                message: dict.aiAccessDenied || "L'Assistant IA est réservé aux abonnés Premium.",
+                              });
+                              return;
+                            }
                           }
                           if (item.id === "Invoice") {
                             clearInvoiceData();
@@ -252,6 +183,11 @@ export const AppSidebar = React.memo(function AppSidebar() {
                           </span>
                         )}
 
+                        {/* Lock icon for AI Assistant on free plan */}
+                        {item.id === "Assistant IA" && !subscription?.hasAIAccess && !isCollapsed && (
+                          <Lock className="size-3 ml-auto text-muted-foreground/50 flex-shrink-0" />
+                        )}
+
                         {isActive && !isCollapsed && (
                           <motion.div
                             layoutId="active-pill"
@@ -270,101 +206,38 @@ export const AppSidebar = React.memo(function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent className="px-2 py-4 space-y-4">
-            <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
-              <DialogTrigger asChild>
-                <button
-                  className={cn(
-                    "flex items-center gap-3 w-full px-3 py-2 rounded-xl transition-all duration-300",
-                    "bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 group",
-                  )}
-                >
-                  <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <HelpCircle className="size-4" />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                      Besoin d&apos;aide ?
-                    </span>
-                  )}
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-card border-border/50 backdrop-blur-xl">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <MessageSquare className="size-5 text-primary" />
-                    Envoyer un retour
-                  </DialogTitle>
-                  <DialogDescription>
-                    Votre avis nous aide à améliorer l&apos;application.
-                    Décrivez votre problème ou suggestion ci-dessous.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4 space-y-6 text-foreground">
-                  <div className="space-y-4 text-center">
-                    <Label className="text-sm font-bold opacity-70">
-                      Quelle note donneriez-vous à l&apos;application ?
-                    </Label>
-                    <div className="flex items-center justify-center gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onClick={() => setRating(star)}
-                          className="transition-transform active:scale-95 hover:scale-110"
-                        >
-                          <Star
-                            className={cn(
-                              "size-8 transition-colors",
-                              star <= rating
-                                ? "fill-amber-500 text-amber-500"
-                                : "text-muted-foreground/30",
-                            )}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-widest opacity-60">
-                      Votre message
-                    </Label>
-                    <Textarea
-                      placeholder="Comment pouvons-nous nous améliorer ?"
-                      className="min-h-[120px] bg-background border-border/50 shadow-inner rounded-xl resize-none focus:ring-primary/20"
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground italic bg-primary/5 p-3 rounded-lg border border-primary/10">
-                    Note : Votre retour sera directement enregistré et envoyé à
-                    notre équipe.
-                  </p>
+        {/* Bottom: version only */}
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent className="px-2 py-4">
+            {/* Daily invoice counter — free plan only */}
+            {!subscription?.hasUnlimitedInvoices && subscription && !isCollapsed && (
+              <div className="mb-4 px-3 py-2 rounded-xl bg-muted/40 border border-border/30">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[10px] text-muted-foreground font-bold">
+                    {dict.invoicesToday || "Factures aujourd'hui"}
+                  </span>
+                  <span className="text-[10px] font-black text-foreground">
+                    {subscription.dailyInvoiceCount}/{subscription.dailyInvoiceLimit}
+                  </span>
                 </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsFeedbackOpen(false)}
-                    className="rounded-xl"
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    onClick={handleSendFeedback}
-                    className="rounded-xl bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-primary/20 min-w-[120px]"
-                    disabled={!feedback.trim() || isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Send className="size-4" />
+                <div className="h-1 rounded-full bg-border overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-500",
+                      (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) >= 1
+                        ? "bg-destructive"
+                        : (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) >= 0.7
+                        ? "bg-yellow-500"
+                        : "bg-primary"
                     )}
-                    Envoyer
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                    style={{
+                      width: `${Math.min(100, (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
               <div className="size-1.5 rounded-full bg-primary animate-pulse" />

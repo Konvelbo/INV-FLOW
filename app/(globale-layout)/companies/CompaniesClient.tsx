@@ -33,6 +33,9 @@ import {
 import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { useIPCAction } from "@/hooks/useIPCAction";
+import { usePricingRedirect } from "@/hooks/usePricingRedirect";
+import { formatPrice } from "@/lib/currency";
+import { useInvoice } from "@/src/context/InvoiceContext";
 
 interface Company {
   id: string;
@@ -81,6 +84,8 @@ export default function CompaniesClient({
   const [isExporting, setIsExporting] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const { performAction, loading: actionLoading } = useIPCAction();
+  const { currency } = useInvoice();
+  const { checkCompanyQuota } = usePricingRedirect();
   const userStr = localStorage.getItem("user");
 
   useEffect(() => {
@@ -199,7 +204,7 @@ export default function CompaniesClient({
     const res = await performAction("companies", "delete", id);
 
     if (res.success) {
-      toast.success("Entreprise supprimée");
+      toast.success(t("companyDeleted") || "Entreprise supprimée");
       fetchCompanies();
     }
   };
@@ -217,7 +222,7 @@ export default function CompaniesClient({
         user.activeCompanyName = activeCompany?.name || "";
         localStorage.setItem("user", JSON.stringify(user));
       }
-      toast.success("Entreprise activée");
+      toast.success(t("companyActivated") || "Entreprise activée");
       window.dispatchEvent(new CustomEvent("session-update"));
     }
   };
@@ -269,7 +274,7 @@ export default function CompaniesClient({
       if (res.success) {
         setFormData((prev) => ({ ...prev, logoUrl: res.data.logoUrl }));
         window.dispatchEvent(new CustomEvent("session-update"));
-        toast.success("Logo uploadé");
+        toast.success(t("logoUploaded") || "Logo uploadé");
       }
     };
     reader.readAsDataURL(file);
@@ -302,7 +307,7 @@ export default function CompaniesClient({
               className="h-14 px-6 gap-2 font-bold border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all rounded-2xl"
             >
               <Download className="w-4 h-4" />
-              {isExporting ? "Export..." : "Export Stats"}
+              {isExporting ? "Export..." : t("exportStats") || "Export Stats"}
             </Button>
             <Dialog
               open={isDialogOpen}
@@ -312,7 +317,20 @@ export default function CompaniesClient({
               }}
             >
               <DialogTrigger asChild>
-                <Button className="font-black gap-3 px-8 py-6 rounded-2xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all group overflow-hidden relative h-auto uppercase tracking-widest text-xs">
+                <Button
+                  className="font-black gap-3 px-8 py-6 rounded-2xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all group overflow-hidden relative h-auto uppercase tracking-widest text-xs"
+                  onClick={(e) => {
+                    // Intercept for free plan: block if already has 1 company
+                    if (!editingCompany) {
+                      const allowed = checkCompanyQuota(companies.length);
+                      if (!allowed) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                      }
+                    }
+                  }}
+                >
                   <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   <Plus className="w-5 h-5 relative z-10" />
                   <span className="relative z-10">{t("addStructure")}</span>
@@ -324,8 +342,7 @@ export default function CompaniesClient({
                     {editingCompany ? t("updateStructure") : t("addStructure")}
                   </DialogTitle>
                   <DialogDescription className="text-slate-400 font-sans italic">
-                    Renseignez les informations qui apparaîtront sur vos
-                    factures et devis.
+                    {t("company_form_desc")}
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-8 py-6">
@@ -335,7 +352,7 @@ export default function CompaniesClient({
                         htmlFor="name"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Nom / Enseigne commerciale *
+                        {t("company_name_label")}
                       </Label>
                       <Input
                         id="name"
@@ -352,7 +369,7 @@ export default function CompaniesClient({
                         htmlFor="legalName"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Raison Sociale
+                        {t("legal_name_label")}
                       </Label>
                       <Input
                         id="legalName"
@@ -364,7 +381,7 @@ export default function CompaniesClient({
                           })
                         }
                         className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
-                        placeholder="Ex: Ma Société SAS"
+                        placeholder={t("legal_name_placeholder")}
                       />
                     </div>
                     <div className="space-y-3">
@@ -372,7 +389,7 @@ export default function CompaniesClient({
                         htmlFor="taxId"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Numéro fiscal
+                        {t("tax_id_label")}
                       </Label>
                       <Input
                         id="taxId"
@@ -388,7 +405,7 @@ export default function CompaniesClient({
                         htmlFor="leaderName"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Nom du dirigeant / fondateur *
+                        {t("leader_name_label")}
                       </Label>
                       <Input
                         id="leaderName"
@@ -408,7 +425,7 @@ export default function CompaniesClient({
                         htmlFor="legalForm"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Forme juridique *
+                        {t("legal_form_label")}
                       </Label>
                       <Input
                         id="legalForm"
@@ -428,7 +445,7 @@ export default function CompaniesClient({
                         htmlFor="registrationNumber"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        N° Immatriculation / Registre
+                        {t("reg_number_label")}
                       </Label>
                       <Input
                         id="registrationNumber"
@@ -447,7 +464,7 @@ export default function CompaniesClient({
                         htmlFor="address"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Adresse du Siège
+                        {t("headquarters_address")}
                       </Label>
                       <Input
                         id="address"
@@ -463,7 +480,7 @@ export default function CompaniesClient({
                         htmlFor="phone"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Téléphone
+                        {t("phone_label")}
                       </Label>
                       <PhoneInput
                         value={formData.phone}
@@ -477,7 +494,7 @@ export default function CompaniesClient({
                         htmlFor="email"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Email par défaut
+                        {t("default_email")}
                       </Label>
                       <Input
                         id="email"
@@ -494,7 +511,7 @@ export default function CompaniesClient({
                         htmlFor="website"
                         className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                       >
-                        Site Web
+                        {t("website")}
                       </Label>
                       <Input
                         id="website"
@@ -508,7 +525,7 @@ export default function CompaniesClient({
 
                     <div className="md:col-span-2 pt-4">
                       <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
-                        Informations sur l’activité
+                        {t("activity_info")}
                       </h4>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
@@ -516,7 +533,7 @@ export default function CompaniesClient({
                             htmlFor="sector"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Secteur d’activité *
+                            {t("sector_label")}
                           </Label>
                           <Input
                             id="sector"
@@ -536,7 +553,7 @@ export default function CompaniesClient({
                             htmlFor="targetMarket"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Marché cible
+                            {t("target_market")}
                           </Label>
                           <Input
                             id="targetMarket"
@@ -595,7 +612,7 @@ export default function CompaniesClient({
 
                     <div className="md:col-span-2 pt-4">
                       <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
-                        {t("financialInfo")}
+                        {t("financial_info") || t("financialInfo")}
                       </h4>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
@@ -624,7 +641,7 @@ export default function CompaniesClient({
                             htmlFor="monthlyRevenue"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Chiffre d’affaires mensuel
+                            {t("monthly_revenue")}
                           </Label>
                           <Input
                             id="monthlyRevenue"
@@ -644,7 +661,7 @@ export default function CompaniesClient({
 
                     <div className="md:col-span-2 pt-4">
                       <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
-                        Organisation
+                        {t("organization")}
                       </h4>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
@@ -652,7 +669,7 @@ export default function CompaniesClient({
                             htmlFor="employeeCount"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Nombre d’employés *
+                            {t("employee_count_label")}
                           </Label>
                           <Input
                             id="employeeCount"
@@ -673,7 +690,7 @@ export default function CompaniesClient({
                             htmlFor="departments"
                             className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
                           >
-                            Départements principaux *
+                            {t("departments_label")}
                           </Label>
                           <Input
                             id="departments"
@@ -684,8 +701,7 @@ export default function CompaniesClient({
                                 departments: e.target.value,
                               })
                             }
-                            required
-                            placeholder="Ex: Direction, Comptabilité, Marketing"
+                            placeholder={t("departments_placeholder")}
                             className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
                           />
                         </div>
@@ -694,7 +710,7 @@ export default function CompaniesClient({
 
                     <div className="space-y-3 md:col-span-2 pt-6">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
-                        Logo de l&apos;entreprise
+                        {t("company_logo")}
                       </Label>
                       <div className="flex items-center gap-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
                         <div className="size-20 rounded-xl bg-slate-900 border border-white/10 overflow-hidden flex items-center justify-center flex-shrink-0 relative">
@@ -717,7 +733,7 @@ export default function CompaniesClient({
                             className="bg-white/5 border-white/10 h-10 file:bg-primary file:text-primary-foreground file:border-0 file:rounded-lg file:mr-4 file:px-4 file:py-1 file:text-[10px] file:font-black file:uppercase cursor-pointer text-xs"
                           />
                           <p className="text-[10px] text-slate-500 font-medium tracking-tight">
-                            Format recommandé : Carré, max 1Mo.
+                            {t("logo_hint")}
                           </p>
                         </div>
                       </div>
@@ -751,21 +767,21 @@ export default function CompaniesClient({
           {[
             {
               label: t("totalRevenue"),
-              value: `${stats.totalRevenue.toLocaleString()} CFA`,
+              value: formatPrice(stats.totalRevenue, currency),
               icon: TrendingUp,
               color: "text-emerald-500",
               bg: "bg-emerald-500/10",
             },
             {
               label: t("totalLoss"),
-              value: `${stats.totalLoss.toLocaleString()} CFA`,
+              value: formatPrice(stats.totalLoss, currency),
               icon: TrendingDown,
               color: "text-rose-500",
               bg: "bg-rose-500/10",
             },
             {
               label: t("totalExpenses"),
-              value: `${stats.totalExpenses.toLocaleString()} CFA`,
+              value: formatPrice(stats.totalExpenses, currency),
               icon: Receipt,
               color: "text-amber-500",
               bg: "bg-amber-500/10",
@@ -838,8 +854,8 @@ export default function CompaniesClient({
                         onClick={() => handleSetActive(company.id)}
                         title={
                           activeCompanyId === company.id
-                            ? "Entreprise active"
-                            : "Définir comme active"
+                            ? t("activeCompany") || "Entreprise active"
+                            : t("setActiveCompany") || "Définir comme active"
                         }
                       >
                         <CheckCircle2
@@ -875,8 +891,8 @@ export default function CompaniesClient({
                       {company.name}
                     </h3>
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      {company.legalForm || "Entreprise"} •{" "}
-                      {company.sector || "Secteur non spécifié"}
+                      {company.legalForm || t("defaultCompanyType") || "Entreprise"} •{" "}
+                      {company.sector || t("unspecifiedSector") || "Secteur non spécifié"}
                     </p>
                   </div>
 
@@ -884,7 +900,7 @@ export default function CompaniesClient({
                     <div className="space-y-5">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          Identifiant Fiscal
+                          {t("taxIdLabel") || "Identifiant Fiscal"}
                         </span>
                         <p className="text-sm font-semibold text-foreground">
                           {company.taxId || "—"}
@@ -892,7 +908,7 @@ export default function CompaniesClient({
                       </div>
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          Contact E-mail
+                          {t("contactEmail") || "Contact E-mail"}
                         </span>
                         <p className="text-sm font-semibold text-foreground break-all">
                           {company.email || "—"}
@@ -902,7 +918,7 @@ export default function CompaniesClient({
                     <div className="space-y-5">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          Numéro Registre
+                          {t("regNumberLabel") || "Numéro Registre"}
                         </span>
                         <p className="text-sm font-semibold text-foreground">
                           {company.registrationNumber || "—"}
@@ -910,12 +926,31 @@ export default function CompaniesClient({
                       </div>
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          Téléphone
+                          {t("phone_label") || "Téléphone"}
                         </span>
                         <p className="text-sm font-semibold text-foreground">
                           {company.phone || "—"}
                         </p>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8 pt-6 mt-6 border-t border-border/10">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">
+                        {t("annualRevenue") || "CA Annuel"}
+                      </span>
+                      <p className="text-sm font-black text-foreground">
+                        {company.annualRevenue ? formatPrice(company.annualRevenue, currency) : "—"}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-primary/80 uppercase tracking-widest block">
+                        {t("monthly_revenue") || "CA Mensuel"}
+                      </span>
+                      <p className="text-sm font-black text-foreground">
+                        {company.monthlyRevenue ? formatPrice(company.monthlyRevenue, currency) : "—"}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -924,13 +959,13 @@ export default function CompaniesClient({
           ) : (
             <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl animate-fade-in-up">
               <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="text-lg">Aucune entreprise trouvée</p>
+              <p className="text-lg">{t("noCompanyFound") || "Aucune entreprise trouvée"}</p>
               <Button
                 variant="link"
                 onClick={() => setIsDialogOpen(true)}
                 className="mt-2 text-primary gap-1"
               >
-                <Plus className="w-4 h-4" /> Ajouter votre première entreprise
+                <Plus className="w-4 h-4" /> {t("addFirstCompany") || "Ajouter votre première entreprise"}
               </Button>
             </div>
           )}

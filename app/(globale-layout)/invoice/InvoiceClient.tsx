@@ -28,6 +28,7 @@ import {
 import { Label } from "@/src/components/ui/label";
 import { useIPCAction } from "@/hooks/useIPCAction";
 import { invoiceTemplate } from "@/lib/invoice-pdf";
+import { usePricingRedirect } from "@/hooks/usePricingRedirect";
 
 interface InvoiceClientProps {
   initialData?: any;
@@ -42,6 +43,7 @@ export default function InvoiceClient({
   const divRef = useRef(null);
   const { performAction, loading: actionLoading } = useIPCAction();
   const { t, language } = useLanguage();
+  const { checkInvoiceQuota } = usePricingRedirect();
   const {
     itemsArr,
     city,
@@ -185,6 +187,12 @@ export default function InvoiceClient({
   };
 
   const handleSave = async () => {
+    // ----- Quota check: redirect to /pricing if limit reached -----
+    // Only block new invoices, not updates
+    if (!invoiceId) {
+      const allowed = checkInvoiceQuota();
+      if (!allowed) return; // Already shows toast + redirects
+    }
     const data = {
       reference: reference || "",
       type: invoiceType,
@@ -251,8 +259,7 @@ export default function InvoiceClient({
     }
 
     setIsSendingEmail(true);
-    const params = invoiceId ? [invoiceId, targetEmail] : [targetEmail];
-    const res = await performAction("invoices", "send", ...params);
+    const res = await performAction("invoices", "send", invoiceId, targetEmail, currency);
 
     if (res.success) {
       toast.success(t("emailSentSuccess"));
