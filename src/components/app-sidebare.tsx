@@ -38,7 +38,7 @@ import { usePricingRedirect } from "@/hooks/usePricingRedirect";
 export const AppSidebar = React.memo(function AppSidebar() {
   const { clearInvoiceData } = useInvoiceActions();
   const { dict, t } = useLanguage();
-  const { redirectToPricing } = usePricingRedirect();
+  const { redirectToPricing, checkAIAccess } = usePricingRedirect();
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -47,8 +47,11 @@ export const AppSidebar = React.memo(function AppSidebar() {
 
   useEffect(() => {
     if (window.electronAPI?.getVersion) {
-      window.electronAPI.getVersion().then((v: string) => setAppVersion(`v${v}`));
+      window.electronAPI
+        .getVersion()
+        .then((v: string) => setAppVersion(`v${v}`));
     }
+    // console.log(subscription);
   }, []);
 
   const menuItems = [
@@ -140,10 +143,12 @@ export const AppSidebar = React.memo(function AppSidebar() {
                         id="sidebare-link"
                         onClick={(e) => {
                           if (item.id === "Assistant IA") {
-                            e.preventDefault();
+                            // e.preventDefault();
                             if (!subscription?.hasAIAccess) {
                               redirectToPricing({
-                                message: dict.aiAccessDenied || "L'Assistant IA est réservé aux abonnés Premium.",
+                                message:
+                                  dict?.aiAccessDenied ||
+                                  "L'Assistant IA est réservé aux abonnés Premium.",
                               });
                               return;
                             }
@@ -184,9 +189,11 @@ export const AppSidebar = React.memo(function AppSidebar() {
                         )}
 
                         {/* Lock icon for AI Assistant on free plan */}
-                        {item.id === "Assistant IA" && !subscription?.hasAIAccess && !isCollapsed && (
-                          <Lock className="size-3 ml-auto text-muted-foreground/50 flex-shrink-0" />
-                        )}
+                        {item.id === "Assistant IA" &&
+                          !subscription?.hasAIAccess &&
+                          !isCollapsed && (
+                            <Lock className="size-3 ml-auto text-muted-foreground/50 flex-shrink-0" />
+                          )}
 
                         {isActive && !isCollapsed && (
                           <motion.div
@@ -211,33 +218,40 @@ export const AppSidebar = React.memo(function AppSidebar() {
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent className="px-2 py-4">
             {/* Daily invoice counter — free plan only */}
-            {!subscription?.hasUnlimitedInvoices && subscription && !isCollapsed && (
-              <div className="mb-4 px-3 py-2 rounded-xl bg-muted/40 border border-border/30">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-[10px] text-muted-foreground font-bold">
-                    {dict.invoicesToday || "Factures aujourd'hui"}
-                  </span>
-                  <span className="text-[10px] font-black text-foreground">
-                    {subscription.dailyInvoiceCount}/{subscription.dailyInvoiceLimit}
-                  </span>
+            {!subscription?.hasUnlimitedInvoices &&
+              subscription &&
+              !isCollapsed && (
+                <div className="mb-4 px-3 py-2 rounded-xl bg-muted/40 border border-border/30">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] text-muted-foreground font-bold">
+                      {dict.invoicesToday || "Factures aujourd'hui"}
+                    </span>
+                    <span className="text-[10px] font-black text-foreground">
+                      {subscription.dailyInvoiceCount}/
+                      {subscription.dailyInvoiceLimit}
+                    </span>
+                  </div>
+                  <div className="h-1 rounded-full bg-border overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        subscription.dailyInvoiceCount /
+                          (subscription.dailyInvoiceLimit || 6) >=
+                          1
+                          ? "bg-destructive"
+                          : subscription.dailyInvoiceCount /
+                                (subscription.dailyInvoiceLimit || 6) >=
+                              0.7
+                            ? "bg-yellow-500"
+                            : "bg-primary",
+                      )}
+                      style={{
+                        width: `${Math.min(100, (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) * 100)}%`,
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="h-1 rounded-full bg-border overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-500",
-                      (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) >= 1
-                        ? "bg-destructive"
-                        : (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) >= 0.7
-                        ? "bg-yellow-500"
-                        : "bg-primary"
-                    )}
-                    style={{
-                      width: `${Math.min(100, (subscription.dailyInvoiceCount / (subscription.dailyInvoiceLimit || 6)) * 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+              )}
 
             <div className="flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
               <div className="size-1.5 rounded-full bg-primary animate-pulse" />

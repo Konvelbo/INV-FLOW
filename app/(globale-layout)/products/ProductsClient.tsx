@@ -37,6 +37,9 @@ import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { useIPCAction } from "@/hooks/useIPCAction";
+import { useInvoice } from "@/src/context/InvoiceContext";
+import { Product } from "@/src/p_client";
+import { formatPrice } from "@/lib/currency";
 
 interface ProductsClientProps {
   initialProducts: Product[];
@@ -67,7 +70,10 @@ export default function ProductsClient({
 
   const fetchProducts = useCallback(async () => {
     try {
-      const result = await (window as any).electronAPI.getData("products", userId);
+      const result = await (window as any).electronAPI.getData(
+        "products",
+        userId,
+      );
       if (result.success) {
         setProducts(result.data);
       }
@@ -79,7 +85,7 @@ export default function ProductsClient({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = editingId ? "update" : "create";
-    
+
     const payload = {
       ...formData,
       price: parseFloat(formData.price),
@@ -99,7 +105,7 @@ export default function ProductsClient({
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t("itemDeleteWarning").replace("{name}", name))) return;
-    
+
     const res = await performAction("products", "delete", id);
 
     if (res.success) {
@@ -137,7 +143,11 @@ export default function ProductsClient({
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
       // @ts-ignore
-      const res = await window.electronAPI.getData("export", userId, "products");
+      const res = await window.electronAPI.getData(
+        "export",
+        userId,
+        "products",
+      );
       if (res.success) {
         const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
@@ -352,7 +362,8 @@ export default function ProductsClient({
               },
               {
                 label: t("services"),
-                value: products.filter((p) => p.type === "service" || !p.type).length,
+                value: products.filter((p) => p.type === "service" || !p.type)
+                  .length,
                 icon: Zap,
                 color: "text-blue-500",
                 bg: "bg-blue-500/10",
@@ -366,7 +377,10 @@ export default function ProductsClient({
               },
               {
                 label: t("totalValue"),
-                value: formatPrice(products.reduce((acc, p) => acc + p.price, 0), currency),
+                value: formatPrice(
+                  products.reduce((acc, p) => acc + p.price, 0),
+                  currency,
+                ),
                 icon: LineChart,
                 color: "text-emerald-500",
                 bg: "bg-emerald-500/10",
@@ -420,18 +434,22 @@ export default function ProductsClient({
                 <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-wrap gap-2">
-                      <div className={cn(
-                        "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5",
-                        product.type === "service"
-                          ? "bg-blue-500/5 text-blue-500 border border-blue-500/10"
-                          : "bg-purple-500/5 text-purple-500 border border-purple-500/10"
-                      )}>
+                      <div
+                        className={cn(
+                          "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5",
+                          product.type === "service"
+                            ? "bg-blue-500/5 text-blue-500 border border-blue-500/10"
+                            : "bg-purple-500/5 text-purple-500 border border-purple-500/10",
+                        )}
+                      >
                         {product.type === "service" ? (
                           <Zap className="w-3 h-3" />
                         ) : (
                           <Package className="w-3 h-3" />
                         )}
-                        {product.type === "service" ? t("service") : t("catalog")}
+                        {product.type === "service"
+                          ? t("service")
+                          : t("catalog")}
                       </div>
                     </div>
                     <div className="flex gap-1.5">

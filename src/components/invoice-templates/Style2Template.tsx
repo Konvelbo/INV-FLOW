@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import OptimizedInput from "../OptimizedInput";
+import OptimizedTextarea from "../OptimizedTextarea";
 
 export default function Style2Template({
   divRef,
@@ -234,7 +235,7 @@ export default function Style2Template({
             <h3 className="text-blue-900 font-bold uppercase text-xs tracking-widest mb-4 border-b-2 border-blue-900 pb-2 inline-block">
               {dict.projectDetails}
             </h3>
-            <OptimizedInput
+            <OptimizedTextarea
               value={object}
               onValueChange={setObject}
               placeholder={dict.object}
@@ -277,7 +278,7 @@ export default function Style2Template({
                       onValueChange={(val) =>
                         updateItem(item.id, "designation", val)
                       }
-                      className="w-full font-medium text-gray-800 bg-transparent wrap-break-word whitespace-pre-wrap min-h-[1.5rem]"
+                      className="w-full font-medium text-gray-800 bg-transparent break-all break-words whitespace-pre-wrap min-h-[1.5rem]"
                     />
                     <button
                       onClick={() => deleteItem(item.id)}
@@ -390,7 +391,7 @@ export default function Style2Template({
         <div className="px-10 mt-12 flex justify-between items-end gap-8 pb-8">
           <div className="flex-1 flex flex-col items-start gap-1 pb-4">
             <span className="text-xs uppercase font-bold text-gray-400 tracking-widest">{dict.description}</span>
-            <OptimizedInput
+            <OptimizedTextarea
               value={description}
               onValueChange={setDescription}
               placeholder={dict.description}

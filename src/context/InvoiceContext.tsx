@@ -47,6 +47,7 @@ export interface InvoiceActionsType {
   setClientId: (value: string | null) => void;
   setInvoiceType: (value: "invoice" | "quote") => void;
   setCompanyName: (value: string) => void;
+  setCompanyAddress: (value: string) => void;
 }
 
 export interface InvoiceStateContextType {
@@ -73,6 +74,7 @@ export interface InvoiceStateContextType {
   clientId: string | null;
   invoiceType: "invoice" | "quote";
   companyName: string;
+  companyAddress: string;
 }
 
 const InvoiceStateContext = createContext<InvoiceStateContextType | undefined>(
@@ -109,6 +111,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [clientId, setClientId] = useState<string | null>(null);
   const [invoiceType, setInvoiceType] = useState<"invoice" | "quote">("invoice");
   const [companyName, setCompanyName] = useState<string>("");
+  const [companyAddress, setCompanyAddress] = useState<string>("");
 
   const setCurrency = useCallback((val: string) => {
     setCurrencyState(val);
@@ -148,6 +151,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setClientId(data.clientId || null);
       setInvoiceType((data.invoiceType as "invoice" | "quote") || "invoice");
       setCompanyName(data.companyName || "");
+      setCompanyAddress(data.companyAddress || "");
     },
     [],
   );
@@ -168,6 +172,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     setClientId(null);
     setInvoiceType("invoice");
     setCompanyName("");
+    setCompanyAddress("");
   }, []);
 
   const stateValue = useMemo(
@@ -195,6 +200,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       clientId,
       invoiceType,
       companyName,
+      companyAddress,
     }),
     [
       reference,
@@ -220,6 +226,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       clientId,
       invoiceType,
       companyName,
+      companyAddress,
     ],
   );
 
@@ -248,6 +255,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setClientId,
       setInvoiceType,
       setCompanyName,
+      setCompanyAddress,
     }),
     [
       setAmountWords,
@@ -261,6 +269,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setClientId,
       setInvoiceType,
       setCompanyName,
+      setCompanyAddress,
     ],
   );
 

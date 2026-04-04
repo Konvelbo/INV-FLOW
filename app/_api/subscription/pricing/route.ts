@@ -4,6 +4,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { detectCountryFromIP, getPricingForCountry } from "@/lib/currency";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     // Extract IP from request

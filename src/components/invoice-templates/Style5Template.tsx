@@ -4,6 +4,7 @@ import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
 import { Plus, Trash2, Zap } from "lucide-react";
 import OptimizedInput from "../OptimizedInput";
+import OptimizedTextarea from "../OptimizedTextarea";
 import { Button } from "../ui/button";
 
 export default function Style5Template({
@@ -17,6 +18,7 @@ export default function Style5Template({
     reference,
     setReference,
     city,
+    setCity,
     clientName,
     setClientName,
     clientAddress,
@@ -35,6 +37,8 @@ export default function Style5Template({
     invoiceType,
     companyName,
     setCompanyName,
+    companyAddress,
+    setCompanyAddress,
     description,
     setDescription,
   } = useInvoice();
@@ -206,12 +210,19 @@ export default function Style5Template({
                   placeholder={dict.companyName || "Company Inc."}
                   className="bg-transparent font-bold text-zinc-900 w-full mb-1 p-0 h-auto border-none focus:ring-0"
                 />
-                <div className="text-sm text-zinc-500">
-                  123 Tech Boulevard
-                  <br />
-                  San Francisco, CA
-                  <br />
-                  <span className="inline-block mt-1">{city}</span>
+                <div className="flex flex-col gap-1 w-full">
+                  <OptimizedInput
+                    value={companyAddress}
+                    onValueChange={setCompanyAddress}
+                    placeholder={dict.headquartersAddress || "Adresse de l'entreprise"}
+                    className="bg-transparent text-sm text-zinc-500 w-full p-0 h-auto border-none focus:ring-0 break-all break-words whitespace-pre-wrap"
+                  />
+                  <OptimizedInput
+                    value={city}
+                    onValueChange={setCity}
+                    placeholder={dict.city || "Ville"}
+                    className="bg-transparent text-sm text-zinc-500 w-full p-0 h-auto border-none focus:ring-0 mt-1 inline-block"
+                  />
                 </div>
               </div>
               <div className="w-1/2">
@@ -250,11 +261,11 @@ export default function Style5Template({
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">
                 {dict.projectDetails}
               </label>
-              <OptimizedInput
+              <OptimizedTextarea
                 value={object}
                 onValueChange={setObject}
                 placeholder={dict.object}
-                className="bg-transparent text-zinc-700 w-full font-medium wrap-break-word whitespace-pre-wrap"
+                className="bg-transparent text-zinc-700 w-full font-medium break-all break-words whitespace-pre-wrap"
               />
             </div>
           </div>
@@ -280,7 +291,7 @@ export default function Style5Template({
                       onValueChange={(val) =>
                         updateItem(item.id, "designation", val)
                       }
-                      className="w-full bg-transparent wrap-break-word whitespace-pre-wrap"
+                      className="w-full bg-transparent break-all break-words whitespace-pre-wrap"
                     />
                     <button
                       onClick={() => deleteItem(item.id)}
@@ -404,7 +415,7 @@ export default function Style5Template({
                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
                   {dict.description}
                 </div>
-                <OptimizedInput
+                <OptimizedTextarea
                   value={description}
                   onValueChange={setDescription}
                   placeholder={dict.description}

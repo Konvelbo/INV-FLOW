@@ -57,7 +57,7 @@ const InvoiceEmail = ({
           e(Text, { style: text },
             isEn ? (
               e(React.Fragment, null,
-                "Please find attached the download link for your invoice ",
+                "Please find attached the PDF for your invoice ",
                 e("strong", null, invoiceReference),
                 " issued by ",
                 e("strong", null, senderName),
@@ -65,7 +65,7 @@ const InvoiceEmail = ({
               )
             ) : (
               e(React.Fragment, null,
-                "Veuillez trouver ci-joint le lien de téléchargement pour votre facture ",
+                "Veuillez trouver ci-joint le PDF de votre facture ",
                 e("strong", null, invoiceReference),
                 " émise par ",
                 e("strong", null, senderName),
@@ -77,12 +77,12 @@ const InvoiceEmail = ({
             isEn ? "Total amount: " : "Montant total : ",
             e("strong", null, amount)
           ),
-          e(Section, { style: buttonContainer },
+          downloadLink && e(Section, { style: buttonContainer },
             e(Button, { style: button, href: downloadLink },
               isEn ? "Download Invoice" : "Télécharger la facture"
             )
           ),
-          e(Text, { style: text },
+          downloadLink && e(Text, { style: text },
             isEn
               ? "If the button doesn't work, copy and paste this link into your browser:"
               : "Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :",

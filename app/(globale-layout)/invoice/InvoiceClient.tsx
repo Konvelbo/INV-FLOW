@@ -57,6 +57,8 @@ export default function InvoiceClient({
     amountWords,
     style,
     currency,
+    description,
+    setDescription,
     setInvoiceData,
     clientId,
     totalMaterial,
@@ -94,10 +96,10 @@ export default function InvoiceClient({
   // Initialize with initialData if provided
   useEffect(() => {
     if (initialData) {
-      setInvoiceData({ 
-        ...initialData, 
+      setInvoiceData({
+        ...initialData,
         invoiceType: initialData.type || "invoice",
-        companyName: initialData.companyName || "" 
+        companyName: initialData.companyName || "",
       });
     }
   }, [initialData, setInvoiceData]);
@@ -261,18 +263,65 @@ export default function InvoiceClient({
     }
 
     setIsSendingEmail(true);
-    const res = await performAction("invoices", "send", invoiceId, targetEmail, currency);
+    
+    try {
+      const data = {
+        reference,
+        city,
+        clientName,
+        clientAddress,
+        clientContact,
+        clientPOBox,
+        object,
+        items: itemsArr,
+        totalHT: itemsArr.reduce(
+          (sum: number, item: any) =>
+            sum + (item.totalPrice || item.quantity * item.unitPrice),
+          0,
+        ),
+        totalMaterial: itemsArr.reduce(
+          (sum: number, item: any) => sum + Number(item.quantity),
+          0,
+        ),
+        managerName,
+        amountWords,
+        description,
+        style,
+        type: invoiceType,
+        companyName,
+        companyAddress,
+        currencyCode: currency,
+        language,
+      };
 
-    if (res.success) {
-      toast.success(t("emailSentSuccess"));
-      setIsEmailModalOpen(false);
-      setTargetEmail("");
-      // When sent, it becomes pending
-      setInvoiceStatus("pending");
-      // Trigger a save to update the status in DB
-      setTimeout(handleSave, 100);
+      const html = invoiceTemplate(data);
+      // @ts-ignore
+      const pdfBuffer = await window.electronAPI.generatePDF(html);
+
+      const res = await performAction(
+        "invoices",
+        "send",
+        invoiceId,
+        targetEmail,
+        currency,
+        Array.from(new Uint8Array(pdfBuffer))
+      );
+
+      if (res.success) {
+        toast.success(t("emailSentSuccess"));
+        setIsEmailModalOpen(false);
+        setTargetEmail("");
+        setInvoiceStatus("pending");
+        setTimeout(handleSave, 100);
+      } else {
+        toast.error(t("emailSendError"));
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(t("emailSendError"));
+    } finally {
+      setIsSendingEmail(false);
     }
-    setIsSendingEmail(false);
   };
 
   return (
@@ -372,7 +421,7 @@ export default function InvoiceClient({
               </select>
             </div>
 
-            <div className="space-y-2">
+            {/*<div className="space-y-2">
               <Label className="font-bold">{t("dueDate")}</Label>
               <input
                 type="date"
@@ -380,7 +429,7 @@ export default function InvoiceClient({
                 onChange={(e) => setDueDate(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
               />
-            </div>
+            </div>*/}
 
             <div className="space-y-3 pt-3 border-t border-border/50">
               <label className="flex items-center gap-2 cursor-pointer">

@@ -85,6 +85,9 @@ const FALLBACK_RATES: Record<string, number> = {
   CDF: 2810,
 };
 
+const rateCache: Record<string, { rates: Record<string, number>; cachedAt: number }> = {};
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 /**
  * Try a single fetch to an exchange-rate API endpoint.
  * Returns null on any failure so callers can try the next.

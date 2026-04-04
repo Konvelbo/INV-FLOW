@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import OptimizedInput from "../OptimizedInput";
+import OptimizedTextarea from "../OptimizedTextarea";
 
 export default function Style4Template({
   divRef,
@@ -229,7 +230,7 @@ export default function Style4Template({
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-200 pb-2">
                 {dict.projectDetails}
               </h3>
-              <OptimizedInput
+              <OptimizedTextarea
                 value={object}
                 onValueChange={setObject}
                 placeholder={dict.object}
@@ -381,7 +382,7 @@ export default function Style4Template({
           <div className="flex justify-between items-end mb-20 gap-8">
             <div className="flex-1 flex flex-col items-start gap-1">
               <span className="text-xs uppercase font-bold text-slate-400 tracking-widest border-b border-slate-200 pb-2 mb-2 w-full">{dict.description}</span>
-              <OptimizedInput
+              <OptimizedTextarea
                 value={description}
                 onValueChange={setDescription}
                 placeholder={dict.description}

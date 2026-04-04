@@ -464,20 +464,25 @@ export const translations = {
     management: "Gestion Globale",
     managementDesc:
       "Gérez vos clients, votre catalogue et vos dépenses en un seul endroit.",
-    
+
     // Detailed Features Section
     detailFeaturesTitle: "Décorticage de l'Écosystème ESSOR",
     detailFeaturesSubtitle: "AU MILLIMÈTRE PRÈS",
     detailList1Title: "1. Facturation Automatisée et Intelligente",
-    detailList1Desc: "Génération de devis et factures conformes. Suivi en temps réel des impayés, acomptes, et soldes. Personnalisation avancée de l'identité visuelle de vos documents et calcul automatisé des taxes.",
+    detailList1Desc:
+      "Génération de devis et factures conformes. Suivi en temps réel des impayés, acomptes, et soldes. Personnalisation avancée de l'identité visuelle de vos documents et calcul automatisé des taxes.",
     detailList2Title: "2. Dashboard & KPI Instantanés",
-    detailList2Desc: "Visualisation stratégique de vos flux financiers : évolution des revenus, contrôle des dépenses et marges bénéficiaires. Indicateurs de croissance chiffrés pour une prise de décision éclairée.",
+    detailList2Desc:
+      "Visualisation stratégique de vos flux financiers : évolution des revenus, contrôle des dépenses et marges bénéficiaires. Indicateurs de croissance chiffrés pour une prise de décision éclairée.",
     detailList3Title: "3. CRM Puissant & Centralisé",
-    detailList3Desc: "Base de données client exhaustive. Suivez précisément l'historique des interactions, le volume d'affaires généré par chaque client, et le statut des factures pour fidéliser votre clientèle existante.",
+    detailList3Desc:
+      "Base de données client exhaustive. Suivez précisément l'historique des interactions, le volume d'affaires généré par chaque client, et le statut des factures pour fidéliser votre clientèle existante.",
     detailList4Title: "4. Maîtrise des Catalogues et Dépenses",
-    detailList4Desc: "Bibliothèque de produits et services réutilisables. Tri automatique de vos charges pour distinguer l'utile du superflu et isoler les dépenses déductibles afin d'optimiser votre rentabilité.",
+    detailList4Desc:
+      "Bibliothèque de produits et services réutilisables. Tri automatique de vos charges pour distinguer l'utile du superflu et isoler les dépenses déductibles afin d'optimiser votre rentabilité.",
     detailList5Title: "5. Intelligence Pulse™ & Conseiller IA",
-    detailList5Desc: "Véritable co-pilote digital, notre IA scanne vos performances, rédige des analyses complètes, signale les anomalies de trésorerie et répond par chat à toutes vos questions comptables ou stratégiques.",
+    detailList5Desc:
+      "Véritable co-pilote digital, notre IA scanne vos performances, rédige des analyses complètes, signale les anomalies de trésorerie et répond par chat à toutes vos questions comptables ou stratégiques.",
     authorSignature: "Auteur : KONVELBO.W.Samuel.B",
     workspace: "Espace de Travail",
     avatarUpdated: "Avatar mis à jour !",
@@ -585,10 +590,11 @@ export const translations = {
       "Veuillez fournir une adresse e-mail valide pour envoyer la facture !",
     notFoundInvoiceWithThatId: "Facture non trouvée !",
     invoiceSendSuccess: "Facture envoyée avec succès !",
-    
+
     // Pricing & Subscription
     pricingTitle: "Simple. Transparent.",
-    pricingSubtitle: "Commencez gratuitement. Passez à Premium quand vous êtes prêt, sans engagement.",
+    pricingSubtitle:
+      "Commencez gratuitement. Passez à Premium quand vous êtes prêt, sans engagement.",
     choosePlan: "Choisissez votre plan",
     currentPlan: "Plan actuel",
     freePlan: "Gratuit",
@@ -603,16 +609,18 @@ export const translations = {
     yearlyDesc: "Le meilleur rapport qualité-prix",
     processing: "Traitement...",
     successTitle: "Bienvenue dans Premium !",
-    successDesc: "Votre abonnement est actif. Profitez de toutes les fonctionnalités sans limite.",
+    successDesc:
+      "Votre abonnement est actif. Profitez de toutes les fonctionnalités sans limite.",
     manageSubscription: "Gérer l'abonnement",
     upgradeToPremium: "Passer à Premium",
     paymentMethods: "Orange Money & Moov acceptés",
     cardPayment: "Carte VISA / Mastercard",
     regionalPayment: "Zone UEMOA + International",
     backToPricing: "← Retour aux prix",
-    paymentInstructions: "Paiement ouvert dans votre navigateur. Revenez ici après.",
+    paymentInstructions:
+      "Paiement ouvert dans votre navigateur. Revenez ici après.",
     activationSuccess: "🎉 Abonnement activé avec succès !",
-    
+
     // Features Free
     feat_limit_6: "6 factures par jour",
     feat_1_comp: "1 compagnie",
@@ -644,7 +652,8 @@ export const translations = {
     pricing_choose: "Choisir ce plan",
     pricing_back: "← Retour au tableau de bord",
     pricing_welcome: "Bienvenue dans Premium !",
-    pricing_active_desc: "Votre abonnement est actif. Profitez de toutes les fonctionnalités sans limite.",
+    pricing_active_desc:
+      "Votre abonnement est actif. Profitez de toutes les fonctionnalités sans limite.",
     pricing_start_now: "Commencer",
     pricing_expiry: "Votre abonnement {type} expire le {date}",
     pricing_type_monthly: "mensuel",
@@ -686,6 +695,7 @@ export const translations = {
     addFirstCompany: "Ajouter votre première entreprise",
     exportStats: "Exporter Stats",
     currency_unit: "CFA",
+    aiAccessDenied: "L'Assistant IA est réservé aux abonnés Premium.",
   },
   en: {
     // Invoices
@@ -906,15 +916,20 @@ export const translations = {
     detailFeaturesTitle: "Deconstructing the ESSOR Ecosystem",
     detailFeaturesSubtitle: "DOWN TO THE MILLIMETER",
     detailList1Title: "1. Automated & Smart Billing",
-    detailList1Desc: "Create compliant quotes and invoices. Real-time tracking of unpaid items, deposits, and balances. Advanced customization of your document's visual identity with automated tax calculation.",
+    detailList1Desc:
+      "Create compliant quotes and invoices. Real-time tracking of unpaid items, deposits, and balances. Advanced customization of your document's visual identity with automated tax calculation.",
     detailList2Title: "2. Dashboard & Instant KPIs",
-    detailList2Desc: "Strategic visualization of your financial flows: revenue tracking, expense control, and profit margins. Quantified growth indicators to empower your decision-making.",
+    detailList2Desc:
+      "Strategic visualization of your financial flows: revenue tracking, expense control, and profit margins. Quantified growth indicators to empower your decision-making.",
     detailList3Title: "3. Powerful & Centralized CRM",
-    detailList3Desc: "Comprehensive customer database. Precisely track interaction history, business volume generated per client, and invoice status to secure customer loyalty.",
+    detailList3Desc:
+      "Comprehensive customer database. Precisely track interaction history, business volume generated per client, and invoice status to secure customer loyalty.",
     detailList4Title: "4. Catalog & Expense Mastery",
-    detailList4Desc: "Library of reusable products and services. Automatic sorting of your expenses to distinguish necessities from excess, isolating deductibles to optimize your profitability.",
+    detailList4Desc:
+      "Library of reusable products and services. Automatic sorting of your expenses to distinguish necessities from excess, isolating deductibles to optimize your profitability.",
     detailList5Title: "5. Pulse™ Intelligence & AI Advisor",
-    detailList5Desc: "A true digital co-pilot, our AI scans your performance, drafts comprehensive analyses, flags cash-flow anomalies, and answers all your accounting or strategic questions via chat.",
+    detailList5Desc:
+      "A true digital co-pilot, our AI scans your performance, drafts comprehensive analyses, flags cash-flow anomalies, and answers all your accounting or strategic questions via chat.",
     authorSignature: "Author: KONVELBO.W.Samuel.B",
     pdfSuccess: "PDF Downloaded Successfully!",
     fillFields:
@@ -1309,7 +1324,8 @@ export const translations = {
 
     // Pricing & Subscription
     pricingTitle: "Simple. Transparent.",
-    pricingSubtitle: "Start for free. Upgrade to Premium when you're ready, no commitment.",
+    pricingSubtitle:
+      "Start for free. Upgrade to Premium when you're ready, no commitment.",
     choosePlan: "Choose your plan",
     currentPlan: "Current Plan",
     freePlan: "Free",
@@ -1324,7 +1340,8 @@ export const translations = {
     yearlyDesc: "Best value for money",
     processing: "Processing...",
     successTitle: "Welcome to Premium!",
-    successDesc: "Your subscription is active. Enjoy all features without limits.",
+    successDesc:
+      "Your subscription is active. Enjoy all features without limits.",
     manageSubscription: "Manage Subscription",
     upgradeToPremium: "Upgrade to Premium",
     paymentMethods: "Orange Money & Moov accepted",
@@ -1365,7 +1382,8 @@ export const translations = {
     pricing_choose: "Choose this plan",
     pricing_back: "← Back to dashboard",
     pricing_welcome: "Welcome to Premium!",
-    pricing_active_desc: "Your subscription is active. Enjoy all features without limits.",
+    pricing_active_desc:
+      "Your subscription is active. Enjoy all features without limits.",
     pricing_start_now: "Get Started",
     pricing_expiry: "Your {type} subscription expires on {date}",
     pricing_type_monthly: "monthly",
@@ -1375,5 +1393,6 @@ export const translations = {
     totalExpenses: "Total Expenses",
     totalClients: "Total Clients",
     currency_unit: "CFA",
+    aiAccessDenied: "The AI Assistant is reserved for Premium subscribers.",
   },
 };

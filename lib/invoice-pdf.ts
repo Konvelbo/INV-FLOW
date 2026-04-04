@@ -35,27 +35,42 @@ export type InvoiceProps = {
 type PdfDictionary = Partial<typeof translations.fr> & Record<string, string>;
 
 export function invoiceTemplate(data: InvoiceProps) {
-  const { style } = data;
-  const lang = data.language || "fr";
+  // Convert newlines to HTML <br> tags for puppeteer rendering reliability
+  const nl2br = (str?: string) => typeof str === "string" ? str.replace(/\n/g, "<br>") : str;
+  const processedData = {
+    ...data,
+    object: nl2br(data.object) || "",
+    description: nl2br(data.description),
+    amountWords: nl2br(data.amountWords),
+    clientAddress: nl2br(data.clientAddress),
+    companyName: nl2br(data.companyName),
+    items: data.items.map(item => ({
+      ...item,
+      designation: nl2br(item.designation) || ""
+    }))
+  };
+
+  const { style } = processedData;
+  const lang = processedData.language || "fr";
   const dict = translations[lang] || translations.fr;
 
   switch (style) {
     case "style1":
-      return renderStyle1(data, dict, lang);
+      return renderStyle1(processedData, dict, lang);
     case "style2":
-      return renderStyle2(data, dict, lang);
+      return renderStyle2(processedData, dict, lang);
     case "style3":
-      return renderStyle3(data, dict, lang);
+      return renderStyle3(processedData, dict, lang);
     case "style4":
-      return renderStyle4(data, dict, lang);
+      return renderStyle4(processedData, dict, lang);
     case "style5":
-      return renderStyle5(data, dict, lang);
+      return renderStyle5(processedData, dict, lang);
     case "style6":
-      return renderStyle6(data, dict, lang);
+      return renderStyle6(processedData, dict, lang);
     case "style7":
-      return renderStyle7(data, dict, lang);
+      return renderStyle7(processedData, dict, lang);
     default:
-      return renderDefault(data, dict, lang);
+      return renderDefault(processedData, dict, lang);
   }
 }
 
@@ -243,6 +258,10 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   th { font-weight: bold; text-align: center; font-size: 15px; background: #f3f4f6; text-transform: uppercase; letter-spacing: 0.02em; }
   .totals { width: 40%; margin-left: auto; margin-top: 10px; background-color: #f9fafb; }
   .signature { margin-top: 30px; text-align: right; font-weight: bold; }
+
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
 </style>
 </head>
 <body>${pagesHtml}</body>
@@ -432,7 +451,11 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .grand-val { font-size: 24px; word-break: break-all; text-align: right; }
 
     .page-num { position: absolute; bottom: 24px; right: 48px; font-size: 12px; color: #cbd5e1; }
-  </style>
+  
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style>
   </head>
   <body>${pagesHtml}</body>
   </html>`;
@@ -613,7 +636,11 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .total-row.grand span:last-child { font-size: 24px; word-break: break-all; text-align: right; }
 
     .footer-bar { height: 16px; background: #1e3a8a; margin-top: 48px; }
-    </style></head><body>${pagesHtml}</body></html>`;
+    
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style></head><body>${pagesHtml}</body></html>`;
 }
 
 // ==========================================
@@ -805,7 +832,11 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
         .signature-block { text-align: left; width: 250px; }
         .sig { font-family: 'Caveat', cursive; font-size: 32px; color: #7e22ce; margin-bottom: 4px; line-height: 1; }
         .signature-block .label { color: #9ca3af; letter-spacing: 0.2em; font-size: 10px; }
-    </style></head><body>${pagesHtml}</body></html>`;
+    
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style></head><body>${pagesHtml}</body></html>`;
 }
 
 // ==========================================
@@ -989,7 +1020,11 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .sig-block { text-align: center; width: 200px; }
     .sig-name { font-family: 'Playfair Display', serif; font-size: 24px; font-style: italic; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; }
     .sig-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
-    </style></head><body>${pagesHtml}</body></html>`;
+    
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style></head><body>${pagesHtml}</body></html>`;
 }
 
 // ==========================================
@@ -1176,7 +1211,11 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     .total-row { display: flex; justify-content: space-between; font-size: 14px; color: #71717a; margin-bottom: 12px; }
     .total-row.grand { border-top: 1px solid #e4e4e7; padding-top: 16px; margin-top: 16px; color: #18181b; font-weight: 700; font-size: 20px; }
     .grand-val { font-size: 24px; font-weight: 800; word-break: break-all; text-align: right; margin-left: 10px; }
-    </style></head><body>${pagesHtml}</body></html>`;
+    
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style></head><body>${pagesHtml}</body></html>`;
 }
 
 // ==========================================
@@ -1309,7 +1348,11 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
     .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
-    </style></head><body>${pagesHtml}</body></html>`;
+    
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style></head><body>${pagesHtml}</body></html>`;
 }
 
 // ==========================================
@@ -1457,5 +1500,9 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
     .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
-    </style></head><body>${pagesHtml}</body></html>`;
+    
+    
+    /* Global word-break injected for all text-heavy containers */
+    td, .object, .project-text, .desc-text, .item-name, .client-detail, .grand-val, .val-lg, .company { word-break: break-word !important; overflow-wrap: break-word !important; white-space: pre-wrap !important; }
+</style></head><body>${pagesHtml}</body></html>`;
 }

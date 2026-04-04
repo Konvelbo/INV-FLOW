@@ -65,25 +65,18 @@ export function ChatInterface({ initialUser }: ChatInterfaceProps) {
 
     try {
       const userStr = localStorage.getItem("user");
-      const token = userStr ? JSON.parse(userStr).token : "";
+      const userId = userStr ? JSON.parse(userStr).id : "";
 
-      const response = await fetch("/api/ai/advisor", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ message: userMessage }),
-      });
+      // @ts-ignore
+      const res = await window.electronAPI.actionData("ai", "advisor", userId, userMessage);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (res.success && res.data?.response) {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: data.response },
+          { role: "assistant", content: res.data.response },
         ]);
       } else {
-        throw new Error("Failed to get response");
+        throw new Error(res.error || "Failed to get response");
       }
     } catch (error) {
       setMessages((prev) => [

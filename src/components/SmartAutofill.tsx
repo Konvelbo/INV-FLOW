@@ -54,6 +54,7 @@ export default function SmartAutofill() {
   const [clients, setClients] = useState<Client[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  console.log(clients);
 
   useEffect(() => {
     if (!isOpen) return;

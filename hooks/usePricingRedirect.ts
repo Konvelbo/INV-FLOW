@@ -40,7 +40,7 @@ export function usePricingRedirect() {
         router.push("/pricing");
       }, delay);
     },
-    [router]
+    [router],
   );
 
   /**
@@ -75,14 +75,15 @@ export function usePricingRedirect() {
 
       if (currentCompanyCount >= 1) {
         redirectToPricing({
-          message: "Plan gratuit limité à 1 compagnie. Passez à Premium pour des compagnies illimitées !",
+          message:
+            "Plan gratuit limité à 1 compagnie. Passez à Premium pour des compagnies illimitées !",
           delay: 2000,
         });
         return false;
       }
       return true;
     },
-    [subscription, redirectToPricing]
+    [subscription, redirectToPricing],
   );
 
   /**
@@ -94,7 +95,8 @@ export function usePricingRedirect() {
     if (subscription.hasAIAccess) return true;
 
     redirectToPricing({
-      message: "L'Assistant IA est réservé aux abonnés Premium. Découvrez nos plans !",
+      message:
+        "L'Assistant IA est réservé aux abonnés Premium. Découvrez nos plans !",
       delay: 2000,
     });
     return false;

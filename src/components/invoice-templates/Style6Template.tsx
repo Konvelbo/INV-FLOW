@@ -4,6 +4,7 @@ import { useLanguage } from "@/src/context/LanguageContext";
 import { v4 as uuidv4 } from "uuid";
 import { Plus, Trash2 } from "lucide-react";
 import OptimizedInput from "../OptimizedInput";
+import OptimizedTextarea from "../OptimizedTextarea";
 import { Button } from "../ui/button";
 
 export default function Style6Template({
@@ -245,7 +246,7 @@ export default function Style6Template({
             <div className="font-bold text-xs uppercase tracking-widest text-zinc-400 mb-2">
               {dict.object}
             </div>
-            <OptimizedInput
+            <OptimizedTextarea
               value={object}
               onValueChange={setObject}
               placeholder={dict.object}
@@ -351,7 +352,7 @@ export default function Style6Template({
             <div className="mt-8 flex justify-between items-end gap-12">
               <div className="flex-1 flex flex-col items-start gap-1 pb-4">
                 <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">{dict.description}</span>
-                <OptimizedInput
+                <OptimizedTextarea
                   value={description}
                   onValueChange={setDescription}
                   placeholder={dict.description}

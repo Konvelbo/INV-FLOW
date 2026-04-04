@@ -11,8 +11,8 @@ prisma
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
 const { generateExcel } = require("./excel-service");
-const { 
-  getPricingForCurrency, 
+const {
+  getPricingForCurrency,
   fetchRatesFromUSD: getRatesFromUSD,
   getCurrencyForCountry,
   formatPrice,
@@ -247,6 +247,138 @@ const handlers = {
 
     const targetCompanyId = companyId || (await getActiveCompanyId(userId));
 
+    const executeInChunks = async (tasks, chunkSize = 4) => {
+      const results = [];
+      for (let i = 0; i < tasks.length; i += chunkSize) {
+        const chunk = tasks.slice(i, i + chunkSize);
+        const chunkResults = await Promise.all(chunk.map(fn => fn()));
+        results.push(...chunkResults);
+      }
+      return results;
+    };
+
+    const tasks = [
+      () => targetCompanyId
+        ? prisma.company.findUnique({ where: { id: targetCompanyId } })
+        : Promise.resolve(null),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          createdAt: { gte: currentMonthStart },
+          OR: [{ status: "paid" }, { isScaled: true }],
+        },
+        _sum: { totalTTC: true, totalHT: true },
+      }),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          createdAt: { gte: lastMonthStart, lt: currentMonthStart },
+          OR: [{ status: "paid" }, { isScaled: true }],
+        },
+        _sum: { totalTTC: true, totalHT: true },
+      }),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          createdAt: { gte: currentYearStart },
+          OR: [{ status: "paid" }, { isScaled: true }],
+        },
+        _sum: { totalTTC: true, totalHT: true },
+      }),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          status: { in: ["pending", "overdue", "draft"] },
+        },
+        _sum: { totalTTC: true, totalHT: true },
+        _count: true,
+      }),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          createdAt: { gte: currentMonthStart },
+          isScaled: true,
+        },
+        _sum: { totalTTC: true, totalHT: true },
+      }),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          createdAt: { gte: lastMonthStart, lt: currentMonthStart },
+          isScaled: true,
+        },
+        _sum: { totalTTC: true, totalHT: true },
+      }),
+      () => prisma.invoice.aggregate({
+        where: { ...whereInvoice, isScaled: true },
+        _sum: { totalTTC: true, totalHT: true },
+        _count: true,
+      }),
+      () => prisma.invoice.aggregate({
+        where: {
+          ...whereInvoice,
+          OR: [{ status: { in: ["pending", "draft"] } }, { isScaled: false }],
+        },
+        _sum: { totalTTC: true, totalHT: true },
+        _count: true,
+      }),
+      () => prisma.invoice.findMany({
+        where: whereInvoice,
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          reference: true,
+          clientName: true,
+          totalHT: true,
+          status: true,
+          isScaled: true,
+          createdAt: true,
+        },
+      }),
+      () => prisma.invoice.findMany({
+        where: {
+          ...whereInvoice,
+          status: { in: ["pending", "overdue", "draft"] },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      () => prisma.invoice.findMany({
+        where: {
+          ...whereInvoice,
+          createdAt: { gte: sixMonthsAgo },
+          OR: [{ status: "paid" }, { isScaled: true }],
+        },
+        select: { createdAt: true, totalTTC: true, totalHT: true },
+      }),
+      () => prisma.expense.findMany({
+        where: { ...whereExpense, date: { gte: sixMonthsAgo } },
+        select: { date: true, amount: true },
+      }),
+      () => prisma.todo.findMany({
+        where: whereTodo,
+        orderBy: { startTime: "asc" },
+      }),
+      () => prisma.client.count({
+        where: { userId, ...(activeId ? { companyId: activeId } : {}) },
+      }),
+      () => prisma.expense.aggregate({
+        where: { ...whereExpense, date: { gte: currentMonthStart } },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      () => prisma.expense.aggregate({
+        where: { ...whereExpense, date: { gte: currentYearStart } },
+        _sum: { amount: true },
+      }),
+      () => prisma.product.findMany({
+        where: { ...where, userId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+    ];
+
     const [
       activeCompany,
       revenuesThisMonth,
@@ -266,127 +398,7 @@ const handlers = {
       expensesThisMonth,
       expensesThisYear,
       recentProducts,
-    ] = await Promise.all([
-      targetCompanyId
-        ? prisma.company.findUnique({ where: { id: targetCompanyId } })
-        : Promise.resolve(null),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: currentMonthStart },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: lastMonthStart, lt: currentMonthStart },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: currentYearStart },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          status: { in: ["pending", "overdue", "draft"] },
-        },
-        _sum: { totalTTC: true, totalHT: true },
-        _count: true,
-      }),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: currentMonthStart },
-          isScaled: true,
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: lastMonthStart, lt: currentMonthStart },
-          isScaled: true,
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      prisma.invoice.aggregate({
-        where: { ...whereInvoice, isScaled: true },
-        _sum: { totalTTC: true, totalHT: true },
-        _count: true,
-      }),
-      prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          OR: [{ status: { in: ["pending", "draft"] } }, { isScaled: false }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-        _count: true,
-      }),
-      prisma.invoice.findMany({
-        where: whereInvoice,
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          reference: true,
-          clientName: true,
-          totalHT: true,
-          status: true,
-          isScaled: true,
-          createdAt: true,
-        },
-      }),
-      prisma.invoice.findMany({
-        where: {
-          ...whereInvoice,
-          status: { in: ["pending", "overdue", "draft"] },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      prisma.invoice.findMany({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: sixMonthsAgo },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        select: { createdAt: true, totalTTC: true, totalHT: true },
-      }),
-      prisma.expense.findMany({
-        where: { ...whereExpense, date: { gte: sixMonthsAgo } },
-        select: { date: true, amount: true },
-      }),
-      prisma.todo.findMany({
-        where: whereTodo,
-        orderBy: { startTime: "asc" },
-      }),
-      prisma.client.count({
-        where: { userId, ...(activeId ? { companyId: activeId } : {}) },
-      }),
-      prisma.expense.aggregate({
-        where: { ...whereExpense, date: { gte: currentMonthStart } },
-        _sum: { amount: true },
-        _count: true,
-      }),
-      prisma.expense.aggregate({
-        where: { ...whereExpense, date: { gte: currentYearStart } },
-        _sum: { amount: true },
-      }),
-      prisma.product.findMany({
-        where: { ...where, userId },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      }),
-    ]);
+    ] = await executeInChunks(tasks, 5);
 
     // Chart Data Processing
     const monthlyData = {};
@@ -855,7 +867,7 @@ const handlers = {
         ];
         const report = await handlers.companiesReport(userId);
         if (!report) return null;
-        
+
         rows = report.rows;
         // Adding the Global Total row
         rows.push({
@@ -1179,7 +1191,7 @@ const actionHandlers = {
         throw error;
       }
     },
-    send: async (userId, invoiceId, targetEmail, currencyCode = "XOF") => {
+    send: async (userId, invoiceId, targetEmail, currencyCode = "XOF", pdfArrayBuffer) => {
       if (!userId) throw new Error("Authentification requise.");
       try {
         if (!targetEmail) {
@@ -1202,10 +1214,6 @@ const actionHandlers = {
           throw new Error("Invoice not found !");
         }
 
-        const appUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        const downloadLink = `${appUrl}/api/public/download/${invoice.id}`;
-
         // Simple currency formatter for the email (Node.js side)
         const formatEmailAmount = (val, code) => {
           const amount = Number(val).toLocaleString("fr-FR");
@@ -1226,7 +1234,7 @@ const actionHandlers = {
           InvoiceEmail({
             clientName: invoice.clientName,
             invoiceReference: invoice.reference,
-            downloadLink: downloadLink,
+            downloadLink: "", // We attach the PDF directly now
             senderName: invoice.author.name || "Votre Partenaire",
             amount: formatEmailAmount(
               invoice.totalTTC || invoice.totalHT,
@@ -1236,11 +1244,20 @@ const actionHandlers = {
           }),
         );
 
+        const attachments = [];
+        if (pdfArrayBuffer && pdfArrayBuffer.length > 0) {
+          attachments.push({
+            filename: `Facture_${invoice.reference}.pdf`,
+            content: Buffer.from(pdfArrayBuffer)
+          });
+        }
+
         const data = await resend.emails.send({
           from: "ProFacture <onboarding@resend.dev>",
           to: [targetEmail],
           subject: `Nouvelle Facture ${invoice.reference}`,
           html: emailHtml,
+          attachments,
         });
 
         return { success: true, data };
@@ -1729,6 +1746,39 @@ const actionHandlers = {
       }
     },
   },
+  ai: {
+    advisor: async (userId, message) => {
+      if (!userId) throw new Error("Authentification requise pour l'IA.");
+
+      try {
+        const { OpenAI } = require("openai");
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const systemPrompt = `Tu es un assistant économique expert pour les entrepreneurs et PME d'Afrique francophone (ESSOR).
+Tu réponds toujours en français, de manière professionnelle, concise et encourageante.
+Ton but est d'aider les utilisateurs à mieux gérer leur entreprise, optimiser leurs marges et analyser leurs finances.
+Réponds de manière structurée et sans t'étaler inutilement.`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini", // fallback to a commonly available default
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message },
+          ],
+          temperature: 0.7,
+        });
+
+        const responseText = completion.choices[0]?.message?.content || "Désolé, je n'ai pas pu générer une réponse.";
+
+        return { response: responseText };
+      } catch (error) {
+        console.error("Erreur OpenAI:", error);
+        throw new Error("Erreur de l'API IA: " + (error.message || "Impossible de traiter la demande."));
+      }
+    }
+  }
 };
 
 // ---- Subscription data handler ----

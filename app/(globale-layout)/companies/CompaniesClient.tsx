@@ -283,7 +283,7 @@ export default function CompaniesClient({
   return (
     <div className="min-h-full min-w-full bg-background text-foreground p-5 md:p-10 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative pb-20">
       <div className="max-w-6xl mx-auto space-y-10 relative z-10 w-full">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="h-1.5 w-10 bg-primary rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
@@ -336,21 +336,21 @@ export default function CompaniesClient({
                   <span className="relative z-10">{t("addStructure")}</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[800px] bg-slate-950/90 border border-white/10 text-foreground backdrop-blur-3xl rounded-[2.5rem] shadow-2xl">
-                <DialogHeader className="space-y-4">
-                  <DialogTitle className="text-3xl font-black tracking-tighter uppercase">
+              <DialogContent className="sm:max-w-[600px] bg-card border border-border/50 text-foreground backdrop-blur-xl">
+                <DialogHeader>
+                  <DialogTitle>
                     {editingCompany ? t("updateStructure") : t("addStructure")}
                   </DialogTitle>
-                  <DialogDescription className="text-slate-400 font-sans italic">
+                  <DialogDescription>
                     {t("company_form_desc")}
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSave} className="space-y-8 py-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                <form onSubmit={handleSave} className="space-y-4 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <Label
                         htmlFor="name"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("company_name_label")}
                       </Label>
@@ -361,13 +361,13 @@ export default function CompaniesClient({
                           setFormData({ ...formData, name: e.target.value })
                         }
                         required
-                        className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="legalName"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("legal_name_label")}
                       </Label>
@@ -380,14 +380,14 @@ export default function CompaniesClient({
                             legalName: e.target.value,
                           })
                         }
-                        className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                         placeholder={t("legal_name_placeholder")}
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="taxId"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("tax_id_label")}
                       </Label>
@@ -397,13 +397,13 @@ export default function CompaniesClient({
                         onChange={(e) =>
                           setFormData({ ...formData, taxId: e.target.value })
                         }
-                        className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="leaderName"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("leader_name_label")}
                       </Label>
@@ -417,13 +417,13 @@ export default function CompaniesClient({
                           })
                         }
                         required
-                        className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="legalForm"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("legal_form_label")}
                       </Label>
@@ -437,13 +437,13 @@ export default function CompaniesClient({
                           })
                         }
                         required
-                        className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="registrationNumber"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("reg_number_label")}
                       </Label>
@@ -456,13 +456,13 @@ export default function CompaniesClient({
                             registrationNumber: e.target.value,
                           })
                         }
-                        className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3 md:col-span-2">
                       <Label
                         htmlFor="address"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("headquarters_address")}
                       </Label>
@@ -472,13 +472,13 @@ export default function CompaniesClient({
                         onChange={(e) =>
                           setFormData({ ...formData, address: e.target.value })
                         }
-                        className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="phone"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("phone_label")}
                       </Label>
@@ -492,7 +492,7 @@ export default function CompaniesClient({
                     <div className="space-y-3">
                       <Label
                         htmlFor="email"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("default_email")}
                       </Label>
@@ -503,13 +503,13 @@ export default function CompaniesClient({
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label
                         htmlFor="website"
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                       >
                         {t("website")}
                       </Label>
@@ -519,19 +519,19 @@ export default function CompaniesClient({
                         onChange={(e) =>
                           setFormData({ ...formData, website: e.target.value })
                         }
-                        className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                        className="bg-background/50 border-border/50"
                       />
                     </div>
 
                     <div className="md:col-span-2 pt-4">
-                      <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
+                      <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-border/50 pb-2">
                         {t("activity_info")}
-                      </h4>
-                      <div className="grid md:grid-cols-2 gap-6">
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-3">
                           <Label
                             htmlFor="sector"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("sector_label")}
                           </Label>
@@ -545,13 +545,13 @@ export default function CompaniesClient({
                               })
                             }
                             required
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                         <div className="space-y-3">
                           <Label
                             htmlFor="targetMarket"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("target_market")}
                           </Label>
@@ -564,13 +564,13 @@ export default function CompaniesClient({
                                 targetMarket: e.target.value,
                               })
                             }
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                         <div className="space-y-3 md:col-span-2">
                           <Label
                             htmlFor="description"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("description")} *
                           </Label>
@@ -584,13 +584,13 @@ export default function CompaniesClient({
                               })
                             }
                             required
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                         <div className="space-y-3 md:col-span-2">
                           <Label
                             htmlFor="productsServices"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("proposedProducts")} *
                           </Label>
@@ -604,21 +604,21 @@ export default function CompaniesClient({
                               })
                             }
                             required
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="md:col-span-2 pt-4">
-                      <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
+                      <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-border/50 pb-2">
                         {t("financial_info") || t("financialInfo")}
-                      </h4>
-                      <div className="grid md:grid-cols-2 gap-6">
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-3">
                           <Label
                             htmlFor="annualRevenue"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("annualRevenue")} *
                           </Label>
@@ -633,13 +633,13 @@ export default function CompaniesClient({
                               })
                             }
                             required
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                         <div className="space-y-3">
                           <Label
                             htmlFor="monthlyRevenue"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("monthly_revenue")}
                           </Label>
@@ -653,21 +653,21 @@ export default function CompaniesClient({
                                 monthlyRevenue: e.target.value,
                               })
                             }
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="md:col-span-2 pt-4">
-                      <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">
+                      <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-border/50 pb-2">
                         {t("organization")}
-                      </h4>
-                      <div className="grid md:grid-cols-2 gap-6">
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-3">
                           <Label
                             htmlFor="employeeCount"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("employee_count_label")}
                           </Label>
@@ -682,13 +682,13 @@ export default function CompaniesClient({
                               })
                             }
                             required
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                         <div className="space-y-3">
                           <Label
                             htmlFor="departments"
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+
                           >
                             {t("departments_label")}
                           </Label>
@@ -702,17 +702,17 @@ export default function CompaniesClient({
                               })
                             }
                             placeholder={t("departments_placeholder")}
-                            className="bg-muted/20 border-border/50 h-14 rounded-2xl focus:ring-primary/20 focus:border-primary transition-all font-sans"
+                            className="bg-background/50 border-border/50"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-3 md:col-span-2 pt-6">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                      <Label>
                         {t("company_logo")}
                       </Label>
-                      <div className="flex items-center gap-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
+                      <div className="flex items-center gap-4 p-4 bg-background/50 border border-border/50 rounded-2xl">
                         <div className="size-20 rounded-xl bg-slate-900 border border-white/10 overflow-hidden flex items-center justify-center flex-shrink-0 relative">
                           {formData.logoUrl ? (
                             <Image
@@ -730,7 +730,7 @@ export default function CompaniesClient({
                             type="file"
                             accept="image/*"
                             onChange={handleLogoUpload}
-                            className="bg-white/5 border-white/10 h-10 file:bg-primary file:text-primary-foreground file:border-0 file:rounded-lg file:mr-4 file:px-4 file:py-1 file:text-[10px] file:font-black file:uppercase cursor-pointer text-xs"
+                            className="bg-background/50 border-border/50 h-10 file:bg-primary file:text-primary-foreground file:border-0 file:rounded-lg file:mr-4 file:px-4 file:py-1 file:text-[10px] file:font-black file:uppercase cursor-pointer text-xs"
                           />
                           <p className="text-[10px] text-slate-500 font-medium tracking-tight">
                             {t("logo_hint")}
@@ -739,20 +739,8 @@ export default function CompaniesClient({
                       </div>
                     </div>
                   </div>
-                  <DialogFooter className="pt-6 border-t border-white/10 gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                      className="rounded-xl px-8 h-12 uppercase text-[10px] font-black tracking-widest"
-                    >
-                      {t("cancel")}
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="rounded-xl px-8 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase text-[10px] tracking-widest gap-2 shadow-lg shadow-primary/20"
-                    >
-                      <Save className="w-4 h-4" />
+                  <DialogFooter className="pt-6">
+                    <Button type="submit" className="w-full font-bold">
                       {editingCompany ? t("updateStructure") : t("save")}
                     </Button>
                   </DialogFooter>

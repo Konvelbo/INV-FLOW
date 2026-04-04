@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ArrowDown, CookingPot } from "lucide-react";
 import { Button } from "../ui/button";
 import OptimizedInput from "../OptimizedInput";
+import OptimizedTextarea from "../OptimizedTextarea";
 
 export default function DefaultTemplate({
   divRef,
@@ -246,7 +247,7 @@ export default function DefaultTemplate({
             </div>
             <div className="editable-field flex items-center gap-2 border-t pt-2 mt-2">
               <span className="label w-24">{dict.object} :</span>
-              <OptimizedInput
+              <OptimizedTextarea
                 value={object}
                 onValueChange={setObject}
                 placeholder={dict.object}
@@ -397,7 +398,7 @@ export default function DefaultTemplate({
         <div className="flex justify-between items-end mt-4">
           <div className="w-2/3 flex flex-col items-start gap-1 px-4">
             <span className="text-xs uppercase font-bold text-gray-500">{dict.description}</span>
-            <OptimizedInput
+            <OptimizedTextarea
               value={description}
               onValueChange={setDescription}
               placeholder={dict.description}
