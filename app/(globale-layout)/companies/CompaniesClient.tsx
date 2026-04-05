@@ -236,7 +236,7 @@ export default function CompaniesClient({
       const res = await window.electronAPI.getData(
         "export",
         userId,
-        "overview",
+        "companies_report",
       );
       if (res.success && res.data) {
         const blob = new Blob([res.data], {
@@ -245,11 +245,13 @@ export default function CompaniesClient({
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `overview_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+        link.download = `rapport_entreprises_${new Date().toISOString().split("T")[0]}.xlsx`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Export réussi");
+        toast.success("Rapport global exporté");
+      } else {
+        toast.error("Aucune donnée à exporter");
       }
     } catch (error) {
       console.error(error);
@@ -258,6 +260,39 @@ export default function CompaniesClient({
       setIsExporting(false);
     }
   };
+
+  const handleExportCompany = async (companyId: string, companyName: string) => {
+    try {
+      const userStr = localStorage.getItem("user");
+      const userId = userStr ? JSON.parse(userStr).id : null;
+      // @ts-ignore
+      const res = await window.electronAPI.getData(
+        "export",
+        userId,
+        "company_detail",
+        companyId,
+      );
+      if (res.success && res.data) {
+        const blob = new Blob([res.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${companyName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success(`Export de ${companyName} réussi`);
+      } else {
+        toast.error("Aucune donnée à exporter pour cette entreprise");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors de l'export");
+    }
+  };
+
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -830,6 +865,15 @@ export default function CompaniesClient({
                       )}
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
+                        onClick={() => handleExportCompany(company.id, company.name)}
+                        title={"Exporter les stats de cette entreprise"}
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="outline"
                         size="icon"

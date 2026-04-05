@@ -17,42 +17,64 @@ async function generateExcel(title, columns, rows) {
     width: col.width || 20
   }));
 
-  // Style header row
+  // Style header row (Essor Dark Theme)
   const headerRow = worksheet.getRow(1);
-  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.font = { bold: true, color: { argb: 'FFF8FAFC' }, size: 12 };
   headerRow.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF4F46E5' } // Primary indigo color
+    fgColor: { argb: 'FF0F172A' } // Slate 900
   };
   headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-  headerRow.height = 25;
+  headerRow.height = 30;
 
   // Add rows and style them
   rows.forEach((rowData, index) => {
+    // We add row data. exceljs filters by keys mapping to columns automatically.
     const row = worksheet.addRow(rowData);
 
-    // Alternating row colors
-    if (index % 2 === 1) {
+    const isTotal = rowData.isTotalRow === true;
+
+    if (isTotal) {
+      // Total Global / Summary Row Styling (Essor Orange)
+      row.font = { bold: true, color: { argb: 'FF0F172A' }, size: 12 };
       row.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFF9FAFB' } // Light gray
+        fgColor: { argb: 'FFFB923C' } // Orange 400
       };
+      row.height = 25;
+    } else {
+      // Alternating row colors
+      if (index % 2 === 1) {
+        row.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF8FAFC' } // Slate 50
+        };
+      }
     }
 
-    // Border for each cell
-    row.eachCell((cell) => {
-      cell.border = {
-        top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-        left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-        bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-        right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
-      };
+    // Border and alignment for each cell
+    row.eachCell((cell, colNumber) => {
+      // Stronger borders for totals
+      cell.border = isTotal
+        ? {
+          top: { style: 'medium', color: { argb: 'FF0F172A' } },
+          bottom: { style: 'medium', color: { argb: 'FF0F172A' } }
+        }
+        : {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+        };
 
-      // Auto-formatting for numbers
+      cell.alignment = { vertical: 'middle' };
+
+      // Auto-formatting for numbers to show correctly
       if (typeof cell.value === 'number') {
-        cell.numFmt = '#,##0';
+        cell.numFmt = '#,##0.00';
       }
     });
   });

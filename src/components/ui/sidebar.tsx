@@ -207,7 +207,7 @@ function Sidebar({
 
   return (
     <div
-      className="group peer text-sidebar-foreground h-screen w-[var(--sidebar-width)] hidden md:block transition-all duration-200 ease-linear data-[collapsible=offcanvas]:data-[state=collapsed]:w-0"
+      className="group peer text-sidebar-foreground h-screen w-[var(--sidebar-width)] hidden md:block transition-[width] duration-150 ease-in-out data-[collapsible=offcanvas]:data-[state=collapsed]:w-0 will-change-[width]"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -218,7 +218,7 @@ function Sidebar({
       <div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear",
+          "relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-150 ease-in-out will-change-[width]",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -229,7 +229,7 @@ function Sidebar({
       <div
         data-slot="sidebar-container"
         className={cn(
-          "inset-y-0 hidden h-full w-[var(--sidebar-width)] transition-all duration-200 ease-linear md:flex fixed z-50",
+          "inset-y-0 hidden h-full w-[var(--sidebar-width)] transition-[transform,width,opacity] duration-150 ease-in-out md:flex fixed z-50 will-change-[transform,width,opacity]",
           "group-data-[state=collapsed]:group-data-[collapsible=offcanvas]:invisible group-data-[state=collapsed]:group-data-[collapsible=offcanvas]:opacity-0 group-data-[state=collapsed]:group-data-[collapsible=offcanvas]:pointer-events-none",
           side === "left"
             ? "left-0 group-data-[state=collapsed]:group-data-[collapsible=offcanvas]:-translate-x-full"
@@ -405,7 +405,7 @@ function SidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        "text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-150 ease-in-out focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className,
       )}
@@ -569,7 +569,7 @@ function SidebarMenuAction({
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
+        "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
         className,
       )}
       {...props}

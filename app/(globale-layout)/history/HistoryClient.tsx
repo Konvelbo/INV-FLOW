@@ -57,8 +57,13 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
         try {
           // @ts-ignore
           if (window.electronAPI) {
+            const userStr = localStorage.getItem("user");
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+            const userId = user.id;
+            const companyId = user.activeCompanyId || undefined;
             // @ts-ignore
-            const res = await window.electronAPI.getData("clients");
+            const res = await window.electronAPI.getData("clients", userId, companyId);
             if (res.success) {
               setClients(res.data);
             }

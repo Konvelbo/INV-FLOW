@@ -71,8 +71,13 @@ export default function SmartAutofill() {
         // Use Electron IPC bridge instead of fetch API to avoid 404 offline
         // @ts-ignore
         if (window.electronAPI) {
+          const userStr = localStorage.getItem("user");
+          if (!userStr) return;
+          const user = JSON.parse(userStr);
+          const userId = user.id;
+          const companyId = user.activeCompanyId || undefined;
           // @ts-ignore
-          const res = await window.electronAPI.getData(endpoint);
+          const res = await window.electronAPI.getData(endpoint, userId, companyId);
           if (res.success) {
             if (activeTab === "clients") setClients(res.data);
             else setProducts(res.data);

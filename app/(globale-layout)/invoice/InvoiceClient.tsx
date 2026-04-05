@@ -111,8 +111,13 @@ export default function InvoiceClient({
         try {
           // @ts-ignore
           if (window.electronAPI) {
+            const userStr = localStorage.getItem("user");
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+            const userId = user.id;
+            const companyId = user.activeCompanyId || undefined;
             // @ts-ignore
-            const res = await window.electronAPI.getData("clients");
+            const res = await window.electronAPI.getData("clients", userId, companyId);
             if (res.success) {
               setClients(res.data);
             }
@@ -263,7 +268,7 @@ export default function InvoiceClient({
     }
 
     setIsSendingEmail(true);
-    
+
     try {
       const data = {
         reference,
@@ -289,7 +294,6 @@ export default function InvoiceClient({
         style,
         type: invoiceType,
         companyName,
-        companyAddress,
         currencyCode: currency,
         language,
       };

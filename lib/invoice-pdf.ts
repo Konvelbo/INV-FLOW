@@ -40,10 +40,10 @@ export function invoiceTemplate(data: InvoiceProps) {
   const processedData = {
     ...data,
     object: nl2br(data.object) || "",
-    description: nl2br(data.description),
-    amountWords: nl2br(data.amountWords),
-    clientAddress: nl2br(data.clientAddress),
-    companyName: nl2br(data.companyName),
+    description: nl2br(data.description) || "",
+    amountWords: nl2br(data.amountWords) || "",
+    clientAddress: nl2br(data.clientAddress) || "",
+    companyName: nl2br(data.companyName) || "",
     items: data.items.map(item => ({
       ...item,
       designation: nl2br(item.designation) || ""
@@ -240,9 +240,10 @@ function renderDefault(data: InvoiceProps, dict: PdfDictionary, lang: string) {
 <head>
 <meta charset="UTF-8" />
 <style>
-  body { margin: 0; padding: 0; background: #fff; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; color: #000; }
   @page { size: A4; margin: 0; }
-  .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; overflow: hidden; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: #fff; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; color: #000; }
+  .page { width: 794px; height: 1122px; margin: 0; background: #fff; padding: 40px 30px; box-sizing: border-box; position: relative; overflow: hidden; }
   .page-break { page-break-before: always; }
   .pageNumber { position: absolute; bottom: 24px; right: 48px; font-size: 12px; font-weight: 500; color: #4b5563; }
   .proforma-line { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px; }
@@ -411,11 +412,12 @@ function renderStyle1(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   <head>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap');
-    @page { size: A4; margin: 0; }
-    body { margin: 0; background: #fff; font-family: 'Inter', sans-serif; color: #334155; }
-    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; overflow: hidden; }
+  @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; background: #fff; font-family: 'Inter', sans-serif; color: #334155; }
+    .page { width: 794px; height: 1122px; margin: 0; background: #fff; position: relative; overflow: hidden; }
     .page-break { page-break-before: always; }
-    .header { background: #0f172a; color: white; padding: 48px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .header { background: #0f172a; color: white; padding: 48px; display: flex; justify-content: space-between; align-items: flex-start; margin: 0; }
     .logo-section h1 { margin: 0; font-weight: 300; font-size: 36px; letter-spacing: 0.05em; margin-bottom: 8px;}
     .ref-row { color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
     .ref-row .value { color: white; border-bottom: 1px solid #334155; padding-bottom: 2px; }
@@ -591,8 +593,9 @@ function renderStyle2(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap');
     @page { size: A4; margin: 0; }
-    body { font-family: 'Merriweather', serif; background: #fff; color: #374151; }
-    .page { width: 794px; height: 1122px; margin: 0 auto; background: white; padding: 0; position: relative; overflow: hidden; }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; font-family: 'Merriweather', serif; background: #fff; color: #374151; }
+    .page { width: 794px; height: 1122px; margin: 0; background: white; padding: 0; position: relative; overflow: hidden; }
     .page-break { page-break-before: always; }
 
     .header-band { position:absolute; top:0; left:0; bottom:0; width: 33%; background: #1e3a8a; color: white; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; z-index: 10; height: 200px; }
@@ -782,8 +785,9 @@ function renderStyle3(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   return `<!DOCTYPE html><html><head><style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Caveat:wght@700&display=swap');
         @page { size: A4; margin: 0; }
-        body { margin: 0; background: #fff; font-family: 'Outfit', sans-serif; color: #1f2937; }
-        .page { width: 794px; height: 1122px; margin: 0 auto; background: white; padding: 0; position: relative; box-sizing: border-box; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        html, body { margin: 0; padding: 0; background: #fff; font-family: 'Outfit', sans-serif; color: #1f2937; }
+        .page { width: 794px; height: 1122px; margin: 0; background: white; padding: 0; position: relative; box-sizing: border-box; overflow: hidden; }
         .page-break { page-break-before: always; }
 
         .content-wrapper { position: relative; z-index: 10; padding: 48px; }
@@ -976,8 +980,9 @@ function renderStyle4(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
     @page { size: A4; margin: 0; }
-    body { font-family: 'Inter', sans-serif; background: #fff; color: #334155; margin: 0; }
-    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; overflow: hidden; }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: #fff; color: #334155; }
+    .page { width: 794px; height: 1122px; margin: 0; background: #fff; position: relative; overflow: hidden; }
     .page-break { page-break-before: always; }
 
     .top-accent { height: 8px; background: #1e293b; width: 100%; }
@@ -1170,8 +1175,9 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
   return `<!DOCTYPE html><html><head><style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap');
     @page { size: A4; margin: 0; }
-    body { font-family: 'Inter', sans-serif; background: #fff; color: #18181b; margin: 0; }
-    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: #fff; color: #18181b; }
+    .page { width: 794px; height: 1122px; margin: 0; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
 
     .content { padding: 48px; }
@@ -1346,7 +1352,7 @@ function renderStyle6(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
     @page { size: A4; margin: 0; }
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
-    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
+    .page { width: 794px; height: 1122px; margin: 0; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
     
     
@@ -1498,7 +1504,7 @@ function renderStyle7(data: InvoiceProps, dict: PdfDictionary, lang: string) {
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
     @page { size: A4; margin: 0; }
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; }
-    .page { width: 794px; height: 1122px; margin: 0 auto; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
+    .page { width: 794px; height: 1122px; margin: 0; background: #fff; position: relative; box-sizing: border-box; overflow: hidden; }
     .page-break { page-break-before: always; }
     
     

@@ -10,6 +10,7 @@ prisma
 
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
+const React = require("react");
 const { generateExcel } = require("./excel-service");
 const {
   getPricingForCurrency,
@@ -879,6 +880,35 @@ const handlers = {
           isTotalRow: true // Custom flag for styling if needed, though generateExcel doesn't use it yet
         });
         break;
+      case "company_detail":
+        // Per-company financial detail export
+        if (!companyId) throw new Error("companyId required for company_detail export");
+        title = "Détail Entreprise";
+        columns = [
+          { header: "Indicateur", key: "label", width: 35 },
+          { header: "Valeur", key: "value", width: 25 },
+        ];
+        const [cInvoices, cExpenses, cClients] = await Promise.all([
+          prisma.invoice.findMany({ where: { userId, companyId }, select: { totalHT: true, totalTTC: true, paidAmount: true, status: true, type: true } }),
+          prisma.expense.findMany({ where: { userId, companyId }, select: { amount: true } }),
+          prisma.client.count({ where: { userId, companyId } }),
+        ]);
+        const cRevenue = cInvoices.filter(i => i.type === "invoice").reduce((s, i) => s + (i.totalTTC || i.totalHT || 0), 0);
+        const cPaid = cInvoices.reduce((s, i) => s + (i.paidAmount || 0), 0);
+        const cUnpaid = cRevenue - cPaid;
+        const cExpTotal = cExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+        const cNet = cRevenue - cExpTotal;
+        rows = [
+          { label: "Chiffre d'Affaires Total", value: cRevenue },
+          { label: "Montant Encaissé", value: cPaid },
+          { label: "Reste à Encaisser", value: cUnpaid },
+          { label: "Total Dépenses", value: cExpTotal },
+          { label: "Résultat Net", value: cNet, isTotalRow: true },
+          { label: "Nombre de Clients", value: cClients },
+          { label: "Nombre de Factures", value: cInvoices.filter(i => i.type === "invoice").length },
+          { label: "Nombre de Devis", value: cInvoices.filter(i => i.type === "quote").length },
+        ];
+        break;
       default:
         throw new Error("Invalid export type");
     }
@@ -1229,9 +1259,9 @@ const actionHandlers = {
         };
 
         // On utilise la dépendance resend pour envoyer l'email
-        const { render } = await import("@react-email/components");
+        const { render } = await import("@react-email/render");
         const emailHtml = await render(
-          InvoiceEmail({
+          React.createElement(InvoiceEmail, {
             clientName: invoice.clientName,
             invoiceReference: invoice.reference,
             downloadLink: "", // We attach the PDF directly now

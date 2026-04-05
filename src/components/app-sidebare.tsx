@@ -35,6 +35,65 @@ import { toast } from "react-hot-toast";
 import { useSubscription } from "@/src/context/SubscriptionContext";
 import { usePricingRedirect } from "@/hooks/usePricingRedirect";
 
+const menuItems = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: LayoutDashboard,
+    id: "Dashboard",
+    color: "text-blue-500",
+  },
+  {
+    title: "Invoice",
+    url: "/invoice",
+    icon: FileText,
+    id: "Invoice",
+    color: "text-emerald-500",
+  },
+  {
+    title: "History",
+    url: "/history",
+    icon: History,
+    id: "History",
+    color: "text-amber-500",
+  },
+  {
+    title: "Clients",
+    url: "/clients",
+    icon: Users,
+    id: "Clients",
+    color: "text-orange-500",
+  },
+  {
+    title: "Products",
+    url: "/products",
+    icon: Package,
+    id: "Products",
+    color: "text-indigo-500",
+  },
+  {
+    title: "Expenses",
+    url: "/expenses",
+    icon: Wallet,
+    id: "Expenses",
+    color: "text-red-500",
+  },
+  {
+    title: "Planning",
+    url: "/planning",
+    icon: ClipboardList,
+    id: "Planning",
+    color: "text-rose-500",
+  },
+  {
+    title: "Assistant IA",
+    url: "/ai-advisor",
+    icon: Brain,
+    id: "Assistant IA",
+    color: "text-violet-500",
+  },
+];
+
 export const AppSidebar = React.memo(function AppSidebar() {
   const { clearInvoiceData } = useInvoiceActions();
   const { dict, t } = useLanguage();
@@ -51,67 +110,13 @@ export const AppSidebar = React.memo(function AppSidebar() {
         .getVersion()
         .then((v: string) => setAppVersion(`v${v}`));
     }
-    // console.log(subscription);
   }, []);
 
-  const menuItems = [
-    {
-      title: dict.dashboard,
-      url: "/dashboard",
-      icon: LayoutDashboard,
-      id: "Dashboard",
-      color: "text-blue-500",
-    },
-    {
-      title: dict.invoice,
-      url: "/invoice",
-      icon: FileText,
-      id: "Invoice",
-      color: "text-emerald-500",
-    },
-    {
-      title: dict.history,
-      url: "/history",
-      icon: History,
-      id: "History",
-      color: "text-amber-500",
-    },
-    {
-      title: dict.clients,
-      url: "/clients",
-      icon: Users,
-      id: "Clients",
-      color: "text-orange-500",
-    },
-    {
-      title: dict.productsServices,
-      url: "/products",
-      icon: Package,
-      id: "Products",
-      color: "text-indigo-500",
-    },
-    {
-      title: dict.expenses,
-      url: "/expenses",
-      icon: Wallet,
-      id: "Expenses",
-      color: "text-red-500",
-    },
-    {
-      title: dict.workPlanning,
-      url: "/planning",
-      icon: ClipboardList,
-      id: "Planning",
-      color: "text-rose-500",
-    },
-    {
-      title: dict.aiAssistant,
-      url: "/ai-advisor",
-      icon: Brain,
-      id: "Assistant IA",
-      color: "text-violet-500",
-    },
-  ];
+  // Update menu item titles with current dictionary
+  const localizedMenuItems = menuItems.map(item => ({
+    ...item,
+    title: (dict as any)[item.id.toLowerCase().replace(" ", "")] || item.title
+  }));
 
   return (
     <Sidebar
@@ -127,7 +132,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
-              {menuItems.map((item) => {
+              {localizedMenuItems.map((item) => {
                 const isActive = pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.id}>
@@ -240,8 +245,8 @@ export const AppSidebar = React.memo(function AppSidebar() {
                           1
                           ? "bg-destructive"
                           : subscription.dailyInvoiceCount /
-                                (subscription.dailyInvoiceLimit || 6) >=
-                              0.7
+                            (subscription.dailyInvoiceLimit || 6) >=
+                            0.7
                             ? "bg-yellow-500"
                             : "bg-primary",
                       )}
