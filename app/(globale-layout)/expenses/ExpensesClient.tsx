@@ -24,6 +24,7 @@ import {
   TrendingDown,
   PieChart,
   History,
+  Package,
 } from "lucide-react";
 import {
   Dialog,
@@ -164,33 +165,35 @@ export default function ExpensesClient({
     });
   };
 
-  const handleExport = async () => {
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = async (format = "excel") => {
     setIsExporting(true);
+    const toastId = toast.loading(t("processing"), { id: "expense-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
+      const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
       // @ts-ignore
-      const res = await window.electronAPI.getData(
-        "export",
-        userId,
-        "expenses",
-      );
-      if (res.success) {
-        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+      const res = await window.electronAPI.getData("export", userId, "expenses", activeCompanyId, format);
+      if (res.success && res.data) {
+        const mime = format === "excel"
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "application/zip";
+        const ext = format === "excel" ? "xlsx" : "zip";
+
+        const blob = new Blob([res.data], { type: mime });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", "expenses_export.csv");
+        link.href = url;
+        link.download = `Expenses_Export_${new Date().toISOString().split('T')[0]}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(t("exportSuccess"));
-      } else {
-        throw new Error(res.error);
+        toast.success(t("exportSuccess") || "Export réussi !", { id: "expense-export" });
       }
     } catch (error) {
       console.error("Export error", error);
-      toast.error(t("authError"));
+      toast.error(t("authError"), { id: "expense-export" });
     } finally {
       setIsExporting(false);
     }
@@ -225,7 +228,7 @@ export default function ExpensesClient({
             : "max-w-7xl mx-auto space-y-10 relative z-10 w-full"
         }
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 animate-fade-in-up">
           {!isComponent && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -234,24 +237,25 @@ export default function ExpensesClient({
                   {t("financesHub")}
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tighter bg-linear-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter bg-linear-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans">
                 {t("financesTitle")}
               </h1>
-              <p className="text-muted-foreground text-lg max-w-xl font-medium leading-relaxed opacity-80">
+              <p className="text-muted-foreground text-base md:text-lg max-w-xl font-medium leading-relaxed opacity-80">
                 {t("financesDesc")}
               </p>
             </div>
           )}
           {isComponent && <div />}
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="outline"
-              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-card transition-all"
-              onClick={handleExport}
+              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-rose-500/10 hover:text-rose-500 transition-all rounded-xl"
+              onClick={() => handleExport("excel")}
+              disabled={isExporting}
             >
               <Download className="w-4 h-4" />
-              {t("exportCsv")}
+              {t("exportExcel")}
             </Button>
             <Dialog
               open={isDialogOpen}

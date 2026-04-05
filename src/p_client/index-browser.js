@@ -132,6 +132,8 @@ exports.Prisma.UserScalarFieldEnum = {
   subscriptionExpiresAt: 'subscriptionExpiresAt',
   dailyInvoiceCount: 'dailyInvoiceCount',
   dailyInvoiceResetAt: 'dailyInvoiceResetAt',
+  dailyAiCount: 'dailyAiCount',
+  dailyAiResetAt: 'dailyAiResetAt',
   ligdicashCustomerId: 'ligdicashCustomerId'
 };
 
@@ -280,6 +282,11 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   paidAmount: 'paidAmount',
   paymentMethod: 'paymentMethod',
   paidAt: 'paidAt',
+  reminderTone: 'reminderTone',
+  autoReminders: 'autoReminders',
+  lastReminderSentAt: 'lastReminderSentAt',
+  remindersSentCount: 'remindersSentCount',
+  nextReminderDate: 'nextReminderDate',
   isScaled: 'isScaled',
   isRead: 'isRead',
   readAt: 'readAt',

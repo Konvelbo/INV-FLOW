@@ -16,6 +16,7 @@ import {
   Settings2,
   Mail,
   Send,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/src/context/NotificationContext";
@@ -66,6 +67,8 @@ export default function InvoiceClient({
     invoiceType,
     setInvoiceType,
     companyName,
+    clientPaidCount,
+    clientUnpaidCount,
   } = useInvoice();
 
   // Advanced Settings State
@@ -82,6 +85,13 @@ export default function InvoiceClient({
   );
   const [frequency, setFrequency] = useState(
     initialData?.recurrenceFreq || "monthly",
+  );
+  const [showSuggestion, setShowSuggestion] = useState(true);
+  const [autoReminders, setAutoReminders] = useState(
+    initialData?.autoReminders || false,
+  );
+  const [reminderTone, setReminderTone] = useState(
+    initialData?.reminderTone || "professional",
   );
 
   // Email State
@@ -230,6 +240,8 @@ export default function InvoiceClient({
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       isRecurring,
       recurrenceFreq: isRecurring ? frequency : null,
+      autoReminders,
+      reminderTone,
       clientId: clientId || null,
     };
 
@@ -372,6 +384,47 @@ export default function InvoiceClient({
 
       <SmartAutofill />
 
+      {/* Smart Automation Suggestion */}
+      {(clientPaidCount + clientUnpaidCount) >= 2 && !isRecurring && showSuggestion && (
+        <div className="w-full max-w-[1300px] px-8 mb-6 animate-bounce-in">
+          <div className="bg-linear-to-r from-indigo-600/20 to-primary/20 backdrop-blur-xl border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-2xl">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/20 rounded-xl">
+                <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-foreground">
+                  {t("suggestAutomation")}
+                </h4>
+                <p className="text-xs text-muted-foreground font-medium">
+                  {t("suggestAutomationDesc")}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  setIsRecurring(true);
+                  setShowSuggestion(false);
+                  toast.success(t("automationTip"));
+                }}
+                className="bg-primary text-white font-bold text-xs h-9 px-4 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+              >
+                {t("getStarted")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSuggestion(false)}
+                className="size-8 text-muted-foreground hover:bg-white/10 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-[1300px] px-8 mb-6 flex justify-end animate-fade-in-up">
         <Popover>
           <PopoverTrigger asChild>
@@ -460,6 +513,37 @@ export default function InvoiceClient({
                   </select>
                 </div>
               )}
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/50">
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoReminders}
+                    onChange={(e) => setAutoReminders(e.target.checked)}
+                    className="rounded text-primary focus:ring-primary w-4 h-4"
+                  />
+                  <span className="text-sm font-bold">
+                    {t("autoReminders")}
+                  </span>
+                </label>
+                {autoReminders && (
+                  <div className="pl-6 space-y-2 animate-in slide-in-from-left-2 duration-300">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                      {t("automationTone")}
+                    </Label>
+                    <select
+                      value={reminderTone}
+                      onChange={(e) => setReminderTone(e.target.value)}
+                      className="w-full h-9 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm"
+                    >
+                      <option value="professional">{t("professional")}</option>
+                      <option value="friendly">{t("friendly")}</option>
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
           </PopoverContent>
         </Popover>

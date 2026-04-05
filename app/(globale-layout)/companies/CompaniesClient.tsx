@@ -18,8 +18,11 @@ import {
   Receipt,
   Users2,
   Download,
+  Package,
+  Search,
+  X,
 } from "lucide-react";
-import { PhoneInput } from "@/src/components/ui/phone-input";
+import PhoneInput from "@/src/components/comp-46";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -36,6 +39,23 @@ import { useIPCAction } from "@/hooks/useIPCAction";
 import { usePricingRedirect } from "@/hooks/usePricingRedirect";
 import { formatPrice } from "@/lib/currency";
 import { useInvoice } from "@/src/context/InvoiceContext";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
+import { Badge } from "@/src/components/ui/badge";
+import { Checkbox } from "@/src/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
+import { Separator } from "@/src/components/ui/separator";
 
 interface Company {
   id: string;
@@ -59,6 +79,19 @@ interface Company {
   employeeCount: number | null;
   departments: string | null;
 }
+
+const ALL_DEPARTMENTS = [
+  "dept_dg", "dept_admin", "dept_secretariat", "dept_finance", "dept_accounting",
+  "dept_control", "dept_audit", "dept_treasury", "dept_tax", "dept_sales",
+  "dept_bizdev", "dept_mkt", "dept_comm", "dept_rp", "dept_cs", "dept_cx",
+  "dept_rh", "dept_recruitment", "dept_training", "dept_payroll", "dept_talents",
+  "dept_legal", "dept_compliance", "dept_risks", "dept_it", "dept_dev",
+  "dept_cyber", "dept_data", "dept_prod", "dept_ops", "dept_pm", "dept_qhse",
+  "dept_maint", "dept_logistics", "dept_supply", "dept_purchasing", "dept_stocks",
+  "dept_transport", "dept_rd", "dept_innovation", "dept_design_prod", "dept_engineering",
+  "dept_partners", "dept_strategy", "dept_digital_trans", "dept_bi", "dept_ir",
+  "dept_adv", "dept_backoffice", "dept_frontoffice"
+];
 
 interface CompaniesClientProps {
   initialCompanies: any; // Now contains { companies, stats }
@@ -109,21 +142,44 @@ export default function CompaniesClient({
     sector: "",
     description: "",
     productsServices: "",
-    targetMarket: "",
     annualRevenue: "",
     monthlyRevenue: "",
     employeeCount: "",
     departments: "",
   });
 
+  const [deptSearch, setDeptSearch] = useState("");
+
   const fetchCompanies = useCallback(async () => {
+    const userStr = localStorage.getItem("user");
+    const userId = userStr ? JSON.parse(userStr).id : null;
+    if (!userId) return;
+
     // @ts-ignore
-    const res = await window.electronAPI.getData("companies");
+    const res = await window.electronAPI.getData("companies", userId);
     if (res.success) {
       setCompanies(res.data.companies);
       setStats(res.data.stats);
     }
   }, []);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr && companies) {
+      const user = JSON.parse(userStr);
+      // Update companies list in localStorage if it changed
+      if (JSON.stringify(user.companies) !== JSON.stringify(companies)) {
+        user.companies = companies;
+        localStorage.setItem("user", JSON.stringify(user));
+        // Inform other components about the update
+        window.dispatchEvent(new Event("session-update"));
+      }
+    }
+  }, [companies]);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const resetForm = () => {
     setEditingCompany(null);
@@ -142,7 +198,6 @@ export default function CompaniesClient({
       sector: "",
       description: "",
       productsServices: "",
-      targetMarket: "",
       annualRevenue: "",
       monthlyRevenue: "",
       employeeCount: "",
@@ -167,7 +222,6 @@ export default function CompaniesClient({
       sector: c.sector || "",
       description: c.description || "",
       productsServices: c.productsServices || "",
-      targetMarket: c.targetMarket || "",
       annualRevenue: c.annualRevenue?.toString() || "",
       monthlyRevenue: c.monthlyRevenue?.toString() || "",
       employeeCount: c.employeeCount?.toString() || "",
@@ -227,35 +281,29 @@ export default function CompaniesClient({
     }
   };
 
-  const handleExportStats = async () => {
+  const handleGlobalExport = async () => {
     setIsExporting(true);
+    const toastId = toast.loading(t("processing") || "Génération de l'archive...", { id: "global-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
+
       // @ts-ignore
-      const res = await window.electronAPI.getData(
-        "export",
-        userId,
-        "companies_report",
-      );
+      const res = await window.electronAPI.actionData("companies", "exportGlobal", userId);
       if (res.success && res.data) {
-        const blob = new Blob([res.data], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
+        const blob = new Blob([res.data], { type: "application/zip" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `rapport_entreprises_${new Date().toISOString().split("T")[0]}.xlsx`;
+        link.download = `Export_Comptable_Global_${new Date().toISOString().split('T')[0]}.zip`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Rapport global exporté");
-      } else {
-        toast.error("Aucune donnée à exporter");
+        toast.success(t("exportZipSuccess") || "Archive globale générée !", { id: "global-export" });
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Erreur lors de l'export");
+      console.error("Global Export error", error);
+      toast.error(t("exportError") || "Erreur lors de l'export global", { id: "global-export" });
     } finally {
       setIsExporting(false);
     }
@@ -338,11 +386,11 @@ export default function CompaniesClient({
             <Button
               variant="outline"
               disabled={isExporting}
-              onClick={handleExportStats}
-              className="h-14 px-6 gap-2 font-bold border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all rounded-2xl"
+              onClick={handleGlobalExport}
+              className="h-14 px-6 gap-2 font-black border-primary/20 bg-primary/5 backdrop-blur-xl hover:bg-primary/10 text-primary transition-all rounded-2xl shadow-lg shadow-primary/5 uppercase tracking-widest text-[10px]"
             >
-              <Download className="w-4 h-4" />
-              {isExporting ? "Export..." : t("exportStats") || "Export Stats"}
+              <Package className="w-4 h-4" />
+              {t("globalExportZip") || "Export ZIP Global"}
             </Button>
             <Dialog
               open={isDialogOpen}
@@ -458,7 +506,6 @@ export default function CompaniesClient({
                     <div className="space-y-3">
                       <Label
                         htmlFor="legalForm"
-
                       >
                         {t("legal_form_label")}
                       </Label>
@@ -471,7 +518,6 @@ export default function CompaniesClient({
                             legalForm: e.target.value,
                           })
                         }
-                        required
                         className="bg-background/50 border-border/50"
                       />
                     </div>
@@ -558,51 +604,84 @@ export default function CompaniesClient({
                       />
                     </div>
 
-                    <div className="md:col-span-2 pt-4">
-                      <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-border/50 pb-2">
+                    <div className="md:col-span-2 pt-2">
+                      <h3 className="text-sm text-primary uppercase tracking-widest border-b border-border/50 pb-2">
                         {t("activity_info")}
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <Label
-                            htmlFor="sector"
-
-                          >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
+                        <div className="space-y-4">
+                          <Label htmlFor="sector" className="font-bold">
                             {t("sector_label")}
                           </Label>
-                          <Input
-                            id="sector"
+                          <Select
                             value={formData.sector}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                sector: e.target.value,
-                              })
-                            }
-                            required
-                            className="bg-background/50 border-border/50"
-                          />
+                            onValueChange={(val) => setFormData({ ...formData, sector: val })}
+                          >
+                            <SelectTrigger className="bg-background/50 border-border/50 h-10">
+                              <SelectValue placeholder={t("unspecifiedSector")} />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectGroup>
+                                <SelectLabel className="text-primary font-black flex items-center gap-2 bg-primary/5 py-2">
+                                  {t("sector_phys")}
+                                </SelectLabel>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_tech_services")}</SelectLabel>
+                                <SelectItem value="sect_electrician" className="pl-8">{t("sect_electrician")}</SelectItem>
+                                <SelectItem value="sect_plumber" className="pl-8">{t("sect_plumber")}</SelectItem>
+                                <SelectItem value="sect_network" className="pl-8">{t("sect_network")}</SelectItem>
+                                <SelectItem value="sect_phone_repair" className="pl-8">{t("sect_phone_repair")}</SelectItem>
+                                <SelectItem value="sect_mechanic" className="pl-8">{t("sect_mechanic")}</SelectItem>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_btp")}</SelectLabel>
+                                <SelectItem value="sect_mason" className="pl-8">{t("sect_mason")}</SelectItem>
+                                <SelectItem value="sect_architect" className="pl-8">{t("sect_architect")}</SelectItem>
+                                <SelectItem value="sect_construction" className="pl-8">{t("sect_construction")}</SelectItem>
+                                <SelectItem value="sect_carpenter" className="pl-8">{t("sect_carpenter")}</SelectItem>
+                                <SelectItem value="sect_painter" className="pl-8">{t("sect_painter")}</SelectItem>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_artisanat")}</SelectLabel>
+                                <SelectItem value="sect_tailor" className="pl-8">{t("sect_tailor")}</SelectItem>
+                                <SelectItem value="sect_hairdresser" className="pl-8">{t("sect_hairdresser")}</SelectItem>
+                                <SelectItem value="sect_photographer" className="pl-8">{t("sect_photographer")}</SelectItem>
+                                <SelectItem value="sect_printer" className="pl-8">{t("sect_printer")}</SelectItem>
+                                <SelectItem value="sect_welder" className="pl-8">{t("sect_welder")}</SelectItem>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_transport")}</SelectLabel>
+                                <SelectItem value="sect_car_rental" className="pl-8">{t("sect_car_rental")}</SelectItem>
+                                <SelectItem value="sect_freight" className="pl-8">{t("sect_freight")}</SelectItem>
+                                <SelectItem value="sect_moving" className="pl-8">{t("sect_moving")}</SelectItem>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_commerce")}</SelectLabel>
+                                <SelectItem value="sect_restaurant" className="pl-8">{t("sect_restaurant")}</SelectItem>
+                                <SelectItem value="sect_caterer" className="pl-8">{t("sect_caterer")}</SelectItem>
+                                <SelectItem value="sect_retail" className="pl-8">{t("sect_retail")}</SelectItem>
+                              </SelectGroup>
+
+                              <SelectGroup>
+                                <SelectLabel className="text-violet-400 font-black flex items-center gap-2 bg-violet-500/5 py-2 mt-2">
+                                  {t("sector_online")}
+                                </SelectLabel>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_design")}</SelectLabel>
+                                <SelectItem value="sect_graphic" className="pl-8">{t("sect_graphic")}</SelectItem>
+                                <SelectItem value="sect_ui_ux" className="pl-8">{t("sect_ui_ux")}</SelectItem>
+                                <SelectItem value="sect_video" className="pl-8">{t("sect_video")}</SelectItem>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_digital")}</SelectLabel>
+                                <SelectItem value="sect_dev" className="pl-8">{t("sect_dev")}</SelectItem>
+                                <SelectItem value="sect_web_creator" className="pl-8">{t("sect_web_creator")}</SelectItem>
+                                <SelectItem value="sect_community" className="pl-8">{t("sect_community")}</SelectItem>
+                                <SelectItem value="sect_it_consultant" className="pl-8">{t("sect_it_consultant")}</SelectItem>
+
+                                <SelectLabel className="pl-4 opacity-70 italic text-[10px] uppercase tracking-widest">{t("cat_business")}</SelectLabel>
+                                <SelectItem value="sect_coach" className="pl-8">{t("sect_coach")}</SelectItem>
+                                <SelectItem value="sect_marketing" className="pl-8">{t("sect_marketing")}</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-3">
-                          <Label
-                            htmlFor="targetMarket"
-
-                          >
-                            {t("target_market")}
-                          </Label>
-                          <Input
-                            id="targetMarket"
-                            value={formData.targetMarket}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                targetMarket: e.target.value,
-                              })
-                            }
-                            className="bg-background/50 border-border/50"
-                          />
-                        </div>
-                        <div className="space-y-3 md:col-span-2">
                           <Label
                             htmlFor="description"
 
@@ -645,11 +724,11 @@ export default function CompaniesClient({
                       </div>
                     </div>
 
-                    <div className="md:col-span-2 pt-4">
+                    <div className="md:col-span-2 pt-2">
                       <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-border/50 pb-2">
                         {t("financial_info") || t("financialInfo")}
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3">
                         <div className="space-y-3">
                           <Label
                             htmlFor="annualRevenue"
@@ -694,11 +773,11 @@ export default function CompaniesClient({
                       </div>
                     </div>
 
-                    <div className="md:col-span-2 pt-4">
+                    <div className="md:col-span-2 pt-2">
                       <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-border/50 pb-2">
                         {t("organization")}
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 ">
                         <div className="space-y-3">
                           <Label
                             htmlFor="employeeCount"
@@ -721,24 +800,86 @@ export default function CompaniesClient({
                           />
                         </div>
                         <div className="space-y-3">
-                          <Label
-                            htmlFor="departments"
-
-                          >
+                          <Label>
                             {t("departments_label")}
                           </Label>
-                          <Input
-                            id="departments"
-                            value={formData.departments}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                departments: e.target.value,
-                              })
-                            }
-                            placeholder={t("departments_placeholder")}
-                            className="bg-background/50 border-border/50"
-                          />
+
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {(formData.departments?.split(",") || [])
+                              .filter(Boolean)
+                              .map((deptKey) => (
+                                <Badge
+                                  key={deptKey}
+                                  variant="secondary"
+                                  className="pl-3 pr-2 py-1 gap-1 bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                                >
+                                  {t(deptKey as any)}
+                                  <X
+                                    className="w-3 h-3 cursor-pointer hover:text-rose-600"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const depts = formData.departments?.split(",").filter(d => d !== deptKey) || [];
+                                      setFormData({ ...formData, departments: depts.join(",") });
+                                    }}
+                                  />
+                                </Badge>
+                              ))}
+                          </div>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full justify-start text-left font-normal border-border/50 bg-background/50 h-10"
+                              >
+                                <Plus className="mr-2 h-4 w-4 opacity-50" />
+                                {t("select_depts")}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                              <div className="p-3 space-y-3">
+                                <div className="relative">
+                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                  <Input
+                                    placeholder={t("search_dept")}
+                                    className="pl-9 h-9"
+                                    value={deptSearch}
+                                    onChange={(e) => setDeptSearch(e.target.value)}
+                                  />
+                                </div>
+                                <Separator />
+                                <div
+                                  className="max-h-[300px] overflow-y-auto space-y-1 pr-1 custom-scrollbar"
+                                  onWheel={(e) => e.stopPropagation()}
+                                >
+                                  {ALL_DEPARTMENTS.filter(d =>
+                                    t(d as any).toLowerCase().includes(deptSearch.toLowerCase())
+                                  ).map((deptKey) => {
+                                    const isSelected = formData.departments?.split(",").includes(deptKey);
+                                    return (
+                                      <div
+                                        key={deptKey}
+                                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-accent transition-colors cursor-pointer"
+                                        onClick={() => {
+                                          const current = formData.departments?.split(",").filter(Boolean) || [];
+                                          let next;
+                                          if (isSelected) {
+                                            next = current.filter(d => d !== deptKey);
+                                          } else {
+                                            next = [...current, deptKey];
+                                          }
+                                          setFormData({ ...formData, departments: next.join(",") });
+                                        }}
+                                      >
+                                        <Checkbox checked={isSelected} onCheckedChange={() => { }} />
+                                        <span className="text-sm font-medium">{t(deptKey as any)}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       </div>
                     </div>

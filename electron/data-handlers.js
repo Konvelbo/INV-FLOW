@@ -5,13 +5,15 @@ const crypto = require("crypto");
 // Start connection immediately in background to reduce first-query latency
 prisma
   .$connect()
-  .then(() => console.log("Prisma: Database connection established"))
   .catch((err) => console.error("Prisma: Warmup connection failed", err));
 
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
 const React = require("react");
 const { generateExcel } = require("./excel-service");
+const { generateZip } = require("./zip-service");
+const { generatePdfFromHtml } = require("./pdf-utils");
+const { renderInvoiceHtml } = require("./invoice-template-main");
 const {
   getPricingForCurrency,
   fetchRatesFromUSD: getRatesFromUSD,
@@ -109,7 +111,7 @@ async function checkInvoiceQuota(userId) {
   if (info.dailyInvoiceCount >= DAILY_INVOICE_LIMIT) {
     return {
       allowed: false,
-      reason: `Limite journalière atteinte (${DAILY_INVOICE_LIMIT} factures/jour sur le plan gratuit). Passez à Premium pour un accès illimité.`,
+      reason: "ERR_QUOTA_EXCEEDED",
     };
   }
   return {
@@ -134,8 +136,7 @@ async function checkCompanyQuota(userId) {
   if (count >= 1)
     return {
       allowed: false,
-      reason:
-        "Plan gratuit limité à 1 compagnie. Passez à Premium pour des compagnies illimitées.",
+      reason: "ERR_QUOTA_EXCEEDED",
     };
   return { allowed: true };
 }
@@ -191,21 +192,38 @@ const getOTPEmailHtml = (otp, lang = "fr") => {
 };
 
 const sanitizeError = (error) => {
-  const message = error.message || "Une erreur est survenue";
+  const message = error.message || "ERR_INTERNAL";
   console.error("Original Error:", error);
 
   if (
     message.includes("Prisma") ||
     message.includes("database") ||
-    message.includes("invocation")
+    message.includes("invocation") ||
+    message.includes("Foreign key")
   ) {
     if (message.includes("Unique constraint"))
-      return "Cet élément existe déjà.";
+      return "ERR_DUPLICATE";
     if (message.includes("Foreign key constraint"))
-      return "Action impossible : cet élément est lié à d'autres données.";
-    return "Une erreur de base de données est survenue.";
+      return "ERR_INTERNAL"; // Hide FK details
+    return "ERR_INTERNAL";
   }
-  return message;
+  
+  // If the message is already one of our keys, keep it, otherwise map to internal
+  const knownKeys = [
+    "ERR_AUTH_REQUIRED", 
+    "ERR_QUOTA_EXCEEDED", 
+    "ERR_NOT_FOUND", 
+    "ERR_INVALID_INPUT", 
+    "ERR_INTERNAL", 
+    "ERR_UPLOAD_FAILED", 
+    "ERR_DUPLICATE",
+    "ERR_AI_QUOTA",
+    "ERR_AI_API",
+    "ERR_AI_TOO_LONG",
+    "ai_error_not_premium"
+  ];
+  
+  return knownKeys.includes(message) ? message : "ERR_INTERNAL";
 };
 
 const getActiveCompanyId = async (userId) => {
@@ -518,6 +536,7 @@ const handlers = {
             totalTTC: true,
             totalHT: true,
             isScaled: true,
+            createdAt: true,
           },
         },
         _count: {
@@ -527,6 +546,10 @@ const handlers = {
       orderBy: { createdAt: "desc" },
     });
 
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
     return clients.map((client) => {
       const totalSpent = client.invoices
         .filter((inv) => inv.status === "paid" || inv.isScaled)
@@ -535,6 +558,17 @@ const handlers = {
       const paidInvoicesCount = client.invoices.filter(
         (inv) => inv.status === "paid" || inv.isScaled,
       ).length;
+
+      const monthlyPaidInvoicesCount = client.invoices.filter((inv) => {
+        const isPaid = inv.status === "paid" || inv.isScaled;
+        const invDate = new Date(inv.createdAt);
+        return (
+          isPaid &&
+          invDate.getMonth() === currentMonth &&
+          invDate.getFullYear() === currentYear
+        );
+      }).length;
+
       const unpaidInvoicesCount = client.invoices.filter((inv) =>
         ["pending", "overdue", "draft"].includes(inv.status),
       ).length;
@@ -544,6 +578,7 @@ const handlers = {
         ...rest,
         totalSpent,
         paidInvoicesCount,
+        monthlyPaidInvoicesCount,
         unpaidInvoicesCount,
         createdAt: client.createdAt ? client.createdAt.toISOString() : null,
       };
@@ -738,7 +773,7 @@ const handlers = {
       where: { id: activeId },
     });
   },
-  export: async (userId, type, companyId) => {
+  export: async (userId, type, companyId, format = "excel") => {
     if (!userId) return null;
     const whereClause = { userId };
     if (companyId) whereClause.companyId = companyId;
@@ -877,11 +912,10 @@ const handlers = {
           expenses: report.totals.expenses,
           net: report.totals.net,
           clients: report.totals.clients,
-          isTotalRow: true // Custom flag for styling if needed, though generateExcel doesn't use it yet
+          isTotalRow: true // Custom flag for styling
         });
         break;
       case "company_detail":
-        // Per-company financial detail export
         if (!companyId) throw new Error("companyId required for company_detail export");
         title = "Détail Entreprise";
         columns = [
@@ -914,7 +948,31 @@ const handlers = {
     }
 
     if (rows.length === 0 && type !== "overview") return null;
-    return await generateExcel(title, columns, rows);
+    const excelBuffer = await generateExcel(title, columns, rows);
+    if (format === "excel") return excelBuffer;
+
+    // ZIP Logic
+    const zipFiles = [{ name: `${title}.xlsx`, content: excelBuffer }];
+    if (type === "invoices") {
+      const invoicesForZip = await prisma.invoice.findMany({
+        where: whereClause,
+        include: { client: true, author: true, items: true }
+      });
+      for (const inv of invoicesForZip) {
+        try {
+          const html = renderInvoiceHtml(inv, inv.language || "fr");
+          const pdf = await generatePdfFromHtml(html);
+          zipFiles.push({
+            name: `Facture_${inv.reference.replace(/[\/\\]/g, '-')}.pdf`,
+            content: pdf,
+            folder: "Factures_PDF"
+          });
+        } catch (err) {
+          console.error(`Failed to generate PDF for invoice ${inv.reference}:`, err);
+        }
+      }
+    }
+    return await generateZip(zipFiles);
   },
 
   history: async (userId) => {
@@ -929,16 +987,38 @@ const handlers = {
   },
 
   planning: async (userId) => {
-    const todos = await prisma.todo.findMany({
-      where: { userId },
-      orderBy: { startTime: "asc" },
-    });
-    return todos.map((t) => ({
-      ...t,
-      startTime: t.startTime ? t.startTime.toISOString() : null,
-      endTime: t.endTime ? t.endTime.toISOString() : null,
-      createdAt: t.createdAt ? t.createdAt.toISOString() : null,
-    }));
+    const [todos, automations] = await Promise.all([
+      prisma.todo.findMany({
+        where: { userId },
+        orderBy: { startTime: "asc" },
+      }),
+      prisma.invoice.findMany({
+        where: {
+          userId,
+          OR: [{ isRecurring: true }, { autoReminders: true }],
+        },
+        orderBy: { updatedAt: "desc" },
+      }),
+    ]);
+    return {
+      todos: todos.map((t) => ({
+        ...t,
+        startTime: t.startTime ? t.startTime.toISOString() : null,
+        endTime: t.endTime ? t.endTime.toISOString() : null,
+        createdAt: t.createdAt ? t.createdAt.toISOString() : null,
+      })),
+      automations: automations.map((inv) => ({
+        id: inv.id,
+        reference: inv.reference,
+        clientName: inv.clientName,
+        isRecurring: inv.isRecurring,
+        recurrenceFreq: inv.recurrenceFreq,
+        nextIssueDate: inv.nextIssueDate ? inv.nextIssueDate.toISOString() : null,
+        autoReminders: inv.autoReminders,
+        nextReminderDate: inv.nextReminderDate ? inv.nextReminderDate.toISOString() : null,
+        status: inv.status,
+      })),
+    };
   },
 
   management: async (userId, companyId) => {
@@ -956,22 +1036,56 @@ const handlers = {
     };
   },
 };
+const sanitizeText = (str) => {
+  if (typeof str !== "string") return str;
+  // Strip HTML tags to prevent XSS
+  return str.replace(/<[^>]*>?/gm, "").trim();
+};
+
 const sanitizeData = (data, excludeType = false) => {
+  if (!data || typeof data !== "object") return data;
+
+  // Handle arrays
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeData(item, excludeType));
+  }
+
   const { id, createdAt, updatedAt, userId, _id, ...rest } = data;
   if (excludeType) {
     delete rest.type;
   }
+
+  // Implementation of deep sanitization
+  const cleanData = {};
+  for (const key in rest) {
+    const value = rest[key];
+    if (typeof value === "string") {
+      // Basic sanitization: strip HTML tags
+      cleanData[key] = sanitizeText(value);
+    } else if (value && typeof value === "object" && !(value instanceof Date)) {
+      cleanData[key] = sanitizeData(value, excludeType);
+    } else {
+      cleanData[key] = value;
+    }
+  }
+
   // Sanitize empty strings for IDs
-  if (rest.companyId === "") delete rest.companyId;
-  return rest;
+  if (cleanData.companyId === "") delete cleanData.companyId;
+
+  return cleanData;
 };
+
+// ---- Auth Rate Limiting (In-Memory) ----
+const loginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
 
 const actionHandlers = {
   companies: {
     create: async (userId, data) => {
       // Subscription enforcement: max 1 company on free plan
       const companyCheck = await checkCompanyQuota(userId);
-      if (!companyCheck.allowed) throw new Error(companyCheck.reason);
+      if (!companyCheck.allowed) throw new Error("ERR_QUOTA_EXCEEDED");
 
       const validData = sanitizeData(data, true);
       return await prisma.company.create({
@@ -1009,13 +1123,13 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.company.delete({
         where: { id, userId },
       });
     },
     logo: async (userId, { image, companyId }) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       try {
         const options = {
           use_filename: true,
@@ -1038,11 +1152,11 @@ const actionHandlers = {
         return { success: true, logoUrl };
       } catch (error) {
         console.error("Logo upload error:", error);
-        return { success: false, message: "Logo upload failed" };
+        return { success: false, message: "ERR_UPLOAD_FAILED" };
       }
     },
     setActive: async (userId, companyId) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.user.update({
         where: { id: userId },
         data: { activeCompanyId: companyId },
@@ -1054,6 +1168,162 @@ const actionHandlers = {
       return await prisma.company.findUnique({
         where: { id: activeId },
       });
+    },
+    exportGlobal: async (userId) => {
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
+      const companies = await prisma.company.findMany({ where: { userId } });
+      const zipFiles = [];
+      const globalReportRows = [];
+
+      for (const company of companies) {
+        // Fetch ALL company data for the deep archive
+        const [invoices, clients, products, expenses] = await Promise.all([
+          prisma.invoice.findMany({ 
+            where: { companyId: company.id }, 
+            include: { client: true, author: true, items: true } 
+          }),
+          prisma.client.findMany({ where: { companyId: company.id } }),
+          prisma.product.findMany({ where: { companyId: company.id } }),
+          prisma.expense.findMany({ where: { companyId: company.id } })
+        ]);
+
+        const totalRevenue = invoices.filter(i => i.status === "paid" || i.isScaled).reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
+        const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const netProfit = totalRevenue - totalExpenses;
+
+        // Collect stats for the global master summary
+        globalReportRows.push({
+          name: company.name,
+          revenue: totalRevenue,
+          expenses: totalExpenses,
+          net: netProfit,
+          clients: clients.length,
+          invoices: invoices.length,
+          products: products.length
+        });
+
+        const compDir = company.name.replace(/[^a-z0-9]/gi, '_');
+
+        // 1. Company Summary Excel (Company Root)
+        const compSummaryCols = [
+          { header: "Métrique", key: "metric" },
+          { header: "Valeur", key: "value" }
+        ];
+        const compSummaryRows = [
+          { metric: "Nom de l'entreprise", value: company.name },
+          { metric: "Chiffre d'affaires (Payé)", value: totalRevenue },
+          { metric: "Total Dépenses", value: totalExpenses },
+          { metric: "Résultat Net", value: netProfit },
+          { metric: "Nombre de Clients", value: clients.length },
+          { metric: "Nombre de Factures", value: invoices.length },
+          { metric: "Catalogue Produits", value: products.length }
+        ];
+        const summaryExcel = await generateExcel(`${company.name}_Summary`, compSummaryCols, compSummaryRows);
+        zipFiles.push({ name: `${compDir}_Global_Summary.xlsx`, content: summaryExcel, folder: compDir });
+
+        // 2. Products & Services
+        if (products.length > 0) {
+          const prodCols = [
+            { header: "Nom", key: "name" },
+            { header: "Description", key: "desc" },
+            { header: "Prix", key: "price" },
+            { header: "Type", key: "type" }
+          ];
+          const prodRows = products.map(p => ({
+            name: p.name,
+            desc: p.description,
+            price: p.price,
+            type: p.type
+          }));
+          const prodExcel = await generateExcel(`Produits_${company.name}`, prodCols, prodRows);
+          zipFiles.push({ name: "Produits_et_Services.xlsx", content: prodExcel, folder: `${compDir}/Produits_Services` });
+        }
+
+        // 3. Clients
+        if (clients.length > 0) {
+          const clientCols = [
+            { header: "Nom", key: "name" },
+            { header: "Email", key: "email" },
+            { header: "Téléphone", key: "phone" },
+            { header: "Adresse", key: "addr" }
+          ];
+          const clientRows = clients.map(c => ({
+            name: c.name,
+            email: c.email,
+            phone: c.phone,
+            addr: c.address
+          }));
+          const clientExcel = await generateExcel(`Clients_${company.name}`, clientCols, clientRows);
+          zipFiles.push({ name: "Liste_Clients.xlsx", content: clientExcel, folder: `${compDir}/Clients` });
+        }
+
+        // 4. Expenses
+        if (expenses.length > 0) {
+          const expCols = [
+            { header: "Titre", key: "title" },
+            { header: "Montant", key: "amt" },
+            { header: "Date", key: "date" },
+            { header: "Catégorie", key: "cat" }
+          ];
+          const expRows = expenses.map(e => ({
+            title: e.title,
+            amt: e.amount,
+            date: e.date.toLocaleDateString(),
+            cat: e.category
+          }));
+          const expExcel = await generateExcel(`Depenses_${company.name}`, expCols, expRows);
+          zipFiles.push({ name: "Liste_Depenses.xlsx", content: expExcel, folder: `${compDir}/Depenses` });
+        }
+
+        // 5. Invoices & History (Summary + PDFs)
+        if (invoices.length > 0) {
+          const invCols = [
+            { header: "Référence", key: "ref" },
+            { header: "Date", key: "date" },
+            { header: "Client", key: "client" },
+            { header: "Montant", key: "amt" },
+            { header: "Statut", key: "stat" }
+          ];
+          const invRows = invoices.map(i => ({
+            ref: i.reference,
+            date: i.createdAt.toLocaleDateString(),
+            client: i.clientName,
+            amt: i.totalTTC || i.totalHT,
+            stat: i.status
+          }));
+          const invExcel = await generateExcel(`Factures_${company.name}`, invCols, invRows);
+          zipFiles.push({ name: "Historique_Factures.xlsx", content: invExcel, folder: `${compDir}/Historique_Factures` });
+
+          for (const inv of invoices) {
+            try {
+              const html = renderInvoiceHtml(inv, inv.language || "fr");
+              const pdf = await generatePdfFromHtml(html);
+              const safeRef = inv.reference.replace(/[\/\\]/g, '-');
+              zipFiles.push({
+                name: `Facture_${safeRef}.pdf`,
+                content: pdf,
+                folder: `${compDir}/Historique_Factures`
+              });
+            } catch (e) {
+              console.error(`Global Export: PDF failure for ${inv.reference}`, e);
+            }
+          }
+        }
+      }
+
+      // Final Master Global Summary (Root of ZIP)
+      const masterCols = [
+        { header: "Entreprise", key: "name" },
+        { header: "CA Global", key: "revenue" },
+        { header: "Dépenses", key: "expenses" },
+        { header: "Résultat Net", key: "net" },
+        { header: "Clients", key: "clients" },
+        { header: "Factures", key: "invoices" }
+      ];
+      const masterExcel = await generateExcel("Rapport_Comptable_Global", masterCols, globalReportRows);
+      zipFiles.push({ name: "Global_Accounting_Master_Report.xlsx", content: masterExcel });
+
+      return await generateZip(zipFiles);
     },
   },
   clients: {
@@ -1074,7 +1344,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.client.delete({
         where: { id, userId },
       });
@@ -1098,7 +1368,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.product.delete({
         where: { id, userId },
       });
@@ -1106,7 +1376,7 @@ const actionHandlers = {
   },
   expenses: {
     create: async (userId, data) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       const activeCompanyId = await getActiveCompanyId(userId);
       return await prisma.expense.create({
         data: {
@@ -1118,7 +1388,7 @@ const actionHandlers = {
       });
     },
     update: async (userId, id, data) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.expense.update({
         where: { id, userId },
         data: {
@@ -1128,7 +1398,7 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.expense.delete({
         where: { id, userId },
       });
@@ -1136,10 +1406,10 @@ const actionHandlers = {
   },
   invoices: {
     create: async (userId, data) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       // Subscription enforcement: daily quota check
       const quotaCheck = await checkInvoiceQuota(userId);
-      if (!quotaCheck.allowed) throw new Error(quotaCheck.reason);
+      if (!quotaCheck.allowed) throw new Error("ERR_QUOTA_EXCEEDED");
 
       // Logic from app/api/invoices/route.ts
       const { items, currencyCode, ...invoiceData } = sanitizeData(data, false);
@@ -1202,9 +1472,9 @@ const actionHandlers = {
               reference: fallbackRef,
               userId,
               companyId: invoiceData.companyId || activeCompanyId,
-              dueDate: invoiceData.dueDate
-                ? new Date(invoiceData.dueDate)
-                : null,
+              dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+              nextIssueDate: invoiceData.nextIssueDate ? new Date(invoiceData.nextIssueDate) : null,
+              nextReminderDate: invoiceData.nextReminderDate ? new Date(invoiceData.nextReminderDate) : null,
               items: {
                 create: (items || []).map((item) => ({
                   designation: item.designation,
@@ -1222,12 +1492,10 @@ const actionHandlers = {
       }
     },
     send: async (userId, invoiceId, targetEmail, currencyCode = "XOF", pdfArrayBuffer) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       try {
         if (!targetEmail) {
-          throw new Error(
-            "Please provide a valid email address to send the invoice !",
-          );
+          throw new Error("ERR_INVALID_INPUT");
         }
 
         const invoice = await prisma.invoice.findFirst({
@@ -1241,7 +1509,7 @@ const actionHandlers = {
         });
 
         if (!invoice) {
-          throw new Error("Invoice not found !");
+          throw new Error("ERR_NOT_FOUND");
         }
 
         // Simple currency formatter for the email (Node.js side)
@@ -1297,7 +1565,7 @@ const actionHandlers = {
       }
     },
     update: async (userId, id, data) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       // Logic from app/api/invoices/[id]/route.ts (PUT)
       const { items, currencyCode, ...invoiceData } = sanitizeData(data, false);
 
@@ -1315,7 +1583,10 @@ const actionHandlers = {
 
       const updatePayload = {
         ...invoiceData,
-        dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+        dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : undefined,
+        nextIssueDate: invoiceData.nextIssueDate ? new Date(invoiceData.nextIssueDate) : undefined,
+        nextReminderDate: invoiceData.nextReminderDate ? new Date(invoiceData.nextReminderDate) : undefined,
+        lastReminderSentAt: invoiceData.lastReminderSentAt ? new Date(invoiceData.lastReminderSentAt) : undefined,
       };
 
       if (items) {
@@ -1338,7 +1609,7 @@ const actionHandlers = {
       });
     },
     patch: async (userId, id, data) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       // Enforce logic for patches too
       const invoice = await prisma.invoice.findUnique({
         where: { id: id || "", userId: userId || "" },
@@ -1366,15 +1637,27 @@ const actionHandlers = {
       });
     },
     delete: async (userId, id) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       return await prisma.invoice.delete({
         where: { id, userId },
       });
     },
+    markAsViewed: async (userId, id) => {
+      return await prisma.invoice.update({
+        where: { id: id },
+        data: {
+          isRead: true,
+          readAt: new Date(),
+          status: {
+            set: (await prisma.invoice.findUnique({ where: { id } }))?.status === "draft" ? "draft" : "pending"
+          }
+        }
+      });
+    }
   },
   feedback: {
     create: async (userId, data) => {
-      if (!userId) throw new Error("Authentification requise.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       const { content, rating, contactEmail } = data;
       const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -1387,13 +1670,14 @@ const actionHandlers = {
         },
       });
 
+      const escapedContent = (content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const emailContent = `
         <div style="font-family: sans-serif; padding: 20px;">
           <h2>Nouveau Retour Utilisateur</h2>
-          <p><strong>Utilisateur:</strong> ${user?.name || "Inconnu"} (${user?.email || "Non renseigné"})</p>
-          <p><strong>Email de contact:</strong> ${contactEmail || user?.email || "Non renseigné"}</p>
+          <p><strong>Utilisateur:</strong> ${sanitizeText(user?.name) || "Inconnu"} (${sanitizeText(user?.email) || "Non renseigné"})</p>
+          <p><strong>Email de contact:</strong> ${sanitizeText(contactEmail) || sanitizeText(user?.email) || "Non renseigné"}</p>
           <p><strong>Sujet:</strong> <br/>Feedback - Note: ${rating}/5</p>
-          <p><strong>Détails:</strong><br/> <div style="background:#f4f4f4;padding:10px;border-radius:5px;">${content}</div></p>
+          <p><strong>Détails:</strong><br/> <div style="background:#f4f4f4;padding:10px;border-radius:5px;">${escapedContent}</div></p>
         </div>
       `;
 
@@ -1430,26 +1714,50 @@ const actionHandlers = {
   },
   auth: {
     login: async ({ email, password }) => {
+      // 1. Check IP/Account lockout
+      const now = Date.now();
+      const record = loginAttempts.get(email);
+
+      if (record && record.attempts >= MAX_LOGIN_ATTEMPTS && now - record.lastAttempt < LOCKOUT_TIME) {
+        const remainingMinutes = Math.ceil((LOCKOUT_TIME - (now - record.lastAttempt)) / 60000);
+        throw new Error(`Trop de tentatives. Réessayez dans ${remainingMinutes} minutes.`);
+      }
+
       const user = await prisma.user.findUnique({
         where: { email },
         include: { companies: true },
       });
-      if (!user) throw new Error("Utilisateur non trouvé");
+      if (!user) {
+        // Obfuscate whether user exists or not for security
+        throw new Error("Identifiants incorrects");
+      }
 
-      // Use bcrypt to compare password
+      // 2. Compare password
       const isMatch = bcrypt.compareSync(password, user.password);
       if (!isMatch) {
-        throw new Error("Mot de passe incorrect");
+        // Increment attempts on failure
+        const current = loginAttempts.get(email) || { attempts: 0, lastAttempt: 0 };
+        loginAttempts.set(email, {
+          attempts: current.attempts + 1,
+          lastAttempt: now,
+        });
+        throw new Error("Identifiants incorrects");
       }
+
+      // 3. Success: reset attempts
+      loginAttempts.delete(email);
 
       const { password: _, ...userWithoutPassword } = user;
       return userWithoutPassword;
     },
     register: async (data) => {
-      // Hash password before saving
-      const hashedPassword = bcrypt.hashSync(data.password, 10);
+      // Hash password before saving with 12 rounds
+      const hashedPassword = bcrypt.hashSync(data.password, 12);
       const user = await prisma.user.create({
-        data: { ...data, password: hashedPassword },
+        data: {
+          ...sanitizeData(data, true),
+          password: hashedPassword,
+        },
         include: { companies: true },
       });
       const { password: _, ...userWithoutPassword } = user;
@@ -1544,7 +1852,7 @@ const actionHandlers = {
       }
 
       // Update password and clear OTP
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const hashedPassword = bcrypt.hashSync(newPassword, 12);
       await prisma.user.update({
         where: { email },
         data: {
@@ -1589,6 +1897,11 @@ const actionHandlers = {
     initCheckout: async (userId, { plan, countryCode }) => {
       if (!plan || !["monthly", "yearly"].includes(plan))
         throw new Error("Plan invalide.");
+      
+      // Strict country code validation (e.g. "BF", "CI", "US")
+      if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) {
+        throw new Error("ERR_INVALID_INPUT");
+      }
 
       const PRICES_USD = { monthly: 10.99, yearly: 109.99 };
       const amountUSD = PRICES_USD[plan];
@@ -1724,7 +2037,7 @@ const actionHandlers = {
         tx.status === "pending" &&
         (!process.env.LIGDICASH_API_KEY || !process.env.LIGDICASH_API_TOKEN)
       ) {
-        console.log(`[TEST MODE] Auto-approving transaction ${reference}`);
+
         const expiresAt = new Date();
         if (tx.plan === "monthly") expiresAt.setMonth(expiresAt.getMonth() + 1);
         else expiresAt.setFullYear(expiresAt.getFullYear() + 1);
@@ -1778,21 +2091,90 @@ const actionHandlers = {
   },
   ai: {
     advisor: async (userId, message) => {
-      if (!userId) throw new Error("Authentification requise pour l'IA.");
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
+
+      // 1. Subscription & Quota Check
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { dailyAiCount: true, dailyAiResetAt: true, subscriptionPlan: true, subscriptionStatus: true }
+      });
+
+      if (!user) throw new Error("ERR_NOT_FOUND");
+
+      // BLOCK FREE USERS IMMEDIATELY
+      if (user.subscriptionStatus !== "active" || user.subscriptionPlan === "free") {
+        throw new Error("ai_error_not_premium");
+      }
+
+      const limit = user.subscriptionPlan === "yearly" ? 50 : 30;
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const resetAt = user.dailyAiResetAt ? new Date(user.dailyAiResetAt) : null;
+      
+      let currentCount = (resetAt && resetAt >= today) ? user.dailyAiCount : 0;
+
+      if (currentCount >= limit) {
+        throw new Error("ERR_AI_QUOTA");
+      }
+
+      // 2. Input Word Limit (200 words)
+      const inputWords = message.trim().split(/\s+/);
+      if (inputWords.length > 200) {
+        throw new Error("ERR_AI_TOO_LONG");
+      }
 
       try {
-        const { OpenAI } = require("openai");
-        const openai = new OpenAI({
-          apiKey: process.env.OPENAI_API_KEY,
-        });
+        // 3. Fetch Context Data (Last 30 Days)
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        
+        const [invoices, expenses, companies] = await Promise.all([
+          prisma.invoice.findMany({
+            where: { userId, createdAt: { gte: thirtyDaysAgo } },
+            select: { reference: true, totalTTC: true, totalHT: true, status: true, createdAt: true, clientName: true }
+          }),
+          prisma.expense.findMany({
+            where: { userId, date: { gte: thirtyDaysAgo } },
+            select: { title: true, amount: true, category: true, date: true }
+          }),
+          prisma.company.findMany({
+            where: { userId },
+            select: { name: true, sector: true, description: true, productsServices: true }
+          })
+        ]);
 
-        const systemPrompt = `Tu es un assistant économique expert pour les entrepreneurs et PME d'Afrique francophone (ESSOR).
-Tu réponds toujours en français, de manière professionnelle, concise et encourageante.
-Ton but est d'aider les utilisateurs à mieux gérer leur entreprise, optimiser leurs marges et analyser leurs finances.
-Réponds de manière structurée et sans t'étaler inutilement.`;
+        const totalRev = invoices.filter(i => i.status === "paid").reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
+        const totalExp = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+        const dataSummary = `
+PROFIL DES ENTREPRISES DE L'UTILISATEUR :
+${companies.map(c => `- ${c.name} : ${c.sector || 'Secteur non défini'}${c.description ? ` (${c.description})` : ''}${c.productsServices ? `. Produits/Services: ${c.productsServices}` : ''}`).join('\n')}
+
+DONNÉES FINANCIÈRES DES 30 DERNIERS JOURS :
+- Revenus (factures payées) : ${totalRev.toLocaleString()} CFA
+- Dépenses totales : ${totalExp.toLocaleString()} CFA
+- Nombre de factures créées : ${invoices.length}
+- Nombre de dépenses enregistrées : ${expenses.length}
+- Liste récente (Factures) : ${invoices.slice(0, 5).map(i => `${i.reference} (${i.totalHT} CFA, ${i.status})`).join(", ")}
+- Liste récente (Dépenses) : ${expenses.slice(0, 5).map(e => `${e.title} (${e.amount} CFA, ${e.category})`).join(", ")}
+        `;
+
+        const { OpenAI } = require("openai");
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const systemPrompt = `Tu es un assistant économique expert pour les entrepreneurs d'Afrique francophone (ESSOR).
+Tu réponds en français, de manière professionnelle et concise.
+UTILISE LA LISTE DES DONNÉES CI-DESSOUS (Finances et Profil des Entreprises) POUR RÉPONDRE. 
+IMPORTANT : 
+- Adapte tes conseils au SECTEUR D'ACTIVITÉ de l'utilisateur (ex: si BTP, parle de matériaux/chantiers ; si Digital, parle de marketing/tech).
+- Ne dépasse JAMAIS 400 mots dans ta réponse.
+- Ne suggère JAMAIS de créer de nouvelles factures ou dépenses (reste en mode analyse).
+- Aide l'utilisateur à comprendre ses marges et sa trésorerie sur les 30 derniers jours.
+
+${dataSummary}`;
 
         const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini", // fallback to a commonly available default
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: message },
@@ -1802,10 +2184,31 @@ Réponds de manière structurée et sans t'étaler inutilement.`;
 
         const responseText = completion.choices[0]?.message?.content || "Désolé, je n'ai pas pu générer une réponse.";
 
-        return { response: responseText };
+        // 4. Word Count Safety Check for Output
+        const outputWords = responseText.trim().split(/\s+/);
+        let finalResponse = responseText;
+        if (outputWords.length > 400) {
+          finalResponse = outputWords.slice(0, 400).join(" ") + "... [Réponse tronquée à 400 mots]";
+        }
+
+        // 5. Increment Quota
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            dailyAiCount: currentCount + 1,
+            dailyAiResetAt: now
+          }
+        });
+
+        return { response: finalResponse };
       } catch (error) {
-        console.error("Erreur OpenAI:", error);
-        throw new Error("Erreur de l'API IA: " + (error.message || "Impossible de traiter la demande."));
+        console.error("Erreur IA Advisor:", error);
+        
+        // Handle specific OpenAI error codes securely
+        if (error.status === 429) throw new Error("ERR_AI_QUOTA");
+        if (error.status >= 500) throw new Error("ERR_AI_API");
+        
+        throw new Error("ERR_AI_API"); // Generic AI error instead of technical internal error
       }
     }
   }

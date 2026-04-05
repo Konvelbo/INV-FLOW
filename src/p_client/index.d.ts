@@ -2248,10 +2248,12 @@ export namespace Prisma {
 
   export type UserAvgAggregateOutputType = {
     dailyInvoiceCount: number | null
+    dailyAiCount: number | null
   }
 
   export type UserSumAggregateOutputType = {
     dailyInvoiceCount: number | null
+    dailyAiCount: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -2272,6 +2274,8 @@ export namespace Prisma {
     subscriptionExpiresAt: Date | null
     dailyInvoiceCount: number | null
     dailyInvoiceResetAt: Date | null
+    dailyAiCount: number | null
+    dailyAiResetAt: Date | null
     ligdicashCustomerId: string | null
   }
 
@@ -2293,6 +2297,8 @@ export namespace Prisma {
     subscriptionExpiresAt: Date | null
     dailyInvoiceCount: number | null
     dailyInvoiceResetAt: Date | null
+    dailyAiCount: number | null
+    dailyAiResetAt: Date | null
     ligdicashCustomerId: string | null
   }
 
@@ -2314,6 +2320,8 @@ export namespace Prisma {
     subscriptionExpiresAt: number
     dailyInvoiceCount: number
     dailyInvoiceResetAt: number
+    dailyAiCount: number
+    dailyAiResetAt: number
     ligdicashCustomerId: number
     _all: number
   }
@@ -2321,10 +2329,12 @@ export namespace Prisma {
 
   export type UserAvgAggregateInputType = {
     dailyInvoiceCount?: true
+    dailyAiCount?: true
   }
 
   export type UserSumAggregateInputType = {
     dailyInvoiceCount?: true
+    dailyAiCount?: true
   }
 
   export type UserMinAggregateInputType = {
@@ -2345,6 +2355,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: true
     dailyInvoiceCount?: true
     dailyInvoiceResetAt?: true
+    dailyAiCount?: true
+    dailyAiResetAt?: true
     ligdicashCustomerId?: true
   }
 
@@ -2366,6 +2378,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: true
     dailyInvoiceCount?: true
     dailyInvoiceResetAt?: true
+    dailyAiCount?: true
+    dailyAiResetAt?: true
     ligdicashCustomerId?: true
   }
 
@@ -2387,6 +2401,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: true
     dailyInvoiceCount?: true
     dailyInvoiceResetAt?: true
+    dailyAiCount?: true
+    dailyAiResetAt?: true
     ligdicashCustomerId?: true
     _all?: true
   }
@@ -2495,6 +2511,8 @@ export namespace Prisma {
     subscriptionExpiresAt: Date | null
     dailyInvoiceCount: number
     dailyInvoiceResetAt: Date | null
+    dailyAiCount: number
+    dailyAiResetAt: Date | null
     ligdicashCustomerId: string | null
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
@@ -2535,6 +2553,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: boolean
     dailyInvoiceCount?: boolean
     dailyInvoiceResetAt?: boolean
+    dailyAiCount?: boolean
+    dailyAiResetAt?: boolean
     ligdicashCustomerId?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -2570,10 +2590,12 @@ export namespace Prisma {
     subscriptionExpiresAt?: boolean
     dailyInvoiceCount?: boolean
     dailyInvoiceResetAt?: boolean
+    dailyAiCount?: boolean
+    dailyAiResetAt?: boolean
     ligdicashCustomerId?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "avatar" | "emailVerified" | "image" | "activeCompanyId" | "createdAt" | "updatedAt" | "resetOtp" | "resetOtpExpiry" | "subscriptionStatus" | "subscriptionPlan" | "subscriptionExpiresAt" | "dailyInvoiceCount" | "dailyInvoiceResetAt" | "ligdicashCustomerId", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "avatar" | "emailVerified" | "image" | "activeCompanyId" | "createdAt" | "updatedAt" | "resetOtp" | "resetOtpExpiry" | "subscriptionStatus" | "subscriptionPlan" | "subscriptionExpiresAt" | "dailyInvoiceCount" | "dailyInvoiceResetAt" | "dailyAiCount" | "dailyAiResetAt" | "ligdicashCustomerId", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -2622,6 +2644,8 @@ export namespace Prisma {
       subscriptionExpiresAt: Date | null
       dailyInvoiceCount: number
       dailyInvoiceResetAt: Date | null
+      dailyAiCount: number
+      dailyAiResetAt: Date | null
       ligdicashCustomerId: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -3043,6 +3067,8 @@ export namespace Prisma {
     readonly subscriptionExpiresAt: FieldRef<"User", 'DateTime'>
     readonly dailyInvoiceCount: FieldRef<"User", 'Int'>
     readonly dailyInvoiceResetAt: FieldRef<"User", 'DateTime'>
+    readonly dailyAiCount: FieldRef<"User", 'Int'>
+    readonly dailyAiResetAt: FieldRef<"User", 'DateTime'>
     readonly ligdicashCustomerId: FieldRef<"User", 'String'>
   }
     
@@ -10711,6 +10737,7 @@ export namespace Prisma {
     taxAmount: number | null
     totalTTC: number | null
     paidAmount: number | null
+    remindersSentCount: number | null
   }
 
   export type InvoiceSumAggregateOutputType = {
@@ -10720,6 +10747,7 @@ export namespace Prisma {
     taxAmount: number | null
     totalTTC: number | null
     paidAmount: number | null
+    remindersSentCount: number | null
   }
 
   export type InvoiceMinAggregateOutputType = {
@@ -10754,6 +10782,11 @@ export namespace Prisma {
     paidAmount: number | null
     paymentMethod: string | null
     paidAt: Date | null
+    reminderTone: string | null
+    autoReminders: boolean | null
+    lastReminderSentAt: Date | null
+    remindersSentCount: number | null
+    nextReminderDate: Date | null
     isScaled: boolean | null
     isRead: boolean | null
     readAt: Date | null
@@ -10794,6 +10827,11 @@ export namespace Prisma {
     paidAmount: number | null
     paymentMethod: string | null
     paidAt: Date | null
+    reminderTone: string | null
+    autoReminders: boolean | null
+    lastReminderSentAt: Date | null
+    remindersSentCount: number | null
+    nextReminderDate: Date | null
     isScaled: boolean | null
     isRead: boolean | null
     readAt: Date | null
@@ -10834,6 +10872,11 @@ export namespace Prisma {
     paidAmount: number
     paymentMethod: number
     paidAt: number
+    reminderTone: number
+    autoReminders: number
+    lastReminderSentAt: number
+    remindersSentCount: number
+    nextReminderDate: number
     isScaled: number
     isRead: number
     readAt: number
@@ -10851,6 +10894,7 @@ export namespace Prisma {
     taxAmount?: true
     totalTTC?: true
     paidAmount?: true
+    remindersSentCount?: true
   }
 
   export type InvoiceSumAggregateInputType = {
@@ -10860,6 +10904,7 @@ export namespace Prisma {
     taxAmount?: true
     totalTTC?: true
     paidAmount?: true
+    remindersSentCount?: true
   }
 
   export type InvoiceMinAggregateInputType = {
@@ -10894,6 +10939,11 @@ export namespace Prisma {
     paidAmount?: true
     paymentMethod?: true
     paidAt?: true
+    reminderTone?: true
+    autoReminders?: true
+    lastReminderSentAt?: true
+    remindersSentCount?: true
+    nextReminderDate?: true
     isScaled?: true
     isRead?: true
     readAt?: true
@@ -10934,6 +10984,11 @@ export namespace Prisma {
     paidAmount?: true
     paymentMethod?: true
     paidAt?: true
+    reminderTone?: true
+    autoReminders?: true
+    lastReminderSentAt?: true
+    remindersSentCount?: true
+    nextReminderDate?: true
     isScaled?: true
     isRead?: true
     readAt?: true
@@ -10974,6 +11029,11 @@ export namespace Prisma {
     paidAmount?: true
     paymentMethod?: true
     paidAt?: true
+    reminderTone?: true
+    autoReminders?: true
+    lastReminderSentAt?: true
+    remindersSentCount?: true
+    nextReminderDate?: true
     isScaled?: true
     isRead?: true
     readAt?: true
@@ -11101,6 +11161,11 @@ export namespace Prisma {
     paidAmount: number
     paymentMethod: string | null
     paidAt: Date | null
+    reminderTone: string
+    autoReminders: boolean
+    lastReminderSentAt: Date | null
+    remindersSentCount: number
+    nextReminderDate: Date | null
     isScaled: boolean
     isRead: boolean
     readAt: Date | null
@@ -11160,6 +11225,11 @@ export namespace Prisma {
     paidAmount?: boolean
     paymentMethod?: boolean
     paidAt?: boolean
+    reminderTone?: boolean
+    autoReminders?: boolean
+    lastReminderSentAt?: boolean
+    remindersSentCount?: boolean
+    nextReminderDate?: boolean
     isScaled?: boolean
     isRead?: boolean
     readAt?: boolean
@@ -11207,6 +11277,11 @@ export namespace Prisma {
     paidAmount?: boolean
     paymentMethod?: boolean
     paidAt?: boolean
+    reminderTone?: boolean
+    autoReminders?: boolean
+    lastReminderSentAt?: boolean
+    remindersSentCount?: boolean
+    nextReminderDate?: boolean
     isScaled?: boolean
     isRead?: boolean
     readAt?: boolean
@@ -11215,7 +11290,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "companyName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "description" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
+  export type InvoiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reference" | "invoiceNumber" | "type" | "status" | "city" | "clientName" | "object" | "clientAddress" | "clientContact" | "clientPOBox" | "managerName" | "companyName" | "clientId" | "companyId" | "totalHT" | "totalMaterial" | "amountWords" | "description" | "taxAmount" | "totalTTC" | "pdfUrl" | "pdfPublicId" | "userId" | "isRecurring" | "recurrenceFreq" | "nextIssueDate" | "dueDate" | "paidAmount" | "paymentMethod" | "paidAt" | "reminderTone" | "autoReminders" | "lastReminderSentAt" | "remindersSentCount" | "nextReminderDate" | "isScaled" | "isRead" | "readAt" | "style" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
   export type InvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | Invoice$clientArgs<ExtArgs>
     company?: boolean | Invoice$companyArgs<ExtArgs>
@@ -11264,6 +11339,11 @@ export namespace Prisma {
       paidAmount: number
       paymentMethod: string | null
       paidAt: Date | null
+      reminderTone: string
+      autoReminders: boolean
+      lastReminderSentAt: Date | null
+      remindersSentCount: number
+      nextReminderDate: Date | null
       isScaled: boolean
       isRead: boolean
       readAt: Date | null
@@ -11697,6 +11777,11 @@ export namespace Prisma {
     readonly paidAmount: FieldRef<"Invoice", 'Float'>
     readonly paymentMethod: FieldRef<"Invoice", 'String'>
     readonly paidAt: FieldRef<"Invoice", 'DateTime'>
+    readonly reminderTone: FieldRef<"Invoice", 'String'>
+    readonly autoReminders: FieldRef<"Invoice", 'Boolean'>
+    readonly lastReminderSentAt: FieldRef<"Invoice", 'DateTime'>
+    readonly remindersSentCount: FieldRef<"Invoice", 'Int'>
+    readonly nextReminderDate: FieldRef<"Invoice", 'DateTime'>
     readonly isScaled: FieldRef<"Invoice", 'Boolean'>
     readonly isRead: FieldRef<"Invoice", 'Boolean'>
     readonly readAt: FieldRef<"Invoice", 'DateTime'>
@@ -18230,6 +18315,8 @@ export namespace Prisma {
     subscriptionExpiresAt: 'subscriptionExpiresAt',
     dailyInvoiceCount: 'dailyInvoiceCount',
     dailyInvoiceResetAt: 'dailyInvoiceResetAt',
+    dailyAiCount: 'dailyAiCount',
+    dailyAiResetAt: 'dailyAiResetAt',
     ligdicashCustomerId: 'ligdicashCustomerId'
   };
 
@@ -18399,6 +18486,11 @@ export namespace Prisma {
     paidAmount: 'paidAmount',
     paymentMethod: 'paymentMethod',
     paidAt: 'paidAt',
+    reminderTone: 'reminderTone',
+    autoReminders: 'autoReminders',
+    lastReminderSentAt: 'lastReminderSentAt',
+    remindersSentCount: 'remindersSentCount',
+    nextReminderDate: 'nextReminderDate',
     isScaled: 'isScaled',
     isRead: 'isRead',
     readAt: 'readAt',
@@ -18593,6 +18685,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     dailyInvoiceCount?: IntFilter<"User"> | number
     dailyInvoiceResetAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    dailyAiCount?: IntFilter<"User"> | number
+    dailyAiResetAt?: DateTimeNullableFilter<"User"> | Date | string | null
     ligdicashCustomerId?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
@@ -18625,6 +18719,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: SortOrder
     dailyInvoiceCount?: SortOrder
     dailyInvoiceResetAt?: SortOrder
+    dailyAiCount?: SortOrder
+    dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
     accounts?: AccountOrderByRelationAggregateInput
     sessions?: SessionOrderByRelationAggregateInput
@@ -18660,6 +18756,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     dailyInvoiceCount?: IntFilter<"User"> | number
     dailyInvoiceResetAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    dailyAiCount?: IntFilter<"User"> | number
+    dailyAiResetAt?: DateTimeNullableFilter<"User"> | Date | string | null
     ligdicashCustomerId?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
@@ -18692,6 +18790,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: SortOrder
     dailyInvoiceCount?: SortOrder
     dailyInvoiceResetAt?: SortOrder
+    dailyAiCount?: SortOrder
+    dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
@@ -18721,6 +18821,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     dailyInvoiceCount?: IntWithAggregatesFilter<"User"> | number
     dailyInvoiceResetAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    dailyAiCount?: IntWithAggregatesFilter<"User"> | number
+    dailyAiResetAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     ligdicashCustomerId?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
@@ -19448,6 +19550,11 @@ export namespace Prisma {
     paidAmount?: FloatFilter<"Invoice"> | number
     paymentMethod?: StringNullableFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
+    reminderTone?: StringFilter<"Invoice"> | string
+    autoReminders?: BoolFilter<"Invoice"> | boolean
+    lastReminderSentAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
+    remindersSentCount?: IntFilter<"Invoice"> | number
+    nextReminderDate?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     isScaled?: BoolFilter<"Invoice"> | boolean
     isRead?: BoolFilter<"Invoice"> | boolean
     readAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
@@ -19492,6 +19599,11 @@ export namespace Prisma {
     paidAmount?: SortOrder
     paymentMethod?: SortOrder
     paidAt?: SortOrder
+    reminderTone?: SortOrder
+    autoReminders?: SortOrder
+    lastReminderSentAt?: SortOrder
+    remindersSentCount?: SortOrder
+    nextReminderDate?: SortOrder
     isScaled?: SortOrder
     isRead?: SortOrder
     readAt?: SortOrder
@@ -19539,6 +19651,11 @@ export namespace Prisma {
     paidAmount?: FloatFilter<"Invoice"> | number
     paymentMethod?: StringNullableFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
+    reminderTone?: StringFilter<"Invoice"> | string
+    autoReminders?: BoolFilter<"Invoice"> | boolean
+    lastReminderSentAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
+    remindersSentCount?: IntFilter<"Invoice"> | number
+    nextReminderDate?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     isScaled?: BoolFilter<"Invoice"> | boolean
     isRead?: BoolFilter<"Invoice"> | boolean
     readAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
@@ -19583,6 +19700,11 @@ export namespace Prisma {
     paidAmount?: SortOrder
     paymentMethod?: SortOrder
     paidAt?: SortOrder
+    reminderTone?: SortOrder
+    autoReminders?: SortOrder
+    lastReminderSentAt?: SortOrder
+    remindersSentCount?: SortOrder
+    nextReminderDate?: SortOrder
     isScaled?: SortOrder
     isRead?: SortOrder
     readAt?: SortOrder
@@ -19631,6 +19753,11 @@ export namespace Prisma {
     paidAmount?: FloatWithAggregatesFilter<"Invoice"> | number
     paymentMethod?: StringNullableWithAggregatesFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
+    reminderTone?: StringWithAggregatesFilter<"Invoice"> | string
+    autoReminders?: BoolWithAggregatesFilter<"Invoice"> | boolean
+    lastReminderSentAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
+    remindersSentCount?: IntWithAggregatesFilter<"Invoice"> | number
+    nextReminderDate?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
     isScaled?: BoolWithAggregatesFilter<"Invoice"> | boolean
     isRead?: BoolWithAggregatesFilter<"Invoice"> | boolean
     readAt?: DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
@@ -20037,6 +20164,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -20069,6 +20198,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -20100,6 +20231,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -20131,6 +20264,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -20163,6 +20298,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
   }
 
@@ -20183,6 +20320,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -20203,6 +20342,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -21013,6 +21154,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -21057,6 +21203,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -21094,6 +21245,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21137,6 +21293,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21178,6 +21339,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -21214,6 +21380,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21253,6 +21424,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21813,11 +21989,14 @@ export namespace Prisma {
     subscriptionExpiresAt?: SortOrder
     dailyInvoiceCount?: SortOrder
     dailyInvoiceResetAt?: SortOrder
+    dailyAiCount?: SortOrder
+    dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
     dailyInvoiceCount?: SortOrder
+    dailyAiCount?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -21838,6 +22017,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: SortOrder
     dailyInvoiceCount?: SortOrder
     dailyInvoiceResetAt?: SortOrder
+    dailyAiCount?: SortOrder
+    dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
   }
 
@@ -21859,11 +22040,14 @@ export namespace Prisma {
     subscriptionExpiresAt?: SortOrder
     dailyInvoiceCount?: SortOrder
     dailyInvoiceResetAt?: SortOrder
+    dailyAiCount?: SortOrder
+    dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
     dailyInvoiceCount?: SortOrder
+    dailyAiCount?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -22505,6 +22689,11 @@ export namespace Prisma {
     paidAmount?: SortOrder
     paymentMethod?: SortOrder
     paidAt?: SortOrder
+    reminderTone?: SortOrder
+    autoReminders?: SortOrder
+    lastReminderSentAt?: SortOrder
+    remindersSentCount?: SortOrder
+    nextReminderDate?: SortOrder
     isScaled?: SortOrder
     isRead?: SortOrder
     readAt?: SortOrder
@@ -22520,6 +22709,7 @@ export namespace Prisma {
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     paidAmount?: SortOrder
+    remindersSentCount?: SortOrder
   }
 
   export type InvoiceMaxOrderByAggregateInput = {
@@ -22554,6 +22744,11 @@ export namespace Prisma {
     paidAmount?: SortOrder
     paymentMethod?: SortOrder
     paidAt?: SortOrder
+    reminderTone?: SortOrder
+    autoReminders?: SortOrder
+    lastReminderSentAt?: SortOrder
+    remindersSentCount?: SortOrder
+    nextReminderDate?: SortOrder
     isScaled?: SortOrder
     isRead?: SortOrder
     readAt?: SortOrder
@@ -22594,6 +22789,11 @@ export namespace Prisma {
     paidAmount?: SortOrder
     paymentMethod?: SortOrder
     paidAt?: SortOrder
+    reminderTone?: SortOrder
+    autoReminders?: SortOrder
+    lastReminderSentAt?: SortOrder
+    remindersSentCount?: SortOrder
+    nextReminderDate?: SortOrder
     isScaled?: SortOrder
     isRead?: SortOrder
     readAt?: SortOrder
@@ -22609,6 +22809,7 @@ export namespace Prisma {
     taxAmount?: SortOrder
     totalTTC?: SortOrder
     paidAmount?: SortOrder
+    remindersSentCount?: SortOrder
   }
 
   export type InvoiceScalarRelationFilter = {
@@ -24178,6 +24379,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -24220,6 +24426,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -24675,6 +24886,11 @@ export namespace Prisma {
     paidAmount?: FloatFilter<"Invoice"> | number
     paymentMethod?: StringNullableFilter<"Invoice"> | string | null
     paidAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
+    reminderTone?: StringFilter<"Invoice"> | string
+    autoReminders?: BoolFilter<"Invoice"> | boolean
+    lastReminderSentAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
+    remindersSentCount?: IntFilter<"Invoice"> | number
+    nextReminderDate?: DateTimeNullableFilter<"Invoice"> | Date | string | null
     isScaled?: BoolFilter<"Invoice"> | boolean
     isRead?: BoolFilter<"Invoice"> | boolean
     readAt?: DateTimeNullableFilter<"Invoice"> | Date | string | null
@@ -24983,6 +25199,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -25014,6 +25232,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -25060,6 +25280,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -25090,6 +25312,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -25121,6 +25345,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -25152,6 +25378,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -25199,6 +25427,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -25241,6 +25474,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -25426,6 +25664,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -25456,6 +25696,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -25551,6 +25793,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -25582,6 +25826,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -25692,6 +25938,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -25734,6 +25985,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -25780,6 +26036,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -25810,6 +26068,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -25987,6 +26247,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -26018,6 +26280,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -26131,6 +26395,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -26161,6 +26427,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -26192,6 +26460,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -26223,6 +26493,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -26332,6 +26604,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -26362,6 +26636,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -26460,6 +26736,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -26491,6 +26769,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -26537,6 +26817,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -26567,6 +26849,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -26726,6 +27010,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -26757,6 +27043,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -26968,6 +27256,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -26998,6 +27288,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -27070,6 +27362,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -27113,6 +27410,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -27165,6 +27467,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27207,6 +27514,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27233,6 +27545,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -27264,6 +27578,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -27310,6 +27626,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -27340,6 +27658,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -27371,6 +27691,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -27402,6 +27724,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -27448,6 +27772,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -27478,6 +27804,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -27509,6 +27837,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -27540,6 +27870,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -27586,6 +27918,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -27616,6 +27950,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -27647,6 +27983,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -27678,6 +28016,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: Date | string | null
     dailyInvoiceCount?: number
     dailyInvoiceResetAt?: Date | string | null
+    dailyAiCount?: number
+    dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -27724,6 +28064,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -27754,6 +28096,8 @@ export namespace Prisma {
     subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dailyInvoiceCount?: IntFieldUpdateOperationsInput | number
     dailyInvoiceResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dailyAiCount?: IntFieldUpdateOperationsInput | number
+    dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -27818,6 +28162,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -28030,6 +28379,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28071,6 +28425,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28110,6 +28469,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28501,6 +28865,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -28592,6 +28961,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28633,6 +29007,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28672,6 +29051,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28869,6 +29253,11 @@ export namespace Prisma {
     paidAmount?: number
     paymentMethod?: string | null
     paidAt?: Date | string | null
+    reminderTone?: string
+    autoReminders?: boolean
+    lastReminderSentAt?: Date | string | null
+    remindersSentCount?: number
+    nextReminderDate?: Date | string | null
     isScaled?: boolean
     isRead?: boolean
     readAt?: Date | string | null
@@ -28905,6 +29294,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28946,6 +29340,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28985,6 +29384,11 @@ export namespace Prisma {
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderTone?: StringFieldUpdateOperationsInput | string
+    autoReminders?: BoolFieldUpdateOperationsInput | boolean
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindersSentCount?: IntFieldUpdateOperationsInput | number
+    nextReminderDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isScaled?: BoolFieldUpdateOperationsInput | boolean
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

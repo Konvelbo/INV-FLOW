@@ -29,4 +29,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("update-progress", subscription);
     return () => ipcRenderer.removeListener("update-progress", subscription);
   },
+  onInvoiceRead: (callback) => {
+    const subscription = (_event, invoice) => callback(invoice);
+    ipcRenderer.on("invoice-read-notification", subscription);
+    return () => ipcRenderer.removeListener("invoice-read-notification", subscription);
+  },
 });

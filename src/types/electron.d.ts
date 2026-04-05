@@ -12,6 +12,7 @@ export interface IElectronAPI {
   quitAndInstall: () => void;
   onUpdateStatus: (callback: (status: string, info: any) => void) => () => void;
   onUpdateProgress: (callback: (progress: any) => void) => () => void;
+  onInvoiceRead: (callback: (invoice: any) => void) => () => void;
 }
 
 declare global {

@@ -12,6 +12,7 @@ const {
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const { handleDataRequest, handleActionRequest } = require("./data-handlers");
+const { startAutomationService } = require("./automation-service");
 
 const isDev = !app.isPackaged;
 
@@ -111,10 +112,10 @@ if (!gotTheLock) {
         } catch (e) {
           urlPath = request.url.replace("app://", "");
         }
-        
+
         // Remove query strings or hashes
         urlPath = urlPath.split("?")[0].split("#")[0];
-        
+
         // Remove leading prefixes
         if (urlPath.startsWith("./")) urlPath = urlPath.slice(2);
         if (urlPath.startsWith("/")) urlPath = urlPath.slice(1);
@@ -233,14 +234,17 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     createWindow();
-    
+
+    // Start background automation service (recurring invoices, reminders)
+    startAutomationService();
+
     // Auto-check for updates on startup
     autoUpdater.checkForUpdatesAndNotify()
       .catch(err => console.error("AutoUpdater: Initial check failed", err));
-    
+
     // Auto Update configuration
-    autoUpdater.autoDownload = false; // We want users to see the progress
-    
+    autoUpdater.autoDownload = true; // Download updates automatically in the background
+
     autoUpdater.on("checking-for-update", () => {
       win.webContents.send("update-status", "checking");
     });
@@ -263,6 +267,10 @@ if (!gotTheLock) {
 
     autoUpdater.on("update-downloaded", (info) => {
       win.webContents.send("update-status", "downloaded", info);
+      // Automatically install the update immediately after download completes
+      setTimeout(() => {
+        autoUpdater.quitAndInstall();
+      }, 3000); // 3 seconds delay before restarting
     });
 
     // IPC for updates

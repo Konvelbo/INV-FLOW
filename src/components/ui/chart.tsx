@@ -82,18 +82,24 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+            ([theme, prefix]) => {
+              // Sanitize ID for CSS selector safety
+              const safeId = id.replace(/[^a-zA-Z0-9_-]/g, "");
+              return `
+${prefix} [data-chart=${safeId}] {
 ${colorConfig
                 .map(([key, itemConfig]) => {
                   const color =
                     itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
                     itemConfig.color;
-                  return color ? `  --color-${key}: ${color};` : null;
+                  // Sanitize key for CSS variable safety
+                  const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "");
+                  return color ? `  --color-${safeKey}: ${color};` : null;
                 })
                 .join("\n")}
 }
-`,
+`;
+            },
           )
           .join("\n"),
       }}

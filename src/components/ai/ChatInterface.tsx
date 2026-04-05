@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Brain, User, Sparkles, Loader2 } from "lucide-react";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -20,11 +21,11 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ initialUser }: ChatInterfaceProps) {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content:
-        "Salue ! Je suis votre conseiller économique ESSOR. Je peux analyser vos factures, évaluer vos marges et vous aider à optimiser votre stratégie financière. Comment puis-je vous éclairer aujourd'hui ?",
+      content: t("ai_welcome") || "Bonjour ! Je suis Pulse™, votre assistant ESSOR. Comment puis-je vous aider aujourd'hui ?",
     },
   ]);
   const [user, setUser] = useState<{
@@ -41,13 +42,19 @@ export function ChatInterface({ initialUser }: ChatInterfaceProps) {
       const userStr = localStorage.getItem("user");
       if (userStr) {
         try {
-          setUser(JSON.parse(userStr));
+          const parsed = JSON.parse(userStr);
+          setUser(parsed);
+          // Update welcome message with name if possible
+          setMessages([{
+            role: "assistant",
+            content: (t("ai_welcome") || "Bonjour ! Je suis Pulse™, votre assistant ESSOR.").replace("!", ` ${parsed.name} !`)
+          }]);
         } catch (e) {
           // console.error("Error parsing user data", e);
         }
       }
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -76,15 +83,15 @@ export function ChatInterface({ initialUser }: ChatInterfaceProps) {
           { role: "assistant", content: res.data.response },
         ]);
       } else {
-        throw new Error(res.error || "Failed to get response");
+        throw new Error(res.error || "ERR_INTERNAL");
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = t(error.message as any) || t("ERR_INTERNAL") || "Désolé, j'ai rencontré une erreur technique.";
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            "Désolé, j'ai rencontré une erreur technique lors de l'analyse de vos données. Veuillez réessayer dans quelques instants.",
+          content: errorMsg,
         },
       ]);
     } finally {
@@ -93,10 +100,10 @@ export function ChatInterface({ initialUser }: ChatInterfaceProps) {
   };
 
   const suggestions = [
-    "Analyse mes finances",
-    "Mes marges sont-elles saines ?",
-    "État de ma trésorerie",
-    "Conseils de croissance",
+    t("insight_1_title"),
+    t("insight_2_title"),
+    t("insight_3_title"),
+    t("growth_insight_title"),
   ];
 
   return (
@@ -162,7 +169,7 @@ export function ChatInterface({ initialUser }: ChatInterfaceProps) {
               <Loader2 className="w-5 h-5 text-primary animate-spin" />
             </div>
             <div className="bg-muted/30 border border-border/50 p-5 rounded-3xl rounded-tl-none italic text-muted-foreground text-sm">
-              Analyse de vos données financières en cours...
+              {t("analysisInProgress")}
             </div>
           </div>
         )}
@@ -189,7 +196,7 @@ export function ChatInterface({ initialUser }: ChatInterfaceProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Posez une question sur votre stratégie économique..."
+            placeholder={t("searchQuickAssistant").replace("{type}", "ESSOR")}
             className="w-full bg-muted/20 border border-border/50 rounded-2xl p-5 pr-16 text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-sans"
           />
           <Button

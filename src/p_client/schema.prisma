@@ -261,6 +261,13 @@ model Invoice {
   paymentMethod String?
   paidAt        DateTime?
 
+  // Smart Reminders & Automations
+  reminderTone       String    @default("professional") // "professional" or "friendly"
+  autoReminders      Boolean   @default(true)
+  lastReminderSentAt DateTime?
+  remindersSentCount Int       @default(0)
+  nextReminderDate   DateTime?
+
   isScaled  Boolean   @default(false)
   isRead    Boolean   @default(false)
   readAt    DateTime?

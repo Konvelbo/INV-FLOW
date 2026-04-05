@@ -72,6 +72,8 @@ export interface InvoiceStateContextType {
   currency: string;
   style: string;
   clientId: string | null;
+  clientPaidCount: number;
+  clientUnpaidCount: number;
   invoiceType: "invoice" | "quote";
   companyName: string;
   companyAddress: string;
@@ -109,6 +111,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
   });
   const [style, setStyle] = useState<string>("default");
   const [clientId, setClientId] = useState<string | null>(null);
+  const [clientPaidCount, setClientPaidCount] = useState<number>(0);
+  const [clientUnpaidCount, setClientUnpaidCount] = useState<number>(0);
   const [invoiceType, setInvoiceType] = useState<"invoice" | "quote">("invoice");
   const [companyName, setCompanyName] = useState<string>("");
   const [companyAddress, setCompanyAddress] = useState<string>("");
@@ -149,6 +153,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setItemsArr(data.items || []);
       setStyle(data.style || "default");
       setClientId(data.clientId || null);
+      setClientPaidCount(data.clientPaidCount || 0);
+      setClientUnpaidCount(data.clientUnpaidCount || 0);
       setInvoiceType((data.invoiceType as "invoice" | "quote") || "invoice");
       setCompanyName(data.companyName || "");
       setCompanyAddress(data.companyAddress || "");
@@ -170,6 +176,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     setItemsArr([]);
     setStyle("default");
     setClientId(null);
+    setClientPaidCount(0);
+    setClientUnpaidCount(0);
     setInvoiceType("invoice");
     setCompanyName("");
     setCompanyAddress("");
@@ -198,6 +206,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       currency,
       style,
       clientId,
+      clientPaidCount,
+      clientUnpaidCount,
       invoiceType,
       companyName,
       companyAddress,
@@ -224,6 +234,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       currency,
       style,
       clientId,
+      clientPaidCount,
+      clientUnpaidCount,
       invoiceType,
       companyName,
       companyAddress,
@@ -253,6 +265,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setInvoiceData,
       clearInvoiceData,
       setClientId,
+      setClientPaidCount,
+      setClientUnpaidCount,
       setInvoiceType,
       setCompanyName,
       setCompanyAddress,

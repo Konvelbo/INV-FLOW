@@ -108,8 +108,9 @@ export default function SignUp({
           user.token = "local-session";
           localStorage.setItem("user", JSON.stringify(user));
 
-          // Redirect to settings if no companies
-          if (!user.companies || user.companies.length === 0) {
+          // Redirect to companies if no active company or companies list
+          const hasCompanies = (user.companies && user.companies.length > 0) || !!user.activeCompanyId;
+          if (!hasCompanies) {
             toast(t("noCompanyRedirection"), { icon: "🏢" });
             router.push("/companies");
           } else {

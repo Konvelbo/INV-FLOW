@@ -35,10 +35,11 @@ import {
   TrendingUp,
   ShieldCheck,
   Search,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIPCAction } from "@/hooks/useIPCAction";
-import { PhoneInput } from "@/src/components/ui/phone-input";
+import PhoneInput from "@/src/components/comp-46";
 
 interface Client {
   id: string;
@@ -63,6 +64,7 @@ interface Client {
   taxId: string | null;
   totalSpent?: number;
   paidInvoicesCount?: number;
+  monthlyPaidInvoicesCount?: number;
   unpaidInvoicesCount?: number;
   _count?: { invoices: number };
 }
@@ -195,29 +197,34 @@ export default function ClientsClient({
     });
   };
 
-  const handleExport = async () => {
+  const handleExport = async (format = "excel") => {
     setIsExporting(true);
+    const toastId = toast.loading(t("processing"), { id: "client-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
+      const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
       // @ts-ignore
-      const res = await window.electronAPI.getData("export", userId, "clients");
-      if (res.success) {
-        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+      const res = await window.electronAPI.getData("export", userId, "clients", activeCompanyId, format);
+      if (res.success && res.data) {
+        const mime = format === "excel"
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "application/zip";
+        const ext = format === "excel" ? "xlsx" : "zip";
+
+        const blob = new Blob([res.data], { type: mime });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", "clients_export.csv");
+        link.href = url;
+        link.download = `Clients_Export_${new Date().toISOString().split('T')[0]}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(t("exportSuccess"));
-      } else {
-        throw new Error(res.error);
+        toast.success(t("exportSuccess") || "Export réussi !", { id: "client-export" });
       }
     } catch (error) {
       console.error("Export error", error);
-      toast.error(t("authError"));
+      toast.error(t("authError"), { id: "client-export" });
     } finally {
       setIsExporting(false);
     }
@@ -278,11 +285,12 @@ export default function ClientsClient({
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-card transition-all"
-              onClick={handleExport}
+              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-primary/10 hover:text-primary transition-all rounded-xl"
+              onClick={() => handleExport("excel")}
+              disabled={isExporting}
             >
               <Download className="w-4 h-4" />
-              {t("exportCsv")}
+              {t("exportExcel")}
             </Button>
             <Dialog
               open={isDialogOpen}
@@ -501,6 +509,80 @@ export default function ClientsClient({
               </DialogContent>
             </Dialog>
           </div>
+        </div>
+
+        {/* Top 10 Clients of the Month */}
+        <div className="space-y-6 animate-fade-in-up delay-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-500/10 rounded-lg">
+              <TrendingUp className="size-5 text-amber-500" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">{t("topClientsMonth")}</h2>
+          </div>
+
+          {clients.some(c => (c.monthlyPaidInvoicesCount || 0) > 0) ? (
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+              {clients
+                .filter(c => (c.monthlyPaidInvoicesCount || 0) > 0)
+                .sort((a, b) => (b.monthlyPaidInvoicesCount || 0) - (a.monthlyPaidInvoicesCount || 0))
+                .slice(0, 10)
+                .map((client, index) => (
+                  <div
+                    key={client.id}
+                    className="flex-none w-64 snap-start group"
+                  >
+                    <Card className="bg-card/40 border-border/40 hover:border-amber-500/30 transition-all duration-300 relative overflow-hidden group-hover:shadow-xl group-hover:shadow-amber-500/5">
+                      <div className="absolute top-0 right-0 p-3">
+                        <div className={cn(
+                          "size-8 rounded-full flex items-center justify-center font-black text-xs shadow-lg",
+                          index === 0 ? "bg-amber-500 text-white" :
+                            index === 1 ? "bg-slate-300 text-slate-700" :
+                              index === 2 ? "bg-amber-700 text-white" :
+                                "bg-muted text-muted-foreground"
+                        )}>
+                          #{index + 1}
+                        </div>
+                      </div>
+
+                      <CardContent className="p-6 space-y-4">
+                        <div className="size-14 rounded-2xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-500">
+                          {client.firstName?.[0] || client.name[0]}
+                        </div>
+
+                        <div>
+                          <h3 className="font-bold text-sm truncate pr-8">{client.firstName ? `${client.firstName} ${client.name}` : client.name}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <ShieldCheck className="size-3 text-emerald-500" />
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t("active")}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-border/10 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">{t("paidInvoicesCount")}</span>
+                          <span className="text-sm font-black text-primary">{client.monthlyPaidInvoicesCount}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <Card className="bg-card/40 border-dashed border-2 border-border/40">
+              <CardContent className="p-12 text-center space-y-4">
+                <div className="size-16 rounded-full bg-muted/20 flex items-center justify-center mx-auto">
+                  <TrendingUp className="size-8 text-muted-foreground/40" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-muted-foreground">
+                    {t("noPaidInvoicesMonth")}
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 max-w-xs mx-auto">
+                    Les clients apparaîtront ici au fur et à mesure de leurs paiements ce mois-ci.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {!isComponent && (

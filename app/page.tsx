@@ -51,7 +51,8 @@ export default function Home() {
           
           if (!sessionStorage.getItem("hasAutoRedirected")) {
             sessionStorage.setItem("hasAutoRedirected", "true");
-            const target = (parsed.companies && parsed.companies.length > 0) ? "/dashboard" : "/companies";
+            const hasCompanies = (parsed.companies && parsed.companies.length > 0) || !!parsed.activeCompanyId;
+            const target = hasCompanies ? "/dashboard" : "/companies";
             router.push(target);
           }
         }

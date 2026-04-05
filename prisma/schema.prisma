@@ -41,6 +41,8 @@ model User {
   subscriptionExpiresAt DateTime?
   dailyInvoiceCount     Int       @default(0)
   dailyInvoiceResetAt   DateTime?
+  dailyAiCount          Int       @default(0)
+  dailyAiResetAt        DateTime?
   ligdicashCustomerId   String?
 
   paymentTransactions PaymentTransaction[]
@@ -260,6 +262,13 @@ model Invoice {
   paidAmount    Float     @default(0)
   paymentMethod String?
   paidAt        DateTime?
+
+  // Smart Reminders & Automations
+  reminderTone       String    @default("professional") // "professional" or "friendly"
+  autoReminders      Boolean   @default(true)
+  lastReminderSentAt DateTime?
+  remindersSentCount Int       @default(0)
+  nextReminderDate   DateTime?
 
   isScaled  Boolean  @default(false)
   isRead    Boolean  @default(false)

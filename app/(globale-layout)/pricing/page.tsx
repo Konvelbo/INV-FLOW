@@ -47,13 +47,18 @@ const getFreeFeatures = (dict: any) => [
   { text: dict.feat_inv_no || "Factures illimitées", included: false },
 ];
 
-const getProFeatures = (dict: any) => [
+const getProFeatures = (dict: any, aiQuota?: string) => [
   { text: dict.feat_inv_ok || "Factures illimitées", included: true },
   { text: dict.feat_comp_ok || "Compagnies illimitées", included: true },
   { text: dict.feat_unlimited_cp || "Clients & produits illimités", included: true },
   { text: dict.feat_unlimited_tasks || "Planning & tâches illimité", included: true },
   { text: dict.feat_export || "Exporter en PDF & Excel", included: true },
-  { text: dict.feat_ai_ok || "Assistant IA complet", included: true },
+  {
+    text: aiQuota
+      ? `Assistant IA (${aiQuota} requêtes / jour)`
+      : (dict.feat_ai_ok || "Assistant IA complet"),
+    included: true
+  },
   { text: dict.feat_support || "Support prioritaire", included: true },
   { text: dict.feat_updates || "Mises à jour gratuites", included: true },
 ];
@@ -191,7 +196,7 @@ export default function PricingPage() {
                 refresh();
                 toast.success(dict.activationSuccess || "🎉 Abonnement activé avec succès !", { duration: 8000 });
               }
-            } catch {}
+            } catch { }
             if (attempts >= 36) clearInterval(poll);
           }, 5000);
         } else {
@@ -301,7 +306,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* ---- Cards Grid ---- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
 
           {/* ==== Card 1: Free ==== */}
           <motion.div
@@ -421,7 +426,7 @@ export default function PricingPage() {
             </div>
 
             <ul className="space-y-3.5 flex-1">
-              {PRO_FEATURES.map((f, i) => (
+              {getProFeatures(dict, "30").map((f, i) => (
                 <FeatureItem key={i} {...f} delay={0.3 + i * 0.04} />
               ))}
             </ul>
@@ -540,7 +545,7 @@ export default function PricingPage() {
             </div>
 
             <ul className="space-y-3.5 flex-1">
-              {PRO_FEATURES.map((f, i) => (
+              {getProFeatures(dict, "50").map((f, i) => (
                 <FeatureItem key={i} {...f} accent="yellow" delay={0.4 + i * 0.04} />
               ))}
             </ul>
@@ -622,10 +627,10 @@ export default function PricingPage() {
             {dict.pricing_expiry
               ?.replace("{type}", subscription.plan === "yearly" ? (dict.pricing_type_yearly || "annuel") : (dict.pricing_type_monthly || "mensuel"))
               ?.replace("{date}", new Date(subscription.expiresAt).toLocaleDateString(dict.language === "fr" ? "fr-FR" : "en-US", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }))
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }))
             }
           </motion.div>
         )}

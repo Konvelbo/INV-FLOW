@@ -9,7 +9,6 @@ import {
   Settings,
   Languages,
   Building2,
-  RefreshCw,
   Crown,
 } from "lucide-react";
 
@@ -322,28 +321,6 @@ export default function UserMenu() {
               </DropdownMenuPortal>
             </DropdownMenuSub>
 
-            <DropdownMenuItem
-              onClick={async () => {
-                if (window.electronAPI) {
-                  toast.loading("Recherche de mises à jour...", { id: "check-update" });
-                  try {
-                    await window.electronAPI.checkForUpdates();
-                    toast.dismiss("check-update");
-                  } catch (e) {
-                    toast.error("Erreur lors de la recherche", { id: "check-update" });
-                  }
-                }
-              }}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer"
-            >
-              <RefreshCw
-                size={18}
-                className="text-muted-foreground group-hover:text-primary transition-colors"
-              />
-              <span className="font-sans font-medium text-sm text-foreground">
-                {dict.updateApp || "Mettre à jour l'app"}
-              </span>
-            </DropdownMenuItem>
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator className="bg-border/50" />

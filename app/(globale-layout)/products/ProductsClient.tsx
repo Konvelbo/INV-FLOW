@@ -137,33 +137,35 @@ export default function ProductsClient({
     });
   };
 
-  const handleExport = async () => {
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = async (format = "excel") => {
     setIsExporting(true);
+    const toastId = toast.loading(t("processing"), { id: "product-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
+      const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
       // @ts-ignore
-      const res = await window.electronAPI.getData(
-        "export",
-        userId,
-        "products",
-      );
-      if (res.success) {
-        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+      const res = await window.electronAPI.getData("export", userId, "products", activeCompanyId, format);
+      if (res.success && res.data) {
+        const mime = format === "excel"
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "application/zip";
+        const ext = format === "excel" ? "xlsx" : "zip";
+
+        const blob = new Blob([res.data], { type: mime });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", "products_export.csv");
+        link.href = url;
+        link.download = `Products_Export_${new Date().toISOString().split('T')[0]}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(t("exportSuccess"));
-      } else {
-        throw new Error(res.error);
+        toast.success(t("exportSuccess") || "Export réussi !", { id: "product-export" });
       }
     } catch (error) {
       console.error("Export error", error);
-      toast.error(t("authError"));
+      toast.error(t("authError"), { id: "product-export" });
     } finally {
       setIsExporting(false);
     }
@@ -219,11 +221,12 @@ export default function ProductsClient({
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-card transition-all"
-              onClick={handleExport}
+              className="h-12 px-6 gap-2 font-bold border-border/50 bg-card/50 backdrop-blur-xl hover:bg-indigo-500/10 hover:text-indigo-400 transition-all rounded-xl"
+              onClick={() => handleExport("excel")}
+              disabled={isExporting}
             >
               <Download className="w-4 h-4" />
-              {t("exportCsv")}
+              {t("exportExcel")}
             </Button>
             <Dialog
               open={isDialogOpen}

@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export function useIPCAction() {
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   const performAction = useCallback(async (type: string, method: string, ...params: any[]) => {
     const publicActions = ["login", "register", "forgotPassword", "resetPassword"];
@@ -24,14 +26,14 @@ export function useIPCAction() {
     }
 
     if (!userId && !isPublicAuth) {
-      toast.error("User not authenticated");
-      return { success: false, error: "Unauthorized" };
+      toast.error(t("ERR_AUTH_REQUIRED") || "User not authenticated");
+      return { success: false, error: "ERR_AUTH_REQUIRED" };
     }
 
     if (typeof window === "undefined" || !(window as any).electronAPI) {
       const msg = "Application Electron requise. Vous utilisez actuellement un navigateur standard.";
       toast.error(msg);
-      return { success: false, error: msg };
+      return { success: false, error: "ERR_INTERNAL" };
     }
 
     setLoading(true);
@@ -46,18 +48,20 @@ export function useIPCAction() {
       );
 
       if (!result.success) {
-        throw new Error(result.error || "Action failed");
+        throw new Error(result.error || "ERR_INTERNAL");
       }
 
       return result;
     } catch (err: any) {
       console.error(`IPC Action Error [${type}.${method}]:`, err);
-      toast.error(err.message || "An error occurred");
+      // Translate the error if it matches one of our keys
+      const errorMsg = t(err.message as any) || t("ERR_INTERNAL") || err.message;
+      toast.error(errorMsg);
       return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   return { performAction, loading };
 }

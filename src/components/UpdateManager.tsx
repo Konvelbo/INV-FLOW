@@ -27,7 +27,7 @@ export default function UpdateManager() {
     if (typeof window === "undefined" || !window.electronAPI) return;
 
     const unbindStatus = window.electronAPI.onUpdateStatus((newStatus: any, info: any) => {
-      console.log("Update Status:", newStatus, info);
+
       setStatus(newStatus);
       if (newStatus === "available") {
         setUpdateInfo(info);
@@ -46,7 +46,7 @@ export default function UpdateManager() {
         }
       } else if (newStatus === "not-available") {
         // Silent for auto-check
-        console.log("App is up to date");
+
       }
     });
 

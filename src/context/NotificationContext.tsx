@@ -76,7 +76,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       if ("serviceWorker" in navigator && "PushManager" in window) {
         try {
           const registration = await navigator.serviceWorker.register("/sw.js");
-          // console.log("SW registered:", registration);
+
 
           // Once registered, check for subscription
           const subscription = await registration.pushManager.getSubscription();

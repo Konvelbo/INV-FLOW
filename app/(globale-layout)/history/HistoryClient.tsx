@@ -202,15 +202,40 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
               {t("historyDesc")}
             </p>
           </div>
-          <Button
-            onClick={() => {
-              clearInvoiceData();
-              router.push("/invoice");
-            }}
-            className="px-8 py-4 text-xs font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em] h-auto"
-          >
-            {t("newInvoice")}
-          </Button>
+          <div className="flex flex-wrap gap-4">
+            <Button
+              onClick={async () => {
+                const userStr = localStorage.getItem("user");
+                const userId = userStr ? JSON.parse(userStr).id : null;
+                const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
+                const res = await window.electronAPI.getData("export", userId, "invoices", activeCompanyId, "excel");
+                if (res.success && res.data) {
+                  const blob = new Blob([res.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `Export_Factures_${new Date().toISOString().split('T')[0]}.xlsx`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success(t("exportSuccess") || "Export Excel réussi !");
+                }
+              }}
+              variant="outline"
+              className="px-6 py-4 text-[10px] font-black text-foreground bg-background/50 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all rounded-2xl uppercase tracking-[0.2em] h-auto flex items-center gap-2"
+            >
+              <DollarSign className="w-4 h-4" />
+              {t("exportExcel") || "Exporter Excel"}
+            </Button>
+            <Button
+              onClick={() => {
+                clearInvoiceData();
+                router.push("/invoice");
+              }}
+              className="px-8 py-4 text-xs font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em] h-auto"
+            >
+              {t("newInvoice")}
+            </Button>
+          </div>
         </div>
 
         <div className="bg-card p-8 rounded-lg border border-border/50 backdrop-blur-xl shadow-2xl space-y-6 md:space-y-0 md:flex md:items-center md:gap-6 animate-fade-in-up delay-75">

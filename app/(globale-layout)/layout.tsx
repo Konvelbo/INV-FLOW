@@ -4,6 +4,7 @@ import Topbar from "@/src/components/Topbar";
 import { SidebarProvider, SidebarInset } from "@/src/components/ui/sidebar";
 import { PageTransition } from "@/src/components/PageTransition";
 import { SubscriptionProvider } from "@/src/context/SubscriptionContext";
+import { InvoiceListener } from "@/src/components/InvoiceListener";
 
 export default function InvoiceLayout({
   children,
@@ -17,6 +18,7 @@ export default function InvoiceLayout({
         <SidebarInset>
           <div className="flex flex-col h-screen overflow-hidden">
             <Topbar />
+            <InvoiceListener />
             <main
               id="main-page"
               className="flex-1 overflow-y-auto overflow-x-hidden bg-background"

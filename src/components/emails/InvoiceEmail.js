@@ -31,23 +31,37 @@ const InvoiceEmail = ({
   amount,
   invoiceId,
   lang = "fr",
+  isReminder = false,
+  tone = "professional",
 }) => {
   const isEn = lang === "en";
+  const isFriendly = tone === "friendly";
+
+  const getReminderText = () => {
+    if (isEn) {
+      return isFriendly
+        ? `Just a friendly reminder regarding your invoice ${invoiceReference}. We would appreciate it if you could take a look when you have a moment.`
+        : `This is a formal reminder that the payment for invoice ${invoiceReference} is currently pending. Please ensure payment is processed at your earliest convenience.`;
+    }
+    return isFriendly
+      ? `Petit rappel amical concernant votre facture ${invoiceReference}. Nous vous remercions d'y jeter un œil dès que possible.`
+      : `Ceci est une relance formelle concernant votre facture ${invoiceReference}. Le paiement est actuellement en attente. Merci de régulariser la situation dans les plus brefs délais.`;
+  };
 
   return e(Html, null,
     e(Head, null),
     e(Preview, null,
-      isEn
-        ? `New invoice ${invoiceReference} from ${senderName}`
-        : `Nouvelle facture ${invoiceReference} de ${senderName}`
+      isReminder
+        ? (isEn ? `Reminder: Invoice ${invoiceReference}` : `Rappel : Facture ${invoiceReference}`)
+        : (isEn ? `New invoice ${invoiceReference} from ${senderName}` : `Nouvelle facture ${invoiceReference} de ${senderName}`)
     ),
     e(Body, { style: main },
       e(Container, { style: container },
         e(Section, { style: header },
           e(Text, { style: headerTitle },
-            isEn
-              ? `Invoice ${invoiceReference}`
-              : `Facture ${invoiceReference}`
+            isReminder
+              ? (isEn ? `Payment Reminder` : `Rappel de Paiement`)
+              : (isEn ? `Invoice ${invoiceReference}` : `Facture ${invoiceReference}`)
           )
         ),
         e(Section, { style: content },
@@ -55,21 +69,23 @@ const InvoiceEmail = ({
             isEn ? `Hello ${clientName},` : `Bonjour ${clientName},`
           ),
           e(Text, { style: text },
-            isEn ? (
-              e(React.Fragment, null,
-                "Please find attached the PDF for your invoice ",
-                e("strong", null, invoiceReference),
-                " issued by ",
-                e("strong", null, senderName),
-                "."
-              )
-            ) : (
-              e(React.Fragment, null,
-                "Veuillez trouver ci-joint le PDF de votre facture ",
-                e("strong", null, invoiceReference),
-                " émise par ",
-                e("strong", null, senderName),
-                "."
+            isReminder ? getReminderText() : (
+              isEn ? (
+                e(React.Fragment, null,
+                  "Please find attached the PDF for your invoice ",
+                  e("strong", null, invoiceReference),
+                  " issued by ",
+                  e("strong", null, senderName),
+                  "."
+                )
+              ) : (
+                e(React.Fragment, null,
+                  "Veuillez trouver ci-joint le PDF de votre facture ",
+                  e("strong", null, invoiceReference),
+                  " émise par ",
+                  e("strong", null, senderName),
+                  "."
+                )
               )
             )
           ),
@@ -82,7 +98,7 @@ const InvoiceEmail = ({
               isEn ? "Download Invoice" : "Télécharger la facture"
             )
           ),
-          downloadLink && e(Text, { style: text },
+          (downloadLink && !isReminder) && e(Text, { style: text },
             isEn
               ? "If the button doesn't work, copy and paste this link into your browser:"
               : "Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :",
@@ -99,7 +115,7 @@ const InvoiceEmail = ({
           )
         ),
         invoiceId && e("img", {
-          src: `LIEN_ATLAS_A_REMPLACER?invoiceId=${invoiceId}`,
+          src: `https://essor.app/api/track/v?id=${invoiceId}`,
           width: "1",
           height: "1",
           alt: "",

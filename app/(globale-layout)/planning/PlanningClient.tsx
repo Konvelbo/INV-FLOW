@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   ListTodo,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 import {
   format,
@@ -37,11 +38,18 @@ import { fr, enUS } from "date-fns/locale";
 import { useIPCAction } from "@/hooks/useIPCAction";
 
 interface PlanningClientProps {
-  initialTodos: any[];
+  initialData: {
+    todos: any[];
+    automations: any[];
+  } | any[];
 }
 
-export default function PlanningClient({ initialTodos }: PlanningClientProps) {
+export default function PlanningClient({ initialData }: PlanningClientProps) {
+  const initialTodos = Array.isArray(initialData) ? initialData : (initialData?.todos || []);
+  const initialAutomations = Array.isArray(initialData) ? [] : (initialData?.automations || []);
+
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
+  const [automations, setAutomations] = useState<any[]>(initialAutomations);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<TaskFormValues | null>(null);
@@ -180,39 +188,48 @@ export default function PlanningClient({ initialTodos }: PlanningClientProps) {
   }, [startTimeValue, findFreeSlot]);
 
   return (
-    <div className="flex flex-col min-h-full min-w-full pt-5 md:pt-5 lg:pt-16 bg-background font-sans">
-      <div className="flex flex-row justify-between items-center px-10 mb-15">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-linear-to-tr from-primary to-emerald-600 rounded-xl shadow-lg shadow-primary/20">
-            <TrendingUp className="size-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">
+    <div className="flex flex-col min-h-full min-w-full bg-background font-sans">
+      {/* Premium Hero Header */}
+      <div className="relative overflow-hidden bg-muted/30 border-b">
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-emerald-500/5" />
+        <div className="absolute -top-24 -right-24 size-64 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 size-64 bg-emerald-500/10 rounded-full blur-3xl" />
+
+        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center px-6 py-8 md:px-10 md:py-12 gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-linear-to-tr from-primary to-emerald-600 rounded-2xl shadow-xl shadow-primary/20 rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                <Zap className="size-6 text-white" />
+              </div>
+              <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
+                {t("workPlanningAnalysis")}
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70">
               {t("productivityDashboard")}
             </h1>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest -mt-1">
-              {t("workPlanningAnalysis")}
+            <p className="text-sm text-muted-foreground max-w-md">
+              Gérez votre emploi du temps et vos automatisations de facturation en un seul endroit.
             </p>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => openAddModal()}
-            className="rounded-full bg-linear-to-r from-primary to-emerald-600 shadow-lg shadow-primary/25 hover:opacity-90 px-6"
-          >
-            <Plus className="size-4 mr-2" />
-            {t("addTask")}
-          </Button>
-          <div className="h-8 w-px bg-border mx-2" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={() => setIsSearchModalOpen(true)}
-          >
-            <Search className="size-5" />
-          </Button>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Button
+              onClick={() => openAddModal()}
+              className="flex-1 md:flex-none rounded-2xl bg-linear-to-r from-primary to-emerald-600 shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 h-12 px-8 font-bold"
+            >
+              <Plus className="size-5 mr-2" />
+              {t("addTask")}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-2xl size-12 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+              onClick={() => setIsSearchModalOpen(true)}
+            >
+              <Search className="size-5 text-primary" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -253,6 +270,65 @@ export default function PlanningClient({ initialTodos }: PlanningClientProps) {
       </header>
 
       <div className="flex-1 flex flex-col bg-muted/10 p-4 gap-4">
+        {/* Automations Section */}
+        <div className="space-y-4 animate-fade-in-up delay-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Zap className="size-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold">{t("automationDashboard")}</h2>
+          </div>
+
+          {automations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {automations.map((auto) => (
+                <Card key={auto.id} className="bg-card/50 backdrop-blur-sm border-primary/10 hover:border-primary/30 transition-all group">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="text-xs font-bold text-primary uppercase tracking-tighter">
+                          {auto.isRecurring ? t("recurringInvoice") : t("autoReminders")}
+                        </p>
+                        <h3 className="font-bold text-sm line-clamp-1">{auto.clientName}</h3>
+                        <p className="text-[10px] text-muted-foreground">{auto.reference}</p>
+                      </div>
+                      <div className="px-2 py-0.5 bg-primary/20 rounded text-[10px] font-bold text-primary">
+                        {auto.isRecurring ? t(auto.recurrenceFreq) : t("pending")}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {auto.isRecurring && auto.nextIssueDate && (
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">{t("nextGeneration")}</span>
+                          <span className="font-mono">{format(new Date(auto.nextIssueDate), "dd MMM yyyy", { locale })}</span>
+                        </div>
+                      )}
+                      {auto.autoReminders && auto.nextReminderDate && (
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">{t("remindersScheduled")}</span>
+                          <span className="font-mono">{format(new Date(auto.nextReminderDate), "dd MMM yyyy", { locale })}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-muted/10 border-dashed border-2">
+              <CardContent className="p-8 text-center space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t("noActiveAutomations") || "Aucune automatisation active pour le moment."}
+                </p>
+                <p className="text-xs text-muted-foreground/60 italic">
+                  {t("automationTip")}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="border-none shadow-sm bg-linear-to-br from-indigo-500/10 to-indigo-600/5 border border-indigo-500/10">
             <CardContent className="p-4 flex items-center gap-4">
