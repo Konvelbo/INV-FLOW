@@ -16,6 +16,7 @@ import {
   Send,
   CalendarClock,
   Clock,
+  CheckCheck,
 } from "lucide-react";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { formatPrice } from "@/lib/currency";
@@ -402,6 +403,12 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                       <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] px-2 py-0.5 bg-primary/10 rounded-full">
                         PROFORMA
                       </span>
+                      {invoice.isRead && (
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] px-2 py-0.5 bg-emerald-500/10 rounded-full flex items-center gap-1">
+                          <CheckCheck className="w-3 h-3" />
+                          {t("read") || "Lu"}
+                        </span>
+                      )}
                     </div>
                     <CardTitle className="text-xl font-bold font-mono text-foreground tracking-tighter">
                       {invoice.invoiceNumber
@@ -481,7 +488,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                       </span>
                     </div>
                     <span className="text-xl font-black text-primary font-mono tracking-tighter">
-                      {formatPrice(invoice.totalHT, currency)}
+                    {formatPrice(invoice.totalHT, currency, "fr-FR")}
                     </span>
                   </div>
                 </div>

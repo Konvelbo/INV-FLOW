@@ -46,8 +46,6 @@ export default function SmartAutofill() {
     itemsArr,
     setItemsArr,
     setClientId,
-    setClientPaidCount,
-    setClientUnpaidCount,
   } = useInvoice();
   const { t } = useLanguage();
 
@@ -117,8 +115,6 @@ export default function SmartAutofill() {
     setClientContact(client.phone || client.email || "");
     setClientPOBox("");
     setClientId(client.id);
-    setClientPaidCount(client.paidInvoicesCount || 0);
-    setClientUnpaidCount(client.unpaidInvoicesCount || 0);
     setIsOpen(false);
   };
 

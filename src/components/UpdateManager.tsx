@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
-import { RefreshCw, XCircle, CheckCircle2 } from "lucide-react";
+import { RefreshCw, XCircle, CheckCircle2, Download } from "lucide-react";
 import { Progress } from "@/src/components/ui/progress";
 import { useLanguage } from "@/src/context/LanguageContext";
 
@@ -41,7 +41,7 @@ export default function UpdateManager() {
         setError(info);
         // Silent logs for background checks to avoid technical toasts
         console.error("Update System Error:", info);
-        
+
         // Only show toast for critical errors (not for checking failures)
         if (status === "downloading" || status === "downloaded") {
           toast.error(t("systemUpdateError"));
@@ -111,7 +111,7 @@ export default function UpdateManager() {
           <Button variant="ghost" onClick={() => setShowModal(false)} className="rounded-xl">
             {t("later")}
           </Button>
-          
+
           {status === "available" && (
             <Button onClick={handleStartDownload} className="rounded-xl bg-primary hover:bg-primary/90">
               {t("downloadNow")}

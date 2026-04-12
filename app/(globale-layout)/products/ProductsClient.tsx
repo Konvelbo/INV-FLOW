@@ -121,7 +121,7 @@ export default function ProductsClient({
       description: product.description || "",
       price: product.price.toString(),
       taxRate: product.taxRate.toString(),
-      type: product.type || "service",
+      type: (product.type as "service" | "product") || "service",
     });
     setIsDialogOpen(true);
   };
@@ -383,6 +383,7 @@ export default function ProductsClient({
                 value: formatPrice(
                   products.reduce((acc, p) => acc + p.price, 0),
                   currency,
+                  "fr-FR"
                 ),
                 icon: LineChart,
                 color: "text-emerald-500",

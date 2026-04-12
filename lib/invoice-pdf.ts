@@ -27,6 +27,7 @@ export type InvoiceProps = {
   style?: string;
   type?: "invoice" | "quote";
   companyName?: string;
+  amountWords?: string;
   companyAddress?: string;
   currencyCode?: string;
   language?: "fr" | "en";

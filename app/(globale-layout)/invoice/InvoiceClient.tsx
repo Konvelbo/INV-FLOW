@@ -205,7 +205,7 @@ export default function InvoiceClient({
       // @ts-ignore
       const pdfBuffer = await window.electronAPI.generatePDF(html);
 
-      const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+      const blob = new Blob([pdfBuffer as any], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -347,7 +347,7 @@ export default function InvoiceClient({
         invoiceId,
         targetEmail,
         currency,
-        Array.from(new Uint8Array(pdfBuffer)),
+        Array.from(new Uint8Array(pdfBuffer as any)),
       );
 
       if (res.success) {

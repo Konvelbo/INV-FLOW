@@ -23,7 +23,7 @@ export default function AutomationWatcher() {
 
         // Build notification content
         let action = "";
-        let target = invoiceReference || "";
+        const target = invoiceReference || "";
         let icon = "🔔";
 
         if (type === "recurring-generated") {

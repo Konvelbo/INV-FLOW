@@ -2502,6 +2502,7 @@ const actionHandlers = {
       };
     },
 
+    getPricing: async (userId, { currencyCode }) => {
       try {
         return await getPricingForCurrency(currencyCode);
       } catch (err) {

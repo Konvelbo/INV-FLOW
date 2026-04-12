@@ -4,9 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { detectCountryFromIP, getPricingForCountry } from "@/lib/currency";
 
-// Force static for Electron build compatibility with output: "export"
-// On Vercel at runtime, this will still execute the GET handler normally
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {

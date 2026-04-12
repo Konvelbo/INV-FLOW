@@ -1,0 +1,12 @@
+/electron
+/dist
+/out
+/release
+/build
+*.ico
+!public/black-caractere-non-black.ico
+licence.md
+docs/
+.npmrc
+# Exclude puppeteer cache if it exists locally
+.cache/puppeteer

@@ -228,7 +228,7 @@ export default function Style6Template({
                 <OptimizedInput
                   value={clientContact}
                   onValueChange={setClientContact}
-                  placeholder={dict.clientContact}
+                  placeholder={dict.contact}
                   className="bg-transparent text-sm w-full p-0 border-none focus:ring-0 text-right"
                 />
                 <OptimizedInput

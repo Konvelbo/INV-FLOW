@@ -465,6 +465,7 @@ export default function ExpensesClient({
                   value: formatPrice(
                     expenses.reduce((acc, e) => acc + e.amount, 0),
                     currency,
+                    "fr-FR"
                   ),
                   icon: TrendingDown,
                   color: "text-rose-500",

@@ -11,6 +11,10 @@ import {
   Bell,
   LayoutDashboard,
   ShieldCheck,
+  Zap,
+  Globe,
+  RefreshCw,
+  FileCheck,
 } from "lucide-react";
 import Logo from "@/src/components/navbar-components/logo";
 import { SparklesText } from "@/src/components/ui/sparkles-text";
@@ -427,6 +431,49 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What's New v1.5 Section */}
+      <section className="relative z-10 py-32 bg-background/30 backdrop-blur-sm">
+        <div className="container px-6 mx-auto">
+          <div className="text-center mb-24 max-w-4xl mx-auto space-y-6">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
+              {t("v15Badge")}
+            </div>
+            <h2 className="text-5xl md:text-7xl font-black bg-linear-to-b from-white to-slate-500 bg-clip-text text-transparent tracking-tighter leading-tight">
+              {t("whatsNewTitle")}
+            </h2>
+            <p className="text-muted-foreground text-lg md:text-xl font-sans max-w-2xl mx-auto italic">
+              {t("whatsNewSubtitle")}
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+            {[
+              { id: 1, icon: Zap },
+              { id: 2, icon: Bell },
+              { id: 3, icon: ShieldCheck },
+              { id: 4, icon: Globe },
+              { id: 5, icon: FileCheck },
+              { id: 6, icon: RefreshCw },
+            ].map((item) => (
+              <div key={item.id} className="group p-8 rounded-[2.5rem] bg-card/40 border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-[40px] rounded-full -mr-12 -mt-12 group-hover:bg-primary/10 transition-all" />
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 text-primary">
+                  <item.icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3 font-sans tracking-tight">
+                  {/* @ts-ignore */}
+                  {t(`update${item.id}Title`)}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed font-sans text-sm">
+                  {/* @ts-ignore */}
+                  {t(`update${item.id}Desc`)}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

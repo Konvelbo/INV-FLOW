@@ -5,8 +5,8 @@ const isProd = process.env.NODE_ENV === "production";
 const isVercel = !!process.env.VERCEL;
 
 const nextConfig: NextConfig = {
-  output: (isProd && !isVercel) ? "export" : undefined,
-  distDir: (isProd && !isVercel) ? "out" : undefined,
+  output: isVercel ? "standalone" : (isProd ? "export" : undefined),
+  distDir: isVercel ? undefined : (isProd ? "out" : undefined),
   images: {
     unoptimized: true,
   },

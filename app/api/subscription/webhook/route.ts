@@ -5,9 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/src/p_client";
 import crypto from "crypto";
 
-// Force static for Electron build compatibility with output: "export"
-// On Vercel at runtime, this will still execute the POST handler normally
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 

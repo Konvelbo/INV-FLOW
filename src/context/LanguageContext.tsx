@@ -81,7 +81,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     [language],
   );
 
-  const dict = useMemo(() => translations[language], [language]);
+  const dict = useMemo(() => translations[language] as typeof translations.fr, [language]);
 
   const contextValue = useMemo(
     () => ({ language, setLanguage, t, dict }),

@@ -100,7 +100,8 @@ interface CompaniesClientProps {
 export default function CompaniesClient({
   initialCompanies,
 }: CompaniesClientProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const locale = language === "fr" ? "fr-FR" : "en-US";
   const [companies, setCompanies] = useState<Company[]>(
     initialCompanies?.companies || [],
   );
@@ -931,21 +932,21 @@ export default function CompaniesClient({
           {[
             {
               label: t("totalRevenue"),
-              value: formatPrice(stats.totalRevenue, currency),
+              value: formatPrice(stats.totalRevenue, currency, locale),
               icon: TrendingUp,
               color: "text-emerald-500",
               bg: "bg-emerald-500/10",
             },
             {
               label: t("totalLoss"),
-              value: formatPrice(stats.totalLoss, currency),
+              value: formatPrice(stats.totalLoss, currency, locale),
               icon: TrendingDown,
               color: "text-rose-500",
               bg: "bg-rose-500/10",
             },
             {
               label: t("totalExpenses"),
-              value: formatPrice(stats.totalExpenses, currency),
+              value: formatPrice(stats.totalExpenses, currency, locale),
               icon: Receipt,
               color: "text-amber-500",
               bg: "bg-amber-500/10",
@@ -1114,7 +1115,7 @@ export default function CompaniesClient({
                         {t("annualRevenue") || "CA Annuel"}
                       </span>
                       <p className="text-sm font-black text-foreground">
-                        {company.annualRevenue ? formatPrice(company.annualRevenue, currency) : "—"}
+                        {company.annualRevenue ? formatPrice(company.annualRevenue, currency, locale) : "—"}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -1122,7 +1123,7 @@ export default function CompaniesClient({
                         {t("monthly_revenue") || "CA Mensuel"}
                       </span>
                       <p className="text-sm font-black text-foreground">
-                        {company.monthlyRevenue ? formatPrice(company.monthlyRevenue, currency) : "—"}
+                        {company.monthlyRevenue ? formatPrice(company.monthlyRevenue, currency, locale) : "—"}
                       </p>
                     </div>
                   </div>

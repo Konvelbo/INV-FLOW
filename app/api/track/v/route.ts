@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     // Only attempt database operations on Vercel (has database access)
     if (id && process.env.VERCEL) {
       try {
-        const { PrismaClient } = await import("@prisma/client");
+        const { PrismaClient } = await import("@/src/p_client");
         const prisma = new PrismaClient();
 
         await prisma.invoice.updateMany({

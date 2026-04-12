@@ -557,7 +557,7 @@ export default function PlanningClient({ initialData }: PlanningClientProps) {
                a.id === invoiceId ? { ...a, ...payload } : a
              ));
              const updated = dashboardRes.data.automations?.find((a: any) => a.id === invoiceId);
-             setSelectedAutomationInvoice(prev => {
+             setSelectedAutomationInvoice((prev: any) => {
                 const base = updated || prev;
                 return base ? { ...base, ...payload } : null;
              });
@@ -566,7 +566,7 @@ export default function PlanningClient({ initialData }: PlanningClientProps) {
                a.id === invoiceId ? { ...a, ...payload } : a
              ));
              const updated = dashboardRes.data.scheduledInvoices?.find((a: any) => a.id === invoiceId);
-             setSelectedAutomationInvoice(prev => {
+             setSelectedAutomationInvoice((prev: any) => {
                 const base = updated || prev;
                 return base ? { ...base, ...payload } : null;
              });
