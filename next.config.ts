@@ -2,9 +2,11 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
 
+const isVercel = !!process.env.VERCEL;
+
 const nextConfig: NextConfig = {
-  output: (isProd && !process.env.VERCEL) ? "export" : undefined,
-  distDir: "out",
+  output: (isProd && !isVercel) ? "export" : undefined,
+  distDir: (isProd && !isVercel) ? "out" : undefined,
   images: {
     unoptimized: true,
   },
