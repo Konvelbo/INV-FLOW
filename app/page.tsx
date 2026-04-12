@@ -52,7 +52,7 @@ export default function Home() {
         const parsed = JSON.parse(userStr);
         if (parsed?.id) {
           setStorage(parsed);
-          
+
           if (!sessionStorage.getItem("hasAutoRedirected")) {
             sessionStorage.setItem("hasAutoRedirected", "true");
             const hasCompanies = (parsed.companies && parsed.companies.length > 0) || !!parsed.activeCompanyId;

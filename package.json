@@ -8,7 +8,7 @@
     "electron:dev": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "electron:build": "wait-on http://localhost:3000 && cross-env NODE_ENV=production electron-builder --dir",
     "electron:dist": "node -e \"const fs = require('fs'); let moved = false; if (fs.existsSync('app/api')) { fs.renameSync('app/api', 'app/_api'); moved = true; } try { require('child_process').execSync('npx prisma generate && next build', {stdio: 'inherit'}); } finally { if (moved && fs.existsSync('app/_api')) fs.renameSync('app/_api', 'app/api'); }\" && electron-builder",
-    "build": "node -e \"const fs = require('fs'); const isVercel = !!process.env.VERCEL; let moved = false; if (!isVercel && fs.existsSync('app/api')) { fs.renameSync('app/api', 'app/_api'); moved = true; } try { require('child_process').execSync('next build', {stdio: 'inherit'}); } finally { if (moved && fs.existsSync('app/_api')) fs.renameSync('app/_api', 'app/api'); }\"",
+    "build": "node -e \"const fs = require('fs'); const isVercel = !!process.env.VERCEL; let moved = false; if (!isVercel && fs.existsSync('app/api')) { fs.renameSync('app/api', 'app/_api'); moved = true; } try { require('child_process').execSync('npx prisma generate && next build', {stdio: 'inherit'}); } finally { if (moved && fs.existsSync('app/_api')) fs.renameSync('app/_api', 'app/api'); }\"",
     "start": "next start",
     "lint": "eslint"
   },
@@ -37,38 +37,7 @@
       "installerIcon": "public/black-caractere-non-black.ico",
       "uninstallerIcon": "public/black-caractere-non-black.ico",
       "license": "licence.md",
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false
-    },
-    "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "icon": "public/logo-caracterer-bg-non-ESSOR.png",
-      "category": "public.app-category.productivity"
-    },
-    "dmg": {
-      "contents": [
-        {
-          "x": 410,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        },
-        {
-          "x": 130,
-          "y": 150,
-          "type": "file"
-        }
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Office"
+      "perMachine": false
     },
     "files": [
       "**/*",
