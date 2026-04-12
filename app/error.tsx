@@ -35,17 +35,17 @@ export default function Error({
 
         <div className="space-y-4">
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-destructive">
-            {t("errorTitle") || "Une Erreur est Survenue"}
+            {t("errorTitle")}
           </h1>
           <p className="text-slate-400 font-sans leading-relaxed max-w-md mx-auto">
-            {t("errorDescription") || "Nous sommes désolés, une erreur inattendue s'est produite. Nos ingénieurs ont été notifiés."}
+            {t("errorDescription")}
           </p>
         </div>
 
         {/* Technical Hint (Simple and Premium) */}
         {error.message && (
           <div className="w-full bg-destructive/5 border border-destructive/10 p-4 rounded-xl">
-            <p className="text-[10px] font-black uppercase tracking-widest text-destructive mb-1 opacity-60">Info technique</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-destructive mb-1 opacity-60">{t("techInfo")}</p>
             <p className="text-xs text-slate-300 font-mono italic opacity-90 truncate max-w-full">{error.message}</p>
           </div>
         )}
@@ -57,13 +57,13 @@ export default function Error({
             className="h-14 px-8 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-black uppercase text-xs tracking-widest gap-3 transition-all h-auto"
           >
             <RefreshCcw className="w-5 h-5" />
-            {t("retry") || "Réessayer"}
+            {t("retry")}
           </Button>
 
           <Link href="/dashboard" passHref className="flex-grow sm:flex-grow-0">
             <Button className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase text-xs tracking-widest gap-3 shadow-xl shadow-primary/20 transition-all hover:scale-105 h-auto w-full">
               <Home className="w-5 h-5" />
-              {t("backToDashboard") || "Retour au Tableau de Bord"}
+              {t("backToDashboard")}
             </Button>
           </Link>
         </div>

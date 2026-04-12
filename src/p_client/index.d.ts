@@ -2119,6 +2119,7 @@ export namespace Prisma {
     clients: number
     expenses: number
     products: number
+    todos: number
   }
 
   export type CompanyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2126,6 +2127,7 @@ export namespace Prisma {
     clients?: boolean | CompanyCountOutputTypeCountClientsArgs
     expenses?: boolean | CompanyCountOutputTypeCountExpensesArgs
     products?: boolean | CompanyCountOutputTypeCountProductsArgs
+    todos?: boolean | CompanyCountOutputTypeCountTodosArgs
   }
 
   // Custom InputTypes
@@ -2165,6 +2167,13 @@ export namespace Prisma {
    */
   export type CompanyCountOutputTypeCountProductsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductWhereInput
+  }
+
+  /**
+   * CompanyCountOutputType without action
+   */
+  export type CompanyCountOutputTypeCountTodosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TodoWhereInput
   }
 
 
@@ -5149,6 +5158,7 @@ export namespace Prisma {
     clients?: boolean | Company$clientsArgs<ExtArgs>
     expenses?: boolean | Company$expensesArgs<ExtArgs>
     products?: boolean | Company$productsArgs<ExtArgs>
+    todos?: boolean | Company$todosArgs<ExtArgs>
     _count?: boolean | CompanyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["company"]>
 
@@ -5187,6 +5197,7 @@ export namespace Prisma {
     clients?: boolean | Company$clientsArgs<ExtArgs>
     expenses?: boolean | Company$expensesArgs<ExtArgs>
     products?: boolean | Company$productsArgs<ExtArgs>
+    todos?: boolean | Company$todosArgs<ExtArgs>
     _count?: boolean | CompanyCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -5198,6 +5209,7 @@ export namespace Prisma {
       clients: Prisma.$ClientPayload<ExtArgs>[]
       expenses: Prisma.$ExpensePayload<ExtArgs>[]
       products: Prisma.$ProductPayload<ExtArgs>[]
+      todos: Prisma.$TodoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5591,6 +5603,7 @@ export namespace Prisma {
     clients<T extends Company$clientsArgs<ExtArgs> = {}>(args?: Subset<T, Company$clientsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     expenses<T extends Company$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Company$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     products<T extends Company$productsArgs<ExtArgs> = {}>(args?: Subset<T, Company$productsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    todos<T extends Company$todosArgs<ExtArgs> = {}>(args?: Subset<T, Company$todosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6106,6 +6119,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProductScalarFieldEnum | ProductScalarFieldEnum[]
+  }
+
+  /**
+   * Company.todos
+   */
+  export type Company$todosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Todo
+     */
+    select?: TodoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Todo
+     */
+    omit?: TodoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TodoInclude<ExtArgs> | null
+    where?: TodoWhereInput
+    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    cursor?: TodoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
   }
 
   /**
@@ -9673,6 +9710,7 @@ export namespace Prisma {
     endTime: Date | null
     reminderAt: Date | null
     userId: string | null
+    companyId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9689,6 +9727,7 @@ export namespace Prisma {
     endTime: Date | null
     reminderAt: Date | null
     userId: string | null
+    companyId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9705,6 +9744,7 @@ export namespace Prisma {
     endTime: number
     reminderAt: number
     userId: number
+    companyId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -9723,6 +9763,7 @@ export namespace Prisma {
     endTime?: true
     reminderAt?: true
     userId?: true
+    companyId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9739,6 +9780,7 @@ export namespace Prisma {
     endTime?: true
     reminderAt?: true
     userId?: true
+    companyId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9755,6 +9797,7 @@ export namespace Prisma {
     endTime?: true
     reminderAt?: true
     userId?: true
+    companyId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -9844,6 +9887,7 @@ export namespace Prisma {
     endTime: Date | null
     reminderAt: Date | null
     userId: string
+    companyId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     _count: TodoCountAggregateOutputType | null
@@ -9877,9 +9921,11 @@ export namespace Prisma {
     endTime?: boolean
     reminderAt?: boolean
     userId?: boolean
+    companyId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    company?: boolean | Todo$companyArgs<ExtArgs>
   }, ExtArgs["result"]["todo"]>
 
 
@@ -9896,19 +9942,22 @@ export namespace Prisma {
     endTime?: boolean
     reminderAt?: boolean
     userId?: boolean
+    companyId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TodoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "completed" | "status" | "priority" | "category" | "startTime" | "endTime" | "reminderAt" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["todo"]>
+  export type TodoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "completed" | "status" | "priority" | "category" | "startTime" | "endTime" | "reminderAt" | "userId" | "companyId" | "createdAt" | "updatedAt", ExtArgs["result"]["todo"]>
   export type TodoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    company?: boolean | Todo$companyArgs<ExtArgs>
   }
 
   export type $TodoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Todo"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      company: Prisma.$CompanyPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9922,6 +9971,7 @@ export namespace Prisma {
       endTime: Date | null
       reminderAt: Date | null
       userId: string
+      companyId: string | null
       createdAt: Date | null
       updatedAt: Date | null
     }, ExtArgs["result"]["todo"]>
@@ -10288,6 +10338,7 @@ export namespace Prisma {
   export interface Prisma__TodoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    company<T extends Todo$companyArgs<ExtArgs> = {}>(args?: Subset<T, Todo$companyArgs<ExtArgs>>): Prisma__CompanyClient<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10328,6 +10379,7 @@ export namespace Prisma {
     readonly endTime: FieldRef<"Todo", 'DateTime'>
     readonly reminderAt: FieldRef<"Todo", 'DateTime'>
     readonly userId: FieldRef<"Todo", 'String'>
+    readonly companyId: FieldRef<"Todo", 'String'>
     readonly createdAt: FieldRef<"Todo", 'DateTime'>
     readonly updatedAt: FieldRef<"Todo", 'DateTime'>
   }
@@ -10697,6 +10749,25 @@ export namespace Prisma {
      * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
      */
     options?: InputJsonValue
+  }
+
+  /**
+   * Todo.company
+   */
+  export type Todo$companyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Company
+     */
+    select?: CompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Company
+     */
+    omit?: CompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CompanyInclude<ExtArgs> | null
+    where?: CompanyWhereInput
   }
 
   /**
@@ -18447,6 +18518,7 @@ export namespace Prisma {
     endTime: 'endTime',
     reminderAt: 'reminderAt',
     userId: 'userId',
+    companyId: 'companyId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -18940,6 +19012,7 @@ export namespace Prisma {
     clients?: ClientListRelationFilter
     expenses?: ExpenseListRelationFilter
     products?: ProductListRelationFilter
+    todos?: TodoListRelationFilter
   }
 
   export type CompanyOrderByWithRelationInput = {
@@ -18971,6 +19044,7 @@ export namespace Prisma {
     clients?: ClientOrderByRelationAggregateInput
     expenses?: ExpenseOrderByRelationAggregateInput
     products?: ProductOrderByRelationAggregateInput
+    todos?: TodoOrderByRelationAggregateInput
   }
 
   export type CompanyWhereUniqueInput = Prisma.AtLeast<{
@@ -19005,6 +19079,7 @@ export namespace Prisma {
     clients?: ClientListRelationFilter
     expenses?: ExpenseListRelationFilter
     products?: ProductListRelationFilter
+    todos?: TodoListRelationFilter
   }, "id">
 
   export type CompanyOrderByWithAggregationInput = {
@@ -19435,9 +19510,11 @@ export namespace Prisma {
     endTime?: DateTimeNullableFilter<"Todo"> | Date | string | null
     reminderAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     userId?: StringFilter<"Todo"> | string
+    companyId?: StringNullableFilter<"Todo"> | string | null
     createdAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    company?: XOR<CompanyNullableScalarRelationFilter, CompanyWhereInput> | null
   }
 
   export type TodoOrderByWithRelationInput = {
@@ -19452,9 +19529,11 @@ export namespace Prisma {
     endTime?: SortOrder
     reminderAt?: SortOrder
     userId?: SortOrder
+    companyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    company?: CompanyOrderByWithRelationInput
   }
 
   export type TodoWhereUniqueInput = Prisma.AtLeast<{
@@ -19472,9 +19551,11 @@ export namespace Prisma {
     endTime?: DateTimeNullableFilter<"Todo"> | Date | string | null
     reminderAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     userId?: StringFilter<"Todo"> | string
+    companyId?: StringNullableFilter<"Todo"> | string | null
     createdAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    company?: XOR<CompanyNullableScalarRelationFilter, CompanyWhereInput> | null
   }, "id">
 
   export type TodoOrderByWithAggregationInput = {
@@ -19489,6 +19570,7 @@ export namespace Prisma {
     endTime?: SortOrder
     reminderAt?: SortOrder
     userId?: SortOrder
+    companyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TodoCountOrderByAggregateInput
@@ -19511,6 +19593,7 @@ export namespace Prisma {
     endTime?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
     reminderAt?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
     userId?: StringWithAggregatesFilter<"Todo"> | string
+    companyId?: StringNullableWithAggregatesFilter<"Todo"> | string | null
     createdAt?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
   }
@@ -20461,6 +20544,7 @@ export namespace Prisma {
     clients?: ClientCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseCreateNestedManyWithoutCompanyInput
     products?: ProductCreateNestedManyWithoutCompanyInput
+    todos?: TodoCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUncheckedCreateInput = {
@@ -20491,6 +20575,7 @@ export namespace Prisma {
     clients?: ClientUncheckedCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseUncheckedCreateNestedManyWithoutCompanyInput
     products?: ProductUncheckedCreateNestedManyWithoutCompanyInput
+    todos?: TodoUncheckedCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUpdateInput = {
@@ -20520,6 +20605,7 @@ export namespace Prisma {
     clients?: ClientUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUpdateManyWithoutCompanyNestedInput
     products?: ProductUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateInput = {
@@ -20549,6 +20635,7 @@ export namespace Prisma {
     clients?: ClientUncheckedUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUncheckedUpdateManyWithoutCompanyNestedInput
     products?: ProductUncheckedUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyCreateManyInput = {
@@ -21032,6 +21119,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     user: UserCreateNestedOneWithoutTodosInput
+    company?: CompanyCreateNestedOneWithoutTodosInput
   }
 
   export type TodoUncheckedCreateInput = {
@@ -21046,6 +21134,7 @@ export namespace Prisma {
     endTime?: Date | string | null
     reminderAt?: Date | string | null
     userId: string
+    companyId?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -21063,6 +21152,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutTodosNestedInput
+    company?: CompanyUpdateOneWithoutTodosNestedInput
   }
 
   export type TodoUncheckedUpdateInput = {
@@ -21076,6 +21166,7 @@ export namespace Prisma {
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     userId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -21092,6 +21183,7 @@ export namespace Prisma {
     endTime?: Date | string | null
     reminderAt?: Date | string | null
     userId: string
+    companyId?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -21121,6 +21213,7 @@ export namespace Prisma {
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     userId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -22606,6 +22699,7 @@ export namespace Prisma {
     endTime?: SortOrder
     reminderAt?: SortOrder
     userId?: SortOrder
+    companyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22622,6 +22716,7 @@ export namespace Prisma {
     endTime?: SortOrder
     reminderAt?: SortOrder
     userId?: SortOrder
+    companyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22638,6 +22733,7 @@ export namespace Prisma {
     endTime?: SortOrder
     reminderAt?: SortOrder
     userId?: SortOrder
+    companyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -23575,6 +23671,13 @@ export namespace Prisma {
     connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
   }
 
+  export type TodoCreateNestedManyWithoutCompanyInput = {
+    create?: XOR<TodoCreateWithoutCompanyInput, TodoUncheckedCreateWithoutCompanyInput> | TodoCreateWithoutCompanyInput[] | TodoUncheckedCreateWithoutCompanyInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutCompanyInput | TodoCreateOrConnectWithoutCompanyInput[]
+    createMany?: TodoCreateManyCompanyInputEnvelope
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  }
+
   export type InvoiceUncheckedCreateNestedManyWithoutCompanyInput = {
     create?: XOR<InvoiceCreateWithoutCompanyInput, InvoiceUncheckedCreateWithoutCompanyInput> | InvoiceCreateWithoutCompanyInput[] | InvoiceUncheckedCreateWithoutCompanyInput[]
     connectOrCreate?: InvoiceCreateOrConnectWithoutCompanyInput | InvoiceCreateOrConnectWithoutCompanyInput[]
@@ -23601,6 +23704,13 @@ export namespace Prisma {
     connectOrCreate?: ProductCreateOrConnectWithoutCompanyInput | ProductCreateOrConnectWithoutCompanyInput[]
     createMany?: ProductCreateManyCompanyInputEnvelope
     connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+  }
+
+  export type TodoUncheckedCreateNestedManyWithoutCompanyInput = {
+    create?: XOR<TodoCreateWithoutCompanyInput, TodoUncheckedCreateWithoutCompanyInput> | TodoCreateWithoutCompanyInput[] | TodoUncheckedCreateWithoutCompanyInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutCompanyInput | TodoCreateOrConnectWithoutCompanyInput[]
+    createMany?: TodoCreateManyCompanyInputEnvelope
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
@@ -23685,6 +23795,20 @@ export namespace Prisma {
     deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
   }
 
+  export type TodoUpdateManyWithoutCompanyNestedInput = {
+    create?: XOR<TodoCreateWithoutCompanyInput, TodoUncheckedCreateWithoutCompanyInput> | TodoCreateWithoutCompanyInput[] | TodoUncheckedCreateWithoutCompanyInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutCompanyInput | TodoCreateOrConnectWithoutCompanyInput[]
+    upsert?: TodoUpsertWithWhereUniqueWithoutCompanyInput | TodoUpsertWithWhereUniqueWithoutCompanyInput[]
+    createMany?: TodoCreateManyCompanyInputEnvelope
+    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    update?: TodoUpdateWithWhereUniqueWithoutCompanyInput | TodoUpdateWithWhereUniqueWithoutCompanyInput[]
+    updateMany?: TodoUpdateManyWithWhereWithoutCompanyInput | TodoUpdateManyWithWhereWithoutCompanyInput[]
+    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
+  }
+
   export type InvoiceUncheckedUpdateManyWithoutCompanyNestedInput = {
     create?: XOR<InvoiceCreateWithoutCompanyInput, InvoiceUncheckedCreateWithoutCompanyInput> | InvoiceCreateWithoutCompanyInput[] | InvoiceUncheckedCreateWithoutCompanyInput[]
     connectOrCreate?: InvoiceCreateOrConnectWithoutCompanyInput | InvoiceCreateOrConnectWithoutCompanyInput[]
@@ -23739,6 +23863,20 @@ export namespace Prisma {
     update?: ProductUpdateWithWhereUniqueWithoutCompanyInput | ProductUpdateWithWhereUniqueWithoutCompanyInput[]
     updateMany?: ProductUpdateManyWithWhereWithoutCompanyInput | ProductUpdateManyWithWhereWithoutCompanyInput[]
     deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
+  }
+
+  export type TodoUncheckedUpdateManyWithoutCompanyNestedInput = {
+    create?: XOR<TodoCreateWithoutCompanyInput, TodoUncheckedCreateWithoutCompanyInput> | TodoCreateWithoutCompanyInput[] | TodoUncheckedCreateWithoutCompanyInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutCompanyInput | TodoCreateOrConnectWithoutCompanyInput[]
+    upsert?: TodoUpsertWithWhereUniqueWithoutCompanyInput | TodoUpsertWithWhereUniqueWithoutCompanyInput[]
+    createMany?: TodoCreateManyCompanyInputEnvelope
+    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    update?: TodoUpdateWithWhereUniqueWithoutCompanyInput | TodoUpdateWithWhereUniqueWithoutCompanyInput[]
+    updateMany?: TodoUpdateManyWithWhereWithoutCompanyInput | TodoUpdateManyWithWhereWithoutCompanyInput[]
+    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutClientsInput = {
@@ -23883,12 +24021,28 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type CompanyCreateNestedOneWithoutTodosInput = {
+    create?: XOR<CompanyCreateWithoutTodosInput, CompanyUncheckedCreateWithoutTodosInput>
+    connectOrCreate?: CompanyCreateOrConnectWithoutTodosInput
+    connect?: CompanyWhereUniqueInput
+  }
+
   export type UserUpdateOneRequiredWithoutTodosNestedInput = {
     create?: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
     connectOrCreate?: UserCreateOrConnectWithoutTodosInput
     upsert?: UserUpsertWithoutTodosInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTodosInput, UserUpdateWithoutTodosInput>, UserUncheckedUpdateWithoutTodosInput>
+  }
+
+  export type CompanyUpdateOneWithoutTodosNestedInput = {
+    create?: XOR<CompanyCreateWithoutTodosInput, CompanyUncheckedCreateWithoutTodosInput>
+    connectOrCreate?: CompanyCreateOrConnectWithoutTodosInput
+    upsert?: CompanyUpsertWithoutTodosInput
+    disconnect?: boolean
+    delete?: CompanyWhereInput | boolean
+    connect?: CompanyWhereUniqueInput
+    update?: XOR<XOR<CompanyUpdateToOneWithWhereWithoutTodosInput, CompanyUpdateWithoutTodosInput>, CompanyUncheckedUpdateWithoutTodosInput>
   }
 
   export type ClientCreateNestedOneWithoutInvoicesInput = {
@@ -24462,6 +24616,7 @@ export namespace Prisma {
     reminderAt?: Date | string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
+    company?: CompanyCreateNestedOneWithoutTodosInput
   }
 
   export type TodoUncheckedCreateWithoutUserInput = {
@@ -24475,6 +24630,7 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     reminderAt?: Date | string | null
+    companyId?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -24540,6 +24696,7 @@ export namespace Prisma {
     clients?: ClientCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseCreateNestedManyWithoutCompanyInput
     products?: ProductCreateNestedManyWithoutCompanyInput
+    todos?: TodoCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUncheckedCreateWithoutUserInput = {
@@ -24569,6 +24726,7 @@ export namespace Prisma {
     clients?: ClientUncheckedCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseUncheckedCreateNestedManyWithoutCompanyInput
     products?: ProductUncheckedCreateNestedManyWithoutCompanyInput
+    todos?: TodoUncheckedCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyCreateOrConnectWithoutUserInput = {
@@ -24930,6 +25088,7 @@ export namespace Prisma {
     endTime?: DateTimeNullableFilter<"Todo"> | Date | string | null
     reminderAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     userId?: StringFilter<"Todo"> | string
+    companyId?: StringNullableFilter<"Todo"> | string | null
     createdAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
   }
@@ -25636,6 +25795,47 @@ export namespace Prisma {
     data: ProductCreateManyCompanyInput | ProductCreateManyCompanyInput[]
   }
 
+  export type TodoCreateWithoutCompanyInput = {
+    id?: string
+    title: string
+    description?: string | null
+    completed?: boolean
+    status?: string
+    priority?: string
+    category?: string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    reminderAt?: Date | string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutTodosInput
+  }
+
+  export type TodoUncheckedCreateWithoutCompanyInput = {
+    id?: string
+    title: string
+    description?: string | null
+    completed?: boolean
+    status?: string
+    priority?: string
+    category?: string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    reminderAt?: Date | string | null
+    userId: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+  }
+
+  export type TodoCreateOrConnectWithoutCompanyInput = {
+    where: TodoWhereUniqueInput
+    create: XOR<TodoCreateWithoutCompanyInput, TodoUncheckedCreateWithoutCompanyInput>
+  }
+
+  export type TodoCreateManyCompanyInputEnvelope = {
+    data: TodoCreateManyCompanyInput | TodoCreateManyCompanyInput[]
+  }
+
   export type UserUpsertWithoutCompaniesInput = {
     update: XOR<UserUpdateWithoutCompaniesInput, UserUncheckedUpdateWithoutCompaniesInput>
     create: XOR<UserCreateWithoutCompaniesInput, UserUncheckedCreateWithoutCompaniesInput>
@@ -25775,6 +25975,22 @@ export namespace Prisma {
     data: XOR<ProductUpdateManyMutationInput, ProductUncheckedUpdateManyWithoutCompanyInput>
   }
 
+  export type TodoUpsertWithWhereUniqueWithoutCompanyInput = {
+    where: TodoWhereUniqueInput
+    update: XOR<TodoUpdateWithoutCompanyInput, TodoUncheckedUpdateWithoutCompanyInput>
+    create: XOR<TodoCreateWithoutCompanyInput, TodoUncheckedCreateWithoutCompanyInput>
+  }
+
+  export type TodoUpdateWithWhereUniqueWithoutCompanyInput = {
+    where: TodoWhereUniqueInput
+    data: XOR<TodoUpdateWithoutCompanyInput, TodoUncheckedUpdateWithoutCompanyInput>
+  }
+
+  export type TodoUpdateManyWithWhereWithoutCompanyInput = {
+    where: TodoScalarWhereInput
+    data: XOR<TodoUpdateManyMutationInput, TodoUncheckedUpdateManyWithoutCompanyInput>
+  }
+
   export type UserCreateWithoutClientsInput = {
     id?: string
     email: string
@@ -25873,6 +26089,7 @@ export namespace Prisma {
     invoices?: InvoiceCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseCreateNestedManyWithoutCompanyInput
     products?: ProductCreateNestedManyWithoutCompanyInput
+    todos?: TodoCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUncheckedCreateWithoutClientsInput = {
@@ -25902,6 +26119,7 @@ export namespace Prisma {
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseUncheckedCreateNestedManyWithoutCompanyInput
     products?: ProductUncheckedCreateNestedManyWithoutCompanyInput
+    todos?: TodoUncheckedCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyCreateOrConnectWithoutClientsInput = {
@@ -26120,6 +26338,7 @@ export namespace Prisma {
     invoices?: InvoiceUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUpdateManyWithoutCompanyNestedInput
     products?: ProductUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateWithoutClientsInput = {
@@ -26148,6 +26367,7 @@ export namespace Prisma {
     invoices?: InvoiceUncheckedUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUncheckedUpdateManyWithoutCompanyNestedInput
     products?: ProductUncheckedUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type InvoiceUpsertWithWhereUniqueWithoutClientInput = {
@@ -26193,6 +26413,7 @@ export namespace Prisma {
     invoices?: InvoiceCreateNestedManyWithoutCompanyInput
     clients?: ClientCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseCreateNestedManyWithoutCompanyInput
+    todos?: TodoCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUncheckedCreateWithoutProductsInput = {
@@ -26222,6 +26443,7 @@ export namespace Prisma {
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCompanyInput
     clients?: ClientUncheckedCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseUncheckedCreateNestedManyWithoutCompanyInput
+    todos?: TodoUncheckedCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyCreateOrConnectWithoutProductsInput = {
@@ -26337,6 +26559,7 @@ export namespace Prisma {
     invoices?: InvoiceUpdateManyWithoutCompanyNestedInput
     clients?: ClientUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateWithoutProductsInput = {
@@ -26365,6 +26588,7 @@ export namespace Prisma {
     invoices?: InvoiceUncheckedUpdateManyWithoutCompanyNestedInput
     clients?: ClientUncheckedUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUncheckedUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type UserUpsertWithoutProductsInput = {
@@ -26540,6 +26764,7 @@ export namespace Prisma {
     invoices?: InvoiceCreateNestedManyWithoutCompanyInput
     clients?: ClientCreateNestedManyWithoutCompanyInput
     products?: ProductCreateNestedManyWithoutCompanyInput
+    todos?: TodoCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUncheckedCreateWithoutExpensesInput = {
@@ -26569,6 +26794,7 @@ export namespace Prisma {
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCompanyInput
     clients?: ClientUncheckedCreateNestedManyWithoutCompanyInput
     products?: ProductUncheckedCreateNestedManyWithoutCompanyInput
+    todos?: TodoUncheckedCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyCreateOrConnectWithoutExpensesInput = {
@@ -26688,6 +26914,7 @@ export namespace Prisma {
     invoices?: InvoiceUpdateManyWithoutCompanyNestedInput
     clients?: ClientUpdateManyWithoutCompanyNestedInput
     products?: ProductUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateWithoutExpensesInput = {
@@ -26716,6 +26943,7 @@ export namespace Prisma {
     invoices?: InvoiceUncheckedUpdateManyWithoutCompanyNestedInput
     clients?: ClientUncheckedUpdateManyWithoutCompanyNestedInput
     products?: ProductUncheckedUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type UserCreateWithoutTodosInput = {
@@ -26787,6 +27015,71 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutTodosInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
+  }
+
+  export type CompanyCreateWithoutTodosInput = {
+    id?: string
+    name: string
+    legalName?: string | null
+    taxId?: string | null
+    address?: string | null
+    email?: string | null
+    phone?: string | null
+    logoUrl?: string | null
+    website?: string | null
+    leaderName?: string | null
+    legalForm?: string | null
+    registrationNumber?: string | null
+    sector?: string | null
+    description?: string | null
+    productsServices?: string | null
+    targetMarket?: string | null
+    annualRevenue?: number | null
+    monthlyRevenue?: number | null
+    employeeCount?: number | null
+    departments?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutCompaniesInput
+    invoices?: InvoiceCreateNestedManyWithoutCompanyInput
+    clients?: ClientCreateNestedManyWithoutCompanyInput
+    expenses?: ExpenseCreateNestedManyWithoutCompanyInput
+    products?: ProductCreateNestedManyWithoutCompanyInput
+  }
+
+  export type CompanyUncheckedCreateWithoutTodosInput = {
+    id?: string
+    name: string
+    legalName?: string | null
+    taxId?: string | null
+    address?: string | null
+    email?: string | null
+    phone?: string | null
+    logoUrl?: string | null
+    website?: string | null
+    leaderName?: string | null
+    legalForm?: string | null
+    registrationNumber?: string | null
+    sector?: string | null
+    description?: string | null
+    productsServices?: string | null
+    targetMarket?: string | null
+    annualRevenue?: number | null
+    monthlyRevenue?: number | null
+    employeeCount?: number | null
+    departments?: string | null
+    userId: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutCompanyInput
+    clients?: ClientUncheckedCreateNestedManyWithoutCompanyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutCompanyInput
+    products?: ProductUncheckedCreateNestedManyWithoutCompanyInput
+  }
+
+  export type CompanyCreateOrConnectWithoutTodosInput = {
+    where: CompanyWhereUniqueInput
+    create: XOR<CompanyCreateWithoutTodosInput, CompanyUncheckedCreateWithoutTodosInput>
   }
 
   export type UserUpsertWithoutTodosInput = {
@@ -26862,6 +27155,75 @@ export namespace Prisma {
     expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
     paymentTransactions?: PaymentTransactionUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type CompanyUpsertWithoutTodosInput = {
+    update: XOR<CompanyUpdateWithoutTodosInput, CompanyUncheckedUpdateWithoutTodosInput>
+    create: XOR<CompanyCreateWithoutTodosInput, CompanyUncheckedCreateWithoutTodosInput>
+    where?: CompanyWhereInput
+  }
+
+  export type CompanyUpdateToOneWithWhereWithoutTodosInput = {
+    where?: CompanyWhereInput
+    data: XOR<CompanyUpdateWithoutTodosInput, CompanyUncheckedUpdateWithoutTodosInput>
+  }
+
+  export type CompanyUpdateWithoutTodosInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    legalName?: NullableStringFieldUpdateOperationsInput | string | null
+    taxId?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    leaderName?: NullableStringFieldUpdateOperationsInput | string | null
+    legalForm?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    sector?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    productsServices?: NullableStringFieldUpdateOperationsInput | string | null
+    targetMarket?: NullableStringFieldUpdateOperationsInput | string | null
+    annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    departments?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutCompaniesNestedInput
+    invoices?: InvoiceUpdateManyWithoutCompanyNestedInput
+    clients?: ClientUpdateManyWithoutCompanyNestedInput
+    expenses?: ExpenseUpdateManyWithoutCompanyNestedInput
+    products?: ProductUpdateManyWithoutCompanyNestedInput
+  }
+
+  export type CompanyUncheckedUpdateWithoutTodosInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    legalName?: NullableStringFieldUpdateOperationsInput | string | null
+    taxId?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    leaderName?: NullableStringFieldUpdateOperationsInput | string | null
+    legalForm?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    sector?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    productsServices?: NullableStringFieldUpdateOperationsInput | string | null
+    targetMarket?: NullableStringFieldUpdateOperationsInput | string | null
+    annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    departments?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invoices?: InvoiceUncheckedUpdateManyWithoutCompanyNestedInput
+    clients?: ClientUncheckedUpdateManyWithoutCompanyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutCompanyNestedInput
+    products?: ProductUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type ClientCreateWithoutInvoicesInput = {
@@ -26956,6 +27318,7 @@ export namespace Prisma {
     clients?: ClientCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseCreateNestedManyWithoutCompanyInput
     products?: ProductCreateNestedManyWithoutCompanyInput
+    todos?: TodoCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyUncheckedCreateWithoutInvoicesInput = {
@@ -26985,6 +27348,7 @@ export namespace Prisma {
     clients?: ClientUncheckedCreateNestedManyWithoutCompanyInput
     expenses?: ExpenseUncheckedCreateNestedManyWithoutCompanyInput
     products?: ProductUncheckedCreateNestedManyWithoutCompanyInput
+    todos?: TodoUncheckedCreateNestedManyWithoutCompanyInput
   }
 
   export type CompanyCreateOrConnectWithoutInvoicesInput = {
@@ -27198,6 +27562,7 @@ export namespace Prisma {
     clients?: ClientUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUpdateManyWithoutCompanyNestedInput
     products?: ProductUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateWithoutInvoicesInput = {
@@ -27226,6 +27591,7 @@ export namespace Prisma {
     clients?: ClientUncheckedUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUncheckedUpdateManyWithoutCompanyNestedInput
     products?: ProductUncheckedUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type UserUpsertWithoutInvoicesInput = {
@@ -28186,6 +28552,7 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     reminderAt?: Date | string | null
+    companyId?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -28494,6 +28861,7 @@ export namespace Prisma {
     reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    company?: CompanyUpdateOneWithoutTodosNestedInput
   }
 
   export type TodoUncheckedUpdateWithoutUserInput = {
@@ -28506,6 +28874,7 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -28520,6 +28889,7 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -28571,6 +28941,7 @@ export namespace Prisma {
     clients?: ClientUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUpdateManyWithoutCompanyNestedInput
     products?: ProductUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateWithoutUserInput = {
@@ -28599,6 +28970,7 @@ export namespace Prisma {
     clients?: ClientUncheckedUpdateManyWithoutCompanyNestedInput
     expenses?: ExpenseUncheckedUpdateManyWithoutCompanyNestedInput
     products?: ProductUncheckedUpdateManyWithoutCompanyNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutCompanyNestedInput
   }
 
   export type CompanyUncheckedUpdateManyWithoutUserInput = {
@@ -28933,6 +29305,22 @@ export namespace Prisma {
     updatedAt?: Date | string | null
   }
 
+  export type TodoCreateManyCompanyInput = {
+    id?: string
+    title: string
+    description?: string | null
+    completed?: boolean
+    status?: string
+    priority?: string
+    category?: string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    reminderAt?: Date | string | null
+    userId: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+  }
+
   export type InvoiceUpdateWithoutCompanyInput = {
     reference?: StringFieldUpdateOperationsInput | string
     invoiceNumber?: NullableIntFieldUpdateOperationsInput | number | null
@@ -29217,6 +29605,51 @@ export namespace Prisma {
     taxRate?: FloatFieldUpdateOperationsInput | number
     unit?: StringFieldUpdateOperationsInput | string
     type?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TodoUpdateWithoutCompanyInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    completed?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutTodosNestedInput
+  }
+
+  export type TodoUncheckedUpdateWithoutCompanyInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    completed?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TodoUncheckedUpdateManyWithoutCompanyInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    completed?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

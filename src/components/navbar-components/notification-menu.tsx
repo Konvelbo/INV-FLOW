@@ -18,6 +18,7 @@ import {
 import { useNotifications } from "@/src/context/NotificationContext";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 
 export default function NotificationMenu() {
@@ -29,6 +30,7 @@ export default function NotificationMenu() {
     removeNotification,
     clearAllNotifications,
   } = useNotifications();
+  const { t } = useLanguage();
 
   const getIcon = (type?: string) => {
     switch (type) {
@@ -75,7 +77,7 @@ export default function NotificationMenu() {
             </h3>
             {unreadCount > 0 && (
               <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
-                {unreadCount} Nouvelles
+                {unreadCount} {t("newNotifications")}
               </span>
             )}
           </div>
@@ -87,7 +89,7 @@ export default function NotificationMenu() {
                 className="h-7 px-2 text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
                 onClick={markAllAsRead}
               >
-                Tout lire
+                {t("markAllRead")}
               </Button>
             )}
             {notifications.length > 0 && (
@@ -111,7 +113,7 @@ export default function NotificationMenu() {
                 <BellIcon className="size-5 text-muted-foreground/40" />
               </div>
               <p className="text-xs font-medium text-muted-foreground italic">
-                Aucune notification pour le moment.
+                {t("noNotifications")}
               </p>
             </div>
           ) : (

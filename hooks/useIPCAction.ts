@@ -31,8 +31,7 @@ export function useIPCAction() {
     }
 
     if (typeof window === "undefined" || !(window as any).electronAPI) {
-      const msg = "Application Electron requise. Vous utilisez actuellement un navigateur standard.";
-      toast.error(msg);
+      toast.error(t("electronRequirement"));
       return { success: false, error: "ERR_INTERNAL" };
     }
 

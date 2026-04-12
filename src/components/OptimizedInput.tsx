@@ -47,7 +47,7 @@ export default function OptimizedInput({
   return (
     <input
       {...props}
-      value={localValue}
+      value={localValue ?? ""}
       onChange={(e) => setLocalValue(e.target.value)}
       onBlur={handleBlur}
     />

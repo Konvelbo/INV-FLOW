@@ -92,9 +92,15 @@ export function verifyWebhookSignature(
   rawBody: string,
   receivedSignature: string
 ): boolean {
+  const isDev = process.env.NODE_ENV === "development";
+
   if (!LIGDICASH_WEBHOOK_SECRET) {
-    console.warn("LIGDICASH_WEBHOOK_SECRET is not set — skipping signature verification in dev");
-    return true; // Allow in dev if secret not configured
+    if (isDev) {
+      console.warn("LIGDICASH_WEBHOOK_SECRET is not set — allowing in dev");
+      return true;
+    }
+    console.error("LIGDICASH_WEBHOOK_SECRET is NOT set in production!");
+    return false;
   }
 
   const expectedSignature = crypto

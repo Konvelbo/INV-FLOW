@@ -9,6 +9,7 @@ import { Building2, Zap, Crown, MessageSquare, Send, Star } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { useSubscription, usePlanBadge } from "@/src/context/SubscriptionContext";
+import { useLanguage } from "@/src/context/LanguageContext";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,7 @@ export default function Topbar() {
   const { subscription } = useSubscription();
   const { isPro, label: planLabel } = usePlanBadge();
   const { performAction } = useIPCAction();
+  const { t } = useLanguage();
 
   const updateActiveCompany = () => {
     const userStr = localStorage.getItem("user");
@@ -86,15 +88,15 @@ export default function Topbar() {
         contactEmail: "",
       });
       if (res.success) {
-        toast.success("Merci pour votre retour !");
+        toast.success(t("feedbackSuccess"));
         setIsFeedbackOpen(false);
         setFeedback("");
         setRating(5);
       } else {
-        toast.error("Erreur lors de l'envoi du feedback");
+        toast.error(t("feedbackError"));
       }
     } catch {
-      toast.error("Une erreur est survenue");
+      toast.error(t("genericError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +179,7 @@ export default function Topbar() {
                     </span>
                     <Zap className="size-3 text-primary flex-shrink-0" />
                     <span className="text-[10px] font-black text-primary uppercase tracking-wider whitespace-nowrap">
-                      Passer à Premium
+                      {t("upgradeToPremium")}
                     </span>
                   </motion.div>
                 </Link>
@@ -225,7 +227,7 @@ export default function Topbar() {
                   "hover:bg-primary/10 hover:border-primary/30 hover:text-primary",
                   "text-muted-foreground transition-colors duration-200 cursor-pointer"
                 )}
-                title="Envoyer un retour"
+                title={t("sendFeedback")}
               >
                 {/* Subtle pulse to draw attention */}
                 <motion.div
@@ -241,10 +243,10 @@ export default function Topbar() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-lg font-black">
                   <MessageSquare className="size-5 text-primary" />
-                  Envoyer un retour
+                  {t("sendFeedback")}
                 </DialogTitle>
                 <DialogDescription>
-                  Votre avis nous aide à améliorer l&apos;application.
+                  {t("feedbackDescription")}
                 </DialogDescription>
               </DialogHeader>
 
@@ -252,7 +254,7 @@ export default function Topbar() {
                 {/* Star rating */}
                 <div className="space-y-3 text-center">
                   <Label className="text-xs font-bold uppercase tracking-widest opacity-60">
-                    Votre note
+                    {t("feedbackNote")}
                   </Label>
                   <div className="flex items-center justify-center gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -278,10 +280,10 @@ export default function Topbar() {
                 {/* Message */}
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-widest opacity-60">
-                    Votre message
+                    {t("feedbackMessage")}
                   </Label>
                   <Textarea
-                    placeholder="Comment pouvons-nous nous améliorer ?"
+                    placeholder={t("howToImprove")}
                     className="min-h-[110px] bg-background border-border/50 rounded-xl resize-none focus:ring-primary/20"
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
@@ -289,7 +291,7 @@ export default function Topbar() {
                 </div>
 
                 <p className="text-[10px] text-muted-foreground italic bg-primary/5 p-3 rounded-lg border border-primary/10">
-                  Votre retour sera directement enregistré et envoyé à notre équipe.
+                  {t("feedbackDisclaimer")}
                 </p>
               </div>
 
@@ -299,7 +301,7 @@ export default function Topbar() {
                   onClick={() => setIsFeedbackOpen(false)}
                   className="rounded-xl"
                 >
-                  Annuler
+                  {t("cancel")}
                 </Button>
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button
@@ -312,7 +314,7 @@ export default function Topbar() {
                     ) : (
                       <Send className="size-4" />
                     )}
-                    Envoyer
+                    {t("send")}
                   </Button>
                 </motion.div>
               </DialogFooter>

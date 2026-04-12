@@ -197,12 +197,12 @@ export default function DefaultTemplate({
             </p>
           </div>
         </div>
-        <div className="border h-35 w-full min-h-70">
+        <div className="border w-full">
           <div className="flex justify-between">
-            <div className="border-b h-15 p-5 w-full">
+            <div className="border-b min-h-[60px] p-5 w-full">
               <h2>{dict.billingAddress}</h2>
             </div>
-            <div className="border-b border-l h-15 p-5 w-full">
+            <div className="border-b border-l min-h-[60px] p-5 w-full">
               <h2>{dict.deliveryAddress}:</h2>
             </div>
           </div>

@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
-import { FileText, Calendar as CalendarIcon } from "lucide-react";
+import { FileText, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -29,7 +29,7 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
   // Group invoices by date string (ignoring time)
   const invoicesByDate = invoices.reduce(
     (acc: Record<string, Invoice[]>, inv) => {
-      const d = new Date(inv.createdAt).toDateString();
+      const d = new Date(inv.nextIssueDate || inv.createdAt).toDateString();
       if (!acc[d]) acc[d] = [];
       acc[d].push(inv);
       return acc;
@@ -112,7 +112,11 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                     >
                       <div className="flex items-center gap-4 min-w-0 flex-1">
                         <div className="p-2.5 rounded-xl bg-slate-950 border border-white/5 group-hover/item:border-primary/50 transition-colors shrink-0">
-                          <FileText className="w-4 h-4 text-muted-foreground group-hover/item:text-primary" />
+                          {inv.nextIssueDate && new Date(inv.nextIssueDate) > new Date() ? (
+                            <Clock className="w-4 h-4 text-indigo-400 group-hover/item:text-primary" />
+                          ) : (
+                            <FileText className="w-4 h-4 text-muted-foreground group-hover/item:text-primary" />
+                          )}
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <div className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors font-sans truncate">
@@ -131,14 +135,18 @@ export function InvoiceCalendar({ invoices }: { invoices: Invoice[] }) {
                           variant="outline"
                           className={cn(
                             "text-[8px] h-4 px-2 border-0 font-black uppercase tracking-widest",
-                            inv.isScaled
-                              ? "bg-primary/10 text-primary"
-                              : "bg-amber-500/10 text-amber-500",
+                            inv.nextIssueDate && new Date(inv.nextIssueDate) > new Date()
+                               ? "bg-indigo-500/20 text-indigo-400"
+                               : inv.isScaled
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-amber-500/10 text-amber-500",
                           )}
                         >
-                          {inv.isScaled
-                            ? t("scaled_badge")
-                            : t("waiting_badge")}
+                          {inv.nextIssueDate && new Date(inv.nextIssueDate) > new Date()
+                            ? "PLANIFIÉ"
+                            : inv.isScaled
+                              ? t("scaled_badge")
+                              : t("waiting_badge")}
                         </Badge>
                       </div>
                     </Link>

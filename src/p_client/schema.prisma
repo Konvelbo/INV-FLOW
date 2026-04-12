@@ -41,6 +41,8 @@ model User {
   subscriptionExpiresAt DateTime?
   dailyInvoiceCount     Int       @default(0)
   dailyInvoiceResetAt   DateTime?
+  dailyAiCount          Int       @default(0)
+  dailyAiResetAt        DateTime?
   ligdicashCustomerId   String?
 
   paymentTransactions PaymentTransaction[]
@@ -93,6 +95,7 @@ model Company {
   clients  Client[]
   expenses Expense[]
   products Product[]
+  todos    Todo[]
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -204,10 +207,14 @@ model Todo {
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
 
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
   @@index([userId])
+  @@index([companyId])
 }
 
 model Invoice {

@@ -83,7 +83,7 @@ export default function ExpensesClient({
     amount: "",
     currency: "XOF",
     date: new Date().toISOString().split("T")[0],
-    category: "Charges d'exploitation",
+    category: "cat_exploitation",
     companyId: "none",
     description: "",
     isDeductible: false,
@@ -158,7 +158,7 @@ export default function ExpensesClient({
       amount: "",
       currency: "XOF",
       date: new Date().toISOString().split("T")[0],
-      category: "Charges d'exploitation",
+      category: "cat_exploitation",
       companyId: "none",
       description: "",
       isDeductible: false,
@@ -322,7 +322,7 @@ export default function ExpensesClient({
                           setFormData({ ...formData, currency: e.target.value })
                         }
                       >
-                        <option value="XOF">XOF (CFA)</option>
+                        <option value="XOF">{t("currency_unit")} (XOF)</option>
                         <option value="EUR">EUR (€)</option>
                         <option value="USD">USD ($)</option>
                       </select>
@@ -355,28 +355,28 @@ export default function ExpensesClient({
                           setFormData({ ...formData, category: e.target.value })
                         }
                       >
-                        <option value="Charges d'exploitation">
+                        <option value="cat_exploitation">
                           {t("cat_exploitation")}
                         </option>
-                        <option value="Charges financières">
+                        <option value="cat_financial">
                           {t("cat_financial")}
                         </option>
-                        <option value="Charges fiscales et sociales">
+                        <option value="cat_tax">
                           {t("cat_tax")}
                         </option>
-                        <option value="Investissements et immobilisations">
+                        <option value="cat_investment">
                           {t("cat_investment")}
                         </option>
-                        <option value="Dépenses administratives et juridiques">
+                        <option value="cat_admin">
                           {t("cat_admin")}
                         </option>
-                        <option value="Dépenses commerciales">
+                        <option value="cat_commercial">
                           {t("cat_commercial")}
                         </option>
-                        <option value="Dépenses opérationnelles">
+                        <option value="cat_operational">
                           {t("cat_operational")}
                         </option>
-                        <option value="Autre">{t("cat_other")}</option>
+                        <option value="cat_other">{t("cat_other")}</option>
                       </select>
                     </div>
                   </div>
@@ -558,7 +558,7 @@ export default function ExpensesClient({
                       <div className="flex flex-wrap gap-2">
                         <div className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-amber-500/5 text-amber-600 border border-amber-500/10 flex items-center gap-1.5">
                           <Tag className="w-3 h-3" />
-                          {expense.category}
+                          {t(expense.category as any) || expense.category}
                         </div>
                         {(expense as any).isDeductible && (
                           <div className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
@@ -602,7 +602,7 @@ export default function ExpensesClient({
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <CalendarIcon className="w-3.5 h-3.5" />
                           <span className="font-bold uppercase tracking-widest text-[10px]">
-                            {t("date")}
+                            {t("dateLabel")}
                           </span>
                         </div>
                         <span className="font-bold text-foreground">

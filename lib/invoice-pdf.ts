@@ -23,11 +23,11 @@ export type InvoiceProps = {
   totalHT: number;
   totalMaterial: number;
   managerName: string;
-  amountWords: string;
   description?: string;
   style?: string;
   type?: "invoice" | "quote";
   companyName?: string;
+  companyAddress?: string;
   currencyCode?: string;
   language?: "fr" | "en";
 };
@@ -1081,9 +1081,8 @@ function renderStyle5(data: InvoiceProps, dict: PdfDictionary, lang: string) {
                     <div class="info-card">
                         <label>${dict.from}</label>
                         ${data.companyName ? `<div class="company">${data.companyName}</div>` : ""}
-                        <div class="details">
-                            123 Tech Boulevard<br>
-                            San Francisco, CA<br>
+                    <div class="details">
+                            ${data.companyAddress || ""}<br>
                             ${data.city}
                         </div>
                     </div>

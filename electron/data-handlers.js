@@ -5,7 +5,7 @@ const crypto = require("crypto");
 // Start connection immediately in background to reduce first-query latency
 prisma
   .$connect()
-  .catch((err) => console.error("Prisma: Warmup connection failed", err));
+  .catch((err) => { });
 
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
@@ -21,7 +21,7 @@ const {
   formatPrice,
   detectCountryFromIP,
   convertFromUSD,
-  COUNTRY_CURRENCY_MAP
+  COUNTRY_CURRENCY_MAP,
 } = require("../lib/currency-service");
 require("dotenv").config();
 
@@ -141,7 +141,6 @@ async function checkCompanyQuota(userId) {
   return { allowed: true };
 }
 
-
 const InvoiceEmail = require("../src/components/emails/InvoiceEmail.js");
 const { v2: cloudinary } = require("cloudinary");
 cloudinary.config({
@@ -193,7 +192,7 @@ const getOTPEmailHtml = (otp, lang = "fr") => {
 
 const sanitizeError = (error) => {
   const message = error.message || "ERR_INTERNAL";
-  console.error("Original Error:", error);
+  // Log only the message or a sanitized version in production
 
   if (
     message.includes("Prisma") ||
@@ -201,28 +200,26 @@ const sanitizeError = (error) => {
     message.includes("invocation") ||
     message.includes("Foreign key")
   ) {
-    if (message.includes("Unique constraint"))
-      return "ERR_DUPLICATE";
-    if (message.includes("Foreign key constraint"))
-      return "ERR_INTERNAL"; // Hide FK details
+    if (message.includes("Unique constraint")) return "ERR_DUPLICATE";
+    if (message.includes("Foreign key constraint")) return "ERR_INTERNAL"; // Hide FK details
     return "ERR_INTERNAL";
   }
-  
+
   // If the message is already one of our keys, keep it, otherwise map to internal
   const knownKeys = [
-    "ERR_AUTH_REQUIRED", 
-    "ERR_QUOTA_EXCEEDED", 
-    "ERR_NOT_FOUND", 
-    "ERR_INVALID_INPUT", 
-    "ERR_INTERNAL", 
-    "ERR_UPLOAD_FAILED", 
+    "ERR_AUTH_REQUIRED",
+    "ERR_QUOTA_EXCEEDED",
+    "ERR_NOT_FOUND",
+    "ERR_INVALID_INPUT",
+    "ERR_INTERNAL",
+    "ERR_UPLOAD_FAILED",
     "ERR_DUPLICATE",
     "ERR_AI_QUOTA",
     "ERR_AI_API",
     "ERR_AI_TOO_LONG",
-    "ai_error_not_premium"
+    "ai_error_not_premium",
   ];
-  
+
   return knownKeys.includes(message) ? message : "ERR_INTERNAL";
 };
 
@@ -235,7 +232,6 @@ const getActiveCompanyId = async (userId) => {
     });
     return user?.activeCompanyId || null;
   } catch (err) {
-    console.error("Error in getActiveCompanyId:", err);
     return null;
   }
 };
@@ -250,7 +246,7 @@ const handlers = {
       where.companyId = activeId;
     }
 
-    const whereInvoice = { ...where, type: "invoice" };
+    const whereInvoice = { ...where };
     const whereExpense = { ...where };
     const whereTodo = { userId };
 
@@ -270,132 +266,170 @@ const handlers = {
       const results = [];
       for (let i = 0; i < tasks.length; i += chunkSize) {
         const chunk = tasks.slice(i, i + chunkSize);
-        const chunkResults = await Promise.all(chunk.map(fn => fn()));
+        const chunkResults = await Promise.all(chunk.map((fn) => fn()));
         results.push(...chunkResults);
       }
       return results;
     };
 
     const tasks = [
-      () => targetCompanyId
-        ? prisma.company.findUnique({ where: { id: targetCompanyId } })
-        : Promise.resolve(null),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: currentMonthStart },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: lastMonthStart, lt: currentMonthStart },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: currentYearStart },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          status: { in: ["pending", "overdue", "draft"] },
-        },
-        _sum: { totalTTC: true, totalHT: true },
-        _count: true,
-      }),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: currentMonthStart },
-          isScaled: true,
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: lastMonthStart, lt: currentMonthStart },
-          isScaled: true,
-        },
-        _sum: { totalTTC: true, totalHT: true },
-      }),
-      () => prisma.invoice.aggregate({
-        where: { ...whereInvoice, isScaled: true },
-        _sum: { totalTTC: true, totalHT: true },
-        _count: true,
-      }),
-      () => prisma.invoice.aggregate({
-        where: {
-          ...whereInvoice,
-          OR: [{ status: { in: ["pending", "draft"] } }, { isScaled: false }],
-        },
-        _sum: { totalTTC: true, totalHT: true },
-        _count: true,
-      }),
-      () => prisma.invoice.findMany({
-        where: whereInvoice,
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          reference: true,
-          clientName: true,
-          totalHT: true,
-          status: true,
-          isScaled: true,
-          createdAt: true,
-        },
-      }),
-      () => prisma.invoice.findMany({
-        where: {
-          ...whereInvoice,
-          status: { in: ["pending", "overdue", "draft"] },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      () => prisma.invoice.findMany({
-        where: {
-          ...whereInvoice,
-          createdAt: { gte: sixMonthsAgo },
-          OR: [{ status: "paid" }, { isScaled: true }],
-        },
-        select: { createdAt: true, totalTTC: true, totalHT: true },
-      }),
-      () => prisma.expense.findMany({
-        where: { ...whereExpense, date: { gte: sixMonthsAgo } },
-        select: { date: true, amount: true },
-      }),
-      () => prisma.todo.findMany({
-        where: whereTodo,
-        orderBy: { startTime: "asc" },
-      }),
-      () => prisma.client.count({
-        where: { userId, ...(activeId ? { companyId: activeId } : {}) },
-      }),
-      () => prisma.expense.aggregate({
-        where: { ...whereExpense, date: { gte: currentMonthStart } },
-        _sum: { amount: true },
-        _count: true,
-      }),
-      () => prisma.expense.aggregate({
-        where: { ...whereExpense, date: { gte: currentYearStart } },
-        _sum: { amount: true },
-      }),
-      () => prisma.product.findMany({
-        where: { ...where, userId },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      }),
+      () =>
+        targetCompanyId
+          ? prisma.company.findUnique({ where: { id: targetCompanyId } })
+          : Promise.resolve(null),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            createdAt: { gte: currentMonthStart },
+            OR: [{ status: "paid" }, { isScaled: true }],
+          },
+          _sum: { totalTTC: true, totalHT: true },
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            createdAt: { gte: lastMonthStart, lt: currentMonthStart },
+            OR: [{ status: "paid" }, { isScaled: true }],
+          },
+          _sum: { totalTTC: true, totalHT: true },
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            createdAt: { gte: currentYearStart },
+            OR: [{ status: "paid" }, { isScaled: true }],
+          },
+          _sum: { totalTTC: true, totalHT: true },
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            status: { in: ["pending", "overdue", "draft"] },
+          },
+          _sum: { totalTTC: true, totalHT: true },
+          _count: true,
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            createdAt: { gte: currentMonthStart },
+            isScaled: true,
+          },
+          _sum: { totalTTC: true, totalHT: true },
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            createdAt: { gte: lastMonthStart, lt: currentMonthStart },
+            isScaled: true,
+          },
+          _sum: { totalTTC: true, totalHT: true },
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: { ...whereInvoice, isScaled: true },
+          _sum: { totalTTC: true, totalHT: true },
+          _count: true,
+        }),
+      () =>
+        prisma.invoice.aggregate({
+          where: {
+            ...whereInvoice,
+            OR: [{ status: { in: ["pending", "draft"] } }, { isScaled: false }],
+          },
+          _sum: { totalTTC: true, totalHT: true },
+          _count: true,
+        }),
+      () =>
+        prisma.invoice.findMany({
+          where: whereInvoice,
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          select: {
+            id: true,
+            reference: true,
+            clientName: true,
+            totalHT: true,
+            status: true,
+            isScaled: true,
+            createdAt: true,
+            nextIssueDate: true,
+          },
+        }),
+      () =>
+        prisma.invoice.findMany({
+          where: {
+            ...whereInvoice,
+            status: { in: ["pending", "overdue", "draft"] },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        }),
+      () =>
+        prisma.invoice.findMany({
+          where: {
+            ...whereInvoice,
+            createdAt: { gte: sixMonthsAgo },
+            OR: [{ status: "paid" }, { isScaled: true }],
+          },
+          select: { createdAt: true, totalTTC: true, totalHT: true },
+        }),
+      () =>
+        prisma.expense.findMany({
+          where: { ...whereExpense, date: { gte: sixMonthsAgo } },
+          select: { date: true, amount: true },
+        }),
+      () =>
+        prisma.todo.findMany({
+          where: whereTodo,
+          orderBy: { startTime: "asc" },
+        }),
+      () =>
+        prisma.client.count({
+          where: { userId, ...(activeId ? { companyId: activeId } : {}) },
+        }),
+      () =>
+        prisma.expense.aggregate({
+          where: { ...whereExpense, date: { gte: currentMonthStart } },
+          _sum: { amount: true },
+          _count: true,
+        }),
+      () =>
+        prisma.expense.aggregate({
+          where: { ...whereExpense, date: { gte: currentYearStart } },
+          _sum: { amount: true },
+        }),
+      () =>
+        prisma.product.findMany({
+          where: { ...where, userId },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        }),
+      // Recurring invoices (automations)
+      () =>
+        prisma.invoice.findMany({
+          where: {
+            ...whereInvoice,
+            recurrenceFreq: { not: null },
+          },
+          orderBy: { updatedAt: "desc" },
+        }),
+      // Scheduled invoices (one-time sends)
+      () =>
+        prisma.invoice.findMany({
+          where: {
+            ...whereInvoice,
+            nextIssueDate: { not: null },
+            recurrenceFreq: null,
+          },
+          orderBy: { nextIssueDate: "asc" },
+        }),
     ];
 
     const [
@@ -417,6 +451,8 @@ const handlers = {
       expensesThisMonth,
       expensesThisYear,
       recentProducts,
+      automations,
+      scheduledInvoices,
     ] = await executeInChunks(tasks, 5);
 
     // Chart Data Processing
@@ -517,6 +553,36 @@ const handlers = {
         createdAt: t.createdAt ? t.createdAt.toISOString() : null,
       })),
       activeCompanyName: activeCompany?.name || null,
+      automations: automations.map((inv) => ({
+        id: inv.id,
+        reference: inv.reference,
+        clientName: inv.clientName || "",
+        totalHT: inv.totalHT || 0,
+        isScaled: inv.isScaled || false,
+        status: inv.status,
+        isRecurring: inv.isRecurring,
+        recurrenceFreq: inv.recurrenceFreq,
+        nextIssueDate: inv.nextIssueDate
+          ? inv.nextIssueDate.toISOString()
+          : null,
+        autoReminders: inv.autoReminders,
+        nextReminderDate: inv.nextReminderDate
+          ? inv.nextReminderDate.toISOString()
+          : null,
+        createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+      })),
+      scheduledInvoices: scheduledInvoices.map((inv) => ({
+        id: inv.id,
+        reference: inv.reference,
+        clientName: inv.clientName || "",
+        totalHT: inv.totalHT || 0,
+        isScaled: inv.isScaled || false,
+        status: inv.status,
+        nextIssueDate: inv.nextIssueDate
+          ? inv.nextIssueDate.toISOString()
+          : null,
+        createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+      })),
     };
   },
 
@@ -912,22 +978,37 @@ const handlers = {
           expenses: report.totals.expenses,
           net: report.totals.net,
           clients: report.totals.clients,
-          isTotalRow: true // Custom flag for styling
+          isTotalRow: true, // Custom flag for styling
         });
         break;
       case "company_detail":
-        if (!companyId) throw new Error("companyId required for company_detail export");
+        if (!companyId)
+          throw new Error("companyId required for company_detail export");
         title = "Détail Entreprise";
         columns = [
           { header: "Indicateur", key: "label", width: 35 },
           { header: "Valeur", key: "value", width: 25 },
         ];
         const [cInvoices, cExpenses, cClients] = await Promise.all([
-          prisma.invoice.findMany({ where: { userId, companyId }, select: { totalHT: true, totalTTC: true, paidAmount: true, status: true, type: true } }),
-          prisma.expense.findMany({ where: { userId, companyId }, select: { amount: true } }),
+          prisma.invoice.findMany({
+            where: { userId, companyId },
+            select: {
+              totalHT: true,
+              totalTTC: true,
+              paidAmount: true,
+              status: true,
+              type: true,
+            },
+          }),
+          prisma.expense.findMany({
+            where: { userId, companyId },
+            select: { amount: true },
+          }),
           prisma.client.count({ where: { userId, companyId } }),
         ]);
-        const cRevenue = cInvoices.filter(i => i.type === "invoice").reduce((s, i) => s + (i.totalTTC || i.totalHT || 0), 0);
+        const cRevenue = cInvoices
+          .filter((i) => i.type === "invoice")
+          .reduce((s, i) => s + (i.totalTTC || i.totalHT || 0), 0);
         const cPaid = cInvoices.reduce((s, i) => s + (i.paidAmount || 0), 0);
         const cUnpaid = cRevenue - cPaid;
         const cExpTotal = cExpenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -939,8 +1020,14 @@ const handlers = {
           { label: "Total Dépenses", value: cExpTotal },
           { label: "Résultat Net", value: cNet, isTotalRow: true },
           { label: "Nombre de Clients", value: cClients },
-          { label: "Nombre de Factures", value: cInvoices.filter(i => i.type === "invoice").length },
-          { label: "Nombre de Devis", value: cInvoices.filter(i => i.type === "quote").length },
+          {
+            label: "Nombre de Factures",
+            value: cInvoices.filter((i) => i.type === "invoice").length,
+          },
+          {
+            label: "Nombre de Devis",
+            value: cInvoices.filter((i) => i.type === "quote").length,
+          },
         ];
         break;
       default:
@@ -956,19 +1043,18 @@ const handlers = {
     if (type === "invoices") {
       const invoicesForZip = await prisma.invoice.findMany({
         where: whereClause,
-        include: { client: true, author: true, items: true }
+        include: { client: true, author: true, items: true },
       });
       for (const inv of invoicesForZip) {
         try {
           const html = renderInvoiceHtml(inv, inv.language || "fr");
           const pdf = await generatePdfFromHtml(html);
           zipFiles.push({
-            name: `Facture_${inv.reference.replace(/[\/\\]/g, '-')}.pdf`,
+            name: `Facture_${inv.reference.replace(/[\/\\]/g, "-")}.pdf`,
             content: pdf,
-            folder: "Factures_PDF"
+            folder: "Factures_PDF",
           });
         } catch (err) {
-          console.error(`Failed to generate PDF for invoice ${inv.reference}:`, err);
         }
       }
     }
@@ -987,17 +1073,37 @@ const handlers = {
   },
 
   planning: async (userId) => {
-    const [todos, automations] = await Promise.all([
+    // Get active company
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { activeCompanyId: true },
+    });
+
+    const activeCompanyId = user?.activeCompanyId;
+    const whereCompany = activeCompanyId ? { companyId: activeCompanyId } : {};
+
+    const [todos, automations, scheduledInvoices] = await Promise.all([
       prisma.todo.findMany({
-        where: { userId },
+        where: { userId, ...whereCompany },
         orderBy: { startTime: "asc" },
       }),
       prisma.invoice.findMany({
         where: {
           userId,
-          OR: [{ isRecurring: true }, { autoReminders: true }],
+          ...whereCompany,
+          recurrenceFreq: { not: null },
         },
         orderBy: { updatedAt: "desc" },
+      }),
+      // Factures planifiées (envoi unique) - nextIssueDate != null ET recurrenceFreq = null
+      prisma.invoice.findMany({
+        where: {
+          userId,
+          ...whereCompany,
+          nextIssueDate: { not: null },
+          recurrenceFreq: null,
+        },
+        orderBy: { nextIssueDate: "asc" },
       }),
     ]);
     return {
@@ -1010,13 +1116,32 @@ const handlers = {
       automations: automations.map((inv) => ({
         id: inv.id,
         reference: inv.reference,
-        clientName: inv.clientName,
+        clientName: inv.clientName || "",
+        totalHT: inv.totalHT || 0,
+        isScaled: inv.isScaled || false,
+        status: inv.status,
         isRecurring: inv.isRecurring,
         recurrenceFreq: inv.recurrenceFreq,
-        nextIssueDate: inv.nextIssueDate ? inv.nextIssueDate.toISOString() : null,
+        nextIssueDate: inv.nextIssueDate
+          ? inv.nextIssueDate.toISOString()
+          : null,
         autoReminders: inv.autoReminders,
-        nextReminderDate: inv.nextReminderDate ? inv.nextReminderDate.toISOString() : null,
+        nextReminderDate: inv.nextReminderDate
+          ? inv.nextReminderDate.toISOString()
+          : null,
+        createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+      })),
+      scheduledInvoices: scheduledInvoices.map((inv) => ({
+        id: inv.id,
+        reference: inv.reference,
+        clientName: inv.clientName || "",
+        totalHT: inv.totalHT || 0,
+        isScaled: inv.isScaled || false,
         status: inv.status,
+        nextIssueDate: inv.nextIssueDate
+          ? inv.nextIssueDate.toISOString()
+          : null,
+        createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
       })),
     };
   },
@@ -1151,7 +1276,6 @@ const actionHandlers = {
         }
         return { success: true, logoUrl };
       } catch (error) {
-        console.error("Logo upload error:", error);
         return { success: false, message: "ERR_UPLOAD_FAILED" };
       }
     },
@@ -1178,17 +1302,22 @@ const actionHandlers = {
       for (const company of companies) {
         // Fetch ALL company data for the deep archive
         const [invoices, clients, products, expenses] = await Promise.all([
-          prisma.invoice.findMany({ 
-            where: { companyId: company.id }, 
-            include: { client: true, author: true, items: true } 
+          prisma.invoice.findMany({
+            where: { companyId: company.id },
+            include: { client: true, author: true, items: true },
           }),
           prisma.client.findMany({ where: { companyId: company.id } }),
           prisma.product.findMany({ where: { companyId: company.id } }),
-          prisma.expense.findMany({ where: { companyId: company.id } })
+          prisma.expense.findMany({ where: { companyId: company.id } }),
         ]);
 
-        const totalRevenue = invoices.filter(i => i.status === "paid" || i.isScaled).reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
-        const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const totalRevenue = invoices
+          .filter((i) => i.status === "paid" || i.isScaled)
+          .reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
+        const totalExpenses = expenses.reduce(
+          (sum, e) => sum + (e.amount || 0),
+          0,
+        );
         const netProfit = totalRevenue - totalExpenses;
 
         // Collect stats for the global master summary
@@ -1199,15 +1328,15 @@ const actionHandlers = {
           net: netProfit,
           clients: clients.length,
           invoices: invoices.length,
-          products: products.length
+          products: products.length,
         });
 
-        const compDir = company.name.replace(/[^a-z0-9]/gi, '_');
+        const compDir = company.name.replace(/[^a-z0-9]/gi, "_");
 
         // 1. Company Summary Excel (Company Root)
         const compSummaryCols = [
           { header: "Métrique", key: "metric" },
-          { header: "Valeur", key: "value" }
+          { header: "Valeur", key: "value" },
         ];
         const compSummaryRows = [
           { metric: "Nom de l'entreprise", value: company.name },
@@ -1216,10 +1345,18 @@ const actionHandlers = {
           { metric: "Résultat Net", value: netProfit },
           { metric: "Nombre de Clients", value: clients.length },
           { metric: "Nombre de Factures", value: invoices.length },
-          { metric: "Catalogue Produits", value: products.length }
+          { metric: "Catalogue Produits", value: products.length },
         ];
-        const summaryExcel = await generateExcel(`${company.name}_Summary`, compSummaryCols, compSummaryRows);
-        zipFiles.push({ name: `${compDir}_Global_Summary.xlsx`, content: summaryExcel, folder: compDir });
+        const summaryExcel = await generateExcel(
+          `${company.name}_Summary`,
+          compSummaryCols,
+          compSummaryRows,
+        );
+        zipFiles.push({
+          name: `${compDir}_Global_Summary.xlsx`,
+          content: summaryExcel,
+          folder: compDir,
+        });
 
         // 2. Products & Services
         if (products.length > 0) {
@@ -1227,16 +1364,24 @@ const actionHandlers = {
             { header: "Nom", key: "name" },
             { header: "Description", key: "desc" },
             { header: "Prix", key: "price" },
-            { header: "Type", key: "type" }
+            { header: "Type", key: "type" },
           ];
-          const prodRows = products.map(p => ({
+          const prodRows = products.map((p) => ({
             name: p.name,
             desc: p.description,
             price: p.price,
-            type: p.type
+            type: p.type,
           }));
-          const prodExcel = await generateExcel(`Produits_${company.name}`, prodCols, prodRows);
-          zipFiles.push({ name: "Produits_et_Services.xlsx", content: prodExcel, folder: `${compDir}/Produits_Services` });
+          const prodExcel = await generateExcel(
+            `Produits_${company.name}`,
+            prodCols,
+            prodRows,
+          );
+          zipFiles.push({
+            name: "Produits_et_Services.xlsx",
+            content: prodExcel,
+            folder: `${compDir}/Produits_Services`,
+          });
         }
 
         // 3. Clients
@@ -1245,16 +1390,24 @@ const actionHandlers = {
             { header: "Nom", key: "name" },
             { header: "Email", key: "email" },
             { header: "Téléphone", key: "phone" },
-            { header: "Adresse", key: "addr" }
+            { header: "Adresse", key: "addr" },
           ];
-          const clientRows = clients.map(c => ({
+          const clientRows = clients.map((c) => ({
             name: c.name,
             email: c.email,
             phone: c.phone,
-            addr: c.address
+            addr: c.address,
           }));
-          const clientExcel = await generateExcel(`Clients_${company.name}`, clientCols, clientRows);
-          zipFiles.push({ name: "Liste_Clients.xlsx", content: clientExcel, folder: `${compDir}/Clients` });
+          const clientExcel = await generateExcel(
+            `Clients_${company.name}`,
+            clientCols,
+            clientRows,
+          );
+          zipFiles.push({
+            name: "Liste_Clients.xlsx",
+            content: clientExcel,
+            folder: `${compDir}/Clients`,
+          });
         }
 
         // 4. Expenses
@@ -1263,16 +1416,24 @@ const actionHandlers = {
             { header: "Titre", key: "title" },
             { header: "Montant", key: "amt" },
             { header: "Date", key: "date" },
-            { header: "Catégorie", key: "cat" }
+            { header: "Catégorie", key: "cat" },
           ];
-          const expRows = expenses.map(e => ({
+          const expRows = expenses.map((e) => ({
             title: e.title,
             amt: e.amount,
             date: e.date.toLocaleDateString(),
-            cat: e.category
+            cat: e.category,
           }));
-          const expExcel = await generateExcel(`Depenses_${company.name}`, expCols, expRows);
-          zipFiles.push({ name: "Liste_Depenses.xlsx", content: expExcel, folder: `${compDir}/Depenses` });
+          const expExcel = await generateExcel(
+            `Depenses_${company.name}`,
+            expCols,
+            expRows,
+          );
+          zipFiles.push({
+            name: "Liste_Depenses.xlsx",
+            content: expExcel,
+            folder: `${compDir}/Depenses`,
+          });
         }
 
         // 5. Invoices & History (Summary + PDFs)
@@ -1282,30 +1443,37 @@ const actionHandlers = {
             { header: "Date", key: "date" },
             { header: "Client", key: "client" },
             { header: "Montant", key: "amt" },
-            { header: "Statut", key: "stat" }
+            { header: "Statut", key: "stat" },
           ];
-          const invRows = invoices.map(i => ({
+          const invRows = invoices.map((i) => ({
             ref: i.reference,
             date: i.createdAt.toLocaleDateString(),
             client: i.clientName,
             amt: i.totalTTC || i.totalHT,
-            stat: i.status
+            stat: i.status,
           }));
-          const invExcel = await generateExcel(`Factures_${company.name}`, invCols, invRows);
-          zipFiles.push({ name: "Historique_Factures.xlsx", content: invExcel, folder: `${compDir}/Historique_Factures` });
+          const invExcel = await generateExcel(
+            `Factures_${company.name}`,
+            invCols,
+            invRows,
+          );
+          zipFiles.push({
+            name: "Historique_Factures.xlsx",
+            content: invExcel,
+            folder: `${compDir}/Historique_Factures`,
+          });
 
           for (const inv of invoices) {
             try {
               const html = renderInvoiceHtml(inv, inv.language || "fr");
               const pdf = await generatePdfFromHtml(html);
-              const safeRef = inv.reference.replace(/[\/\\]/g, '-');
+              const safeRef = inv.reference.replace(/[\/\\]/g, "-");
               zipFiles.push({
                 name: `Facture_${safeRef}.pdf`,
                 content: pdf,
-                folder: `${compDir}/Historique_Factures`
+                folder: `${compDir}/Historique_Factures`,
               });
             } catch (e) {
-              console.error(`Global Export: PDF failure for ${inv.reference}`, e);
             }
           }
         }
@@ -1318,15 +1486,246 @@ const actionHandlers = {
         { header: "Dépenses", key: "expenses" },
         { header: "Résultat Net", key: "net" },
         { header: "Clients", key: "clients" },
-        { header: "Factures", key: "invoices" }
+        { header: "Factures", key: "invoices" },
       ];
-      const masterExcel = await generateExcel("Rapport_Comptable_Global", masterCols, globalReportRows);
-      zipFiles.push({ name: "Global_Accounting_Master_Report.xlsx", content: masterExcel });
+      const masterExcel = await generateExcel(
+        "Rapport_Comptable_Global",
+        masterCols,
+        globalReportRows,
+      );
+      zipFiles.push({
+        name: "Global_Accounting_Master_Report.xlsx",
+        content: masterExcel,
+      });
 
       return await generateZip(zipFiles);
     },
   },
+  dashboard: {
+    get: async (userId, companyId = null) => {
+      if (!userId) return null;
+      const activeId = companyId || (await getActiveCompanyId(userId));
+      const where = { userId };
+      if (activeId) {
+        where.companyId = activeId;
+      }
+
+      const whereInvoice = { ...where, type: "invoice" };
+      const whereTodo = { userId };
+
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      const currentMonthStart = new Date(currentYear, currentMonth, 1);
+
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+      const targetCompanyId = companyId || (await getActiveCompanyId(userId));
+
+      const executeInChunks = async (tasks, chunkSize = 4) => {
+        const results = [];
+        for (let i = 0; i < tasks.length; i += chunkSize) {
+          const chunk = tasks.slice(i, i + chunkSize);
+          const chunkResults = await Promise.all(chunk.map((fn) => fn()));
+          results.push(...chunkResults);
+        }
+        return results;
+      };
+
+      const tasks = [
+        () =>
+          targetCompanyId
+            ? prisma.company.findUnique({ where: { id: targetCompanyId } })
+            : Promise.resolve(null),
+        () =>
+          prisma.invoice.aggregate({
+            where: {
+              ...whereInvoice,
+              createdAt: { gte: currentMonthStart },
+              OR: [{ status: "paid" }, { isScaled: true }],
+            },
+            _sum: { totalTTC: true, totalHT: true },
+          }),
+        () =>
+          prisma.invoice.aggregate({
+            where: {
+              ...whereInvoice,
+              status: { in: ["pending", "overdue", "draft"] },
+            },
+            _sum: { totalTTC: true, totalHT: true },
+            _count: true,
+          }),
+        () =>
+          prisma.invoice.findMany({
+            where: whereInvoice,
+            orderBy: { createdAt: "desc" },
+            take: 50,
+            select: {
+              id: true,
+              reference: true,
+              clientName: true,
+              totalHT: true,
+              status: true,
+              isScaled: true,
+              createdAt: true,
+              nextIssueDate: true,
+            },
+          }),
+        // Factures planifiées (envoi unique) - nextIssueDate != null ET isRecurring = false
+        () =>
+          prisma.invoice
+            .findMany({
+              where: {
+                ...whereInvoice,
+                nextIssueDate: { not: null },
+                isRecurring: false,
+              },
+              select: {
+                id: true,
+                reference: true,
+                clientName: true,
+                totalHT: true,
+                status: true,
+                isScaled: true,
+                createdAt: true,
+                nextIssueDate: true,
+              },
+              orderBy: { nextIssueDate: "asc" },
+              take: 100,
+            })
+            .then((scheduledInvoices) => {
+              return scheduledInvoices;
+            }),
+        // Factures récurrentes - isRecurring = true
+        () =>
+          prisma.invoice
+            .findMany({
+              where: {
+                ...whereInvoice,
+                isRecurring: true,
+              },
+              select: {
+                id: true,
+                reference: true,
+                clientName: true,
+                totalHT: true,
+                status: true,
+                isScaled: true,
+                createdAt: true,
+                nextIssueDate: true,
+                isRecurring: true,
+                recurrenceFreq: true,
+                autoReminders: true,
+                nextReminderDate: true,
+              },
+              orderBy: { nextIssueDate: "asc" },
+              take: 100,
+            })
+            .then((recurringInvoices) => {
+              return recurringInvoices;
+            }),
+        () =>
+          prisma.invoice.findMany({
+            where: {
+              ...whereInvoice,
+              status: { in: ["pending", "overdue", "draft"] },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          }),
+        () =>
+          prisma.invoice.findMany({
+            where: {
+              ...whereInvoice,
+              createdAt: { gte: sixMonthsAgo },
+              OR: [{ status: "paid" }, { isScaled: true }],
+            },
+            select: { createdAt: true, totalTTC: true, totalHT: true },
+          }),
+        () =>
+          prisma.todo.findMany({
+            where: whereTodo,
+            orderBy: { startTime: "asc" },
+          }),
+        () =>
+          prisma.client.count({
+            where: { userId, ...(activeId ? { companyId: activeId } : {}) },
+          }),
+      ];
+
+      const [
+        activeCompany,
+        revenuesThisMonth,
+        unpaidInvoicesStats,
+        recentInvoices,
+        scheduledInvoices, // Factures planifiées (envoi unique)
+        recurringInvoices, // Factures récurrentes
+        unpaidInvoices,
+        chartInvoices,
+        todos,
+        activeClientsCount,
+      ] = await executeInChunks(tasks, 5);
+
+      return {
+        revenuesThisMonth:
+          revenuesThisMonth._sum.totalTTC ||
+          revenuesThisMonth._sum.totalHT ||
+          0,
+        unpaidInvoicesTotal:
+          unpaidInvoicesStats._sum.totalTTC ||
+          unpaidInvoicesStats._sum.totalHT ||
+          0,
+        unpaidInvoicesCount: unpaidInvoicesStats._count,
+        activeClientsCount,
+        // Factures récurrentes - à afficher uniquement dans la gestion des automatisations
+        automations: recurringInvoices.map((inv) => ({
+          id: inv.id,
+          reference: inv.reference,
+          clientName: inv.clientName || "",
+          totalHT: inv.totalHT || 0,
+          isScaled: inv.isScaled || false,
+          status: inv.status,
+          createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+          isRecurring: inv.isRecurring,
+          recurrenceFreq: inv.recurrenceFreq || "monthly",
+          autoReminders: inv.autoReminders,
+          nextIssueDate: inv.nextIssueDate
+            ? inv.nextIssueDate.toISOString()
+            : null,
+          nextReminderDate: inv.nextReminderDate
+            ? inv.nextReminderDate.toISOString()
+            : null,
+        })),
+        unpaidInvoices: unpaidInvoices.map((inv) => ({
+          ...inv,
+          createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+        })),
+        // Factures planifiées (envoi unique) - à afficher uniquement dans le calendrier
+        scheduledInvoices: scheduledInvoices.map((inv) => ({
+          ...inv,
+          clientName: inv.clientName || "",
+          totalHT: inv.totalHT || 0,
+          isScaled: inv.isScaled || false,
+          createdAt: inv.createdAt ? inv.createdAt.toISOString() : "",
+          nextIssueDate: inv.nextIssueDate
+            ? inv.nextIssueDate.toISOString()
+            : null,
+        })),
+        todos: todos.map((t) => ({
+          ...t,
+          startTime: t.startTime ? t.startTime.toISOString() : null,
+          endTime: t.endTime ? t.endTime.toISOString() : null,
+          createdAt: t.createdAt ? t.createdAt.toISOString() : null,
+        })),
+        activeCompanyName: activeCompany?.name || null,
+      };
+    },
+  },
   clients: {
+    get: async (userId, companyId) => {
+      return await handlers.clients(userId, companyId);
+    },
     create: async (userId, data) => {
       const activeCompanyId = await getActiveCompanyId(userId);
       return await prisma.client.create({
@@ -1405,6 +1804,9 @@ const actionHandlers = {
     },
   },
   invoices: {
+    get: async (userId, id = null, passedCompanyId = null) => {
+      return await handlers.invoices(userId, id, passedCompanyId);
+    },
     create: async (userId, data) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       // Subscription enforcement: daily quota check
@@ -1472,9 +1874,15 @@ const actionHandlers = {
               reference: fallbackRef,
               userId,
               companyId: invoiceData.companyId || activeCompanyId,
-              dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
-              nextIssueDate: invoiceData.nextIssueDate ? new Date(invoiceData.nextIssueDate) : null,
-              nextReminderDate: invoiceData.nextReminderDate ? new Date(invoiceData.nextReminderDate) : null,
+              dueDate: invoiceData.dueDate
+                ? new Date(invoiceData.dueDate)
+                : null,
+              nextIssueDate: invoiceData.nextIssueDate
+                ? new Date(invoiceData.nextIssueDate)
+                : null,
+              nextReminderDate: invoiceData.nextReminderDate
+                ? new Date(invoiceData.nextReminderDate)
+                : null,
               items: {
                 create: (items || []).map((item) => ({
                   designation: item.designation,
@@ -1491,7 +1899,13 @@ const actionHandlers = {
         throw error;
       }
     },
-    send: async (userId, invoiceId, targetEmail, currencyCode = "XOF", pdfArrayBuffer) => {
+    send: async (
+      userId,
+      invoiceId,
+      targetEmail,
+      currencyCode = "XOF",
+      pdfArrayBuffer,
+    ) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       try {
         if (!targetEmail) {
@@ -1546,12 +1960,12 @@ const actionHandlers = {
         if (pdfArrayBuffer && pdfArrayBuffer.length > 0) {
           attachments.push({
             filename: `Facture_${invoice.reference}.pdf`,
-            content: Buffer.from(pdfArrayBuffer)
+            content: Buffer.from(pdfArrayBuffer),
           });
         }
 
         const data = await resend.emails.send({
-          from: "ProFacture <onboarding@resend.dev>",
+          from: "ESSOR <onboarding@resend.dev>",
           to: [targetEmail],
           subject: `Nouvelle Facture ${invoice.reference}`,
           html: emailHtml,
@@ -1559,8 +1973,9 @@ const actionHandlers = {
         });
 
         return { success: true, data };
+        return { success: true, data };
       } catch (error) {
-        console.error("Erreur d'envoi d'e-mail:", error);
+        // console.error("Email send error");
         throw error;
       }
     },
@@ -1583,10 +1998,18 @@ const actionHandlers = {
 
       const updatePayload = {
         ...invoiceData,
-        dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : undefined,
-        nextIssueDate: invoiceData.nextIssueDate ? new Date(invoiceData.nextIssueDate) : undefined,
-        nextReminderDate: invoiceData.nextReminderDate ? new Date(invoiceData.nextReminderDate) : undefined,
-        lastReminderSentAt: invoiceData.lastReminderSentAt ? new Date(invoiceData.lastReminderSentAt) : undefined,
+        dueDate: invoiceData.dueDate
+          ? new Date(invoiceData.dueDate)
+          : undefined,
+        nextIssueDate: invoiceData.nextIssueDate
+          ? new Date(invoiceData.nextIssueDate)
+          : undefined,
+        nextReminderDate: invoiceData.nextReminderDate
+          ? new Date(invoiceData.nextReminderDate)
+          : undefined,
+        lastReminderSentAt: invoiceData.lastReminderSentAt
+          ? new Date(invoiceData.lastReminderSentAt)
+          : undefined,
       };
 
       if (items) {
@@ -1626,6 +2049,9 @@ const actionHandlers = {
       } else if (currentStatus === "draft") {
         updateData.status = "draft";
         updateData.isScaled = false;
+      } else if (currentStatus === "paused") {
+        updateData.status = "paused";
+        updateData.isScaled = false;
       } else {
         updateData.status = "pending";
         updateData.isScaled = false;
@@ -1649,11 +2075,15 @@ const actionHandlers = {
           isRead: true,
           readAt: new Date(),
           status: {
-            set: (await prisma.invoice.findUnique({ where: { id } }))?.status === "draft" ? "draft" : "pending"
-          }
-        }
+            set:
+              (await prisma.invoice.findUnique({ where: { id } }))?.status ===
+              "draft"
+                ? "draft"
+                : "pending",
+          },
+        },
       });
-    }
+    },
   },
   feedback: {
     create: async (userId, data) => {
@@ -1670,7 +2100,9 @@ const actionHandlers = {
         },
       });
 
-      const escapedContent = (content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const escapedContent = (content || "")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
       const emailContent = `
         <div style="font-family: sans-serif; padding: 20px;">
           <h2>Nouveau Retour Utilisateur</h2>
@@ -1693,11 +2125,9 @@ const actionHandlers = {
         });
 
         if (resendRes.error) {
-          console.error("Resend Error:", resendRes.error);
           throw new Error(resendRes.error.message);
         }
       } catch (error) {
-        console.error("Failed to send email via Resend:", error);
         // Fallback or explicit warning mechanism could be placed here
         // We still return success:true so the user sees the confirmation UI since the DB save succeeded
         // but throw an error? Let's just return success so user is happy, but log the error
@@ -1718,9 +2148,17 @@ const actionHandlers = {
       const now = Date.now();
       const record = loginAttempts.get(email);
 
-      if (record && record.attempts >= MAX_LOGIN_ATTEMPTS && now - record.lastAttempt < LOCKOUT_TIME) {
-        const remainingMinutes = Math.ceil((LOCKOUT_TIME - (now - record.lastAttempt)) / 60000);
-        throw new Error(`Trop de tentatives. Réessayez dans ${remainingMinutes} minutes.`);
+      if (
+        record &&
+        record.attempts >= MAX_LOGIN_ATTEMPTS &&
+        now - record.lastAttempt < LOCKOUT_TIME
+      ) {
+        const remainingMinutes = Math.ceil(
+          (LOCKOUT_TIME - (now - record.lastAttempt)) / 60000,
+        );
+        throw new Error(
+          `Trop de tentatives. Réessayez dans ${remainingMinutes} minutes.`,
+        );
       }
 
       const user = await prisma.user.findUnique({
@@ -1736,7 +2174,10 @@ const actionHandlers = {
       const isMatch = bcrypt.compareSync(password, user.password);
       if (!isMatch) {
         // Increment attempts on failure
-        const current = loginAttempts.get(email) || { attempts: 0, lastAttempt: 0 };
+        const current = loginAttempts.get(email) || {
+          attempts: 0,
+          lastAttempt: 0,
+        };
         loginAttempts.set(email, {
           attempts: current.attempts + 1,
           lastAttempt: now,
@@ -1788,7 +2229,6 @@ const actionHandlers = {
           avatar: user.avatar,
         };
       } catch (error) {
-        // console.error("Avatar upload error:", error);
         return {
           success: false,
           message: "Upload failed",
@@ -1828,13 +2268,11 @@ const actionHandlers = {
         });
 
         if (emailRes.error) {
-          console.error("Resend Error:", emailRes.error);
           throw new Error("Erreur lors de l'envoi de l'email.");
         }
 
         return { success: true };
       } catch (err) {
-        console.error("Email Sending Failed:", err);
         throw new Error("Erreur lors de l'envoi de l'email.");
       }
     },
@@ -1897,7 +2335,7 @@ const actionHandlers = {
     initCheckout: async (userId, { plan, countryCode }) => {
       if (!plan || !["monthly", "yearly"].includes(plan))
         throw new Error("Plan invalide.");
-      
+
       // Strict country code validation (e.g. "BF", "CI", "US")
       if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) {
         throw new Error("ERR_INVALID_INPUT");
@@ -1973,8 +2411,6 @@ const actionHandlers = {
       };
 
       if (!apiKey || !apiToken) {
-        // Dev mode: return a simulated payment URL
-        console.warn("LigdiCash keys not configured — returning test URL");
         return {
           paymentUrl: `${appUrl}/pricing?test_ref=${reference}&plan=${plan}`,
           reference,
@@ -2018,7 +2454,6 @@ const actionHandlers = {
         }
         throw new Error(data.response_text || "Erreur LigdiCash");
       } catch (err) {
-        console.error("LigdiCash error:", err);
         throw new Error(
           "Erreur lors de l'initiation du paiement. Veuillez réessayer.",
         );
@@ -2032,12 +2467,13 @@ const actionHandlers = {
       if (!tx || tx.userId !== userId)
         throw new Error("Transaction introuvable.");
 
-      // Dev/Test mode: auto-approve if no API keys
+      // Dev/Test mode: auto-approve if no API keys AND not in production
+      const isProd = process.env.NODE_ENV === "production";
       if (
         tx.status === "pending" &&
-        (!process.env.LIGDICASH_API_KEY || !process.env.LIGDICASH_API_TOKEN)
+        (!process.env.LIGDICASH_API_KEY || !process.env.LIGDICASH_API_TOKEN) &&
+        !isProd
       ) {
-
         const expiresAt = new Date();
         if (tx.plan === "monthly") expiresAt.setMonth(expiresAt.getMonth() + 1);
         else expiresAt.setFullYear(expiresAt.getFullYear() + 1);
@@ -2066,25 +2502,36 @@ const actionHandlers = {
       };
     },
 
-    getPricing: async (currencyCode = "XOF") => {
       try {
         return await getPricingForCurrency(currencyCode);
       } catch (err) {
-        console.error("IPC Pricing error:", err);
         return {
-          currency: { code: "USD", symbol: "$", locale: "en-US", name: "Dollar US" },
+          currency: {
+            code: "USD",
+            symbol: "$",
+            locale: "en-US",
+            name: "Dollar US",
+          },
           monthly: { usd: 10.99, local: 10.99, formatted: "$10.99" },
-          yearly: { usd: 109.99, local: 109.99, formatted: "$109.99", savings: 21.89, savingsPercent: 17 },
+          yearly: {
+            usd: 109.99,
+            local: 109.99,
+            formatted: "$109.99",
+            savings: 21.89,
+            savingsPercent: 17,
+          },
         };
       }
     },
     detectPricing: async () => {
       try {
-        const { detectCountryFromIP, getPricingForCountry } = require("../lib/currency-service");
+        const {
+          detectCountryFromIP,
+          getPricingForCountry,
+        } = require("../lib/currency-service");
         const countryCode = await detectCountryFromIP();
         return await getPricingForCountry(countryCode);
       } catch (err) {
-        console.error("IPC Detect Pricing error:", err);
         return await actionHandlers.subscription.getPricing("USD");
       }
     },
@@ -2096,13 +2543,21 @@ const actionHandlers = {
       // 1. Subscription & Quota Check
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { dailyAiCount: true, dailyAiResetAt: true, subscriptionPlan: true, subscriptionStatus: true }
+        select: {
+          dailyAiCount: true,
+          dailyAiResetAt: true,
+          subscriptionPlan: true,
+          subscriptionStatus: true,
+        },
       });
 
       if (!user) throw new Error("ERR_NOT_FOUND");
 
       // BLOCK FREE USERS IMMEDIATELY
-      if (user.subscriptionStatus !== "active" || user.subscriptionPlan === "free") {
+      if (
+        user.subscriptionStatus !== "active" ||
+        user.subscriptionPlan === "free"
+      ) {
         throw new Error("ai_error_not_premium");
       }
 
@@ -2110,9 +2565,11 @@ const actionHandlers = {
 
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const resetAt = user.dailyAiResetAt ? new Date(user.dailyAiResetAt) : null;
-      
-      let currentCount = (resetAt && resetAt >= today) ? user.dailyAiCount : 0;
+      const resetAt = user.dailyAiResetAt
+        ? new Date(user.dailyAiResetAt)
+        : null;
+
+      let currentCount = resetAt && resetAt >= today ? user.dailyAiCount : 0;
 
       if (currentCount >= limit) {
         throw new Error("ERR_AI_QUOTA");
@@ -2127,36 +2584,56 @@ const actionHandlers = {
       try {
         // 3. Fetch Context Data (Last 30 Days)
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        
+
         const [invoices, expenses, companies] = await Promise.all([
           prisma.invoice.findMany({
             where: { userId, createdAt: { gte: thirtyDaysAgo } },
-            select: { reference: true, totalTTC: true, totalHT: true, status: true, createdAt: true, clientName: true }
+            select: {
+              reference: true,
+              totalTTC: true,
+              totalHT: true,
+              status: true,
+              createdAt: true,
+              clientName: true,
+            },
           }),
           prisma.expense.findMany({
             where: { userId, date: { gte: thirtyDaysAgo } },
-            select: { title: true, amount: true, category: true, date: true }
+            select: { title: true, amount: true, category: true, date: true },
           }),
           prisma.company.findMany({
             where: { userId },
-            select: { name: true, sector: true, description: true, productsServices: true }
-          })
+            select: {
+              name: true,
+              sector: true,
+              description: true,
+              productsServices: true,
+            },
+          }),
         ]);
 
-        const totalRev = invoices.filter(i => i.status === "paid").reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
+        const totalRev = invoices
+          .filter((i) => i.status === "paid")
+          .reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
         const totalExp = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
         const dataSummary = `
 PROFIL DES ENTREPRISES DE L'UTILISATEUR :
-${companies.map(c => `- ${c.name} : ${c.sector || 'Secteur non défini'}${c.description ? ` (${c.description})` : ''}${c.productsServices ? `. Produits/Services: ${c.productsServices}` : ''}`).join('\n')}
+${companies.map((c) => `- ${c.name} : ${c.sector || "Secteur non défini"}${c.description ? ` (${c.description})` : ""}${c.productsServices ? `. Produits/Services: ${c.productsServices}` : ""}`).join("\n")}
 
 DONNÉES FINANCIÈRES DES 30 DERNIERS JOURS :
 - Revenus (factures payées) : ${totalRev.toLocaleString()} CFA
 - Dépenses totales : ${totalExp.toLocaleString()} CFA
 - Nombre de factures créées : ${invoices.length}
 - Nombre de dépenses enregistrées : ${expenses.length}
-- Liste récente (Factures) : ${invoices.slice(0, 5).map(i => `${i.reference} (${i.totalHT} CFA, ${i.status})`).join(", ")}
-- Liste récente (Dépenses) : ${expenses.slice(0, 5).map(e => `${e.title} (${e.amount} CFA, ${e.category})`).join(", ")}
+- Liste récente (Factures) : ${invoices
+          .slice(0, 5)
+          .map((i) => `${i.reference} (${i.totalHT} CFA, ${i.status})`)
+          .join(", ")}
+- Liste récente (Dépenses) : ${expenses
+          .slice(0, 5)
+          .map((e) => `${e.title} (${e.amount} CFA, ${e.category})`)
+          .join(", ")}
         `;
 
         const { OpenAI } = require("openai");
@@ -2164,8 +2641,8 @@ DONNÉES FINANCIÈRES DES 30 DERNIERS JOURS :
 
         const systemPrompt = `Tu es un assistant économique expert pour les entrepreneurs d'Afrique francophone (ESSOR).
 Tu réponds en français, de manière professionnelle et concise.
-UTILISE LA LISTE DES DONNÉES CI-DESSOUS (Finances et Profil des Entreprises) POUR RÉPONDRE. 
-IMPORTANT : 
+UTILISE LA LISTE DES DONNÉES CI-DESSOUS (Finances et Profil des Entreprises) POUR RÉPONDRE.
+IMPORTANT :
 - Adapte tes conseils au SECTEUR D'ACTIVITÉ de l'utilisateur (ex: si BTP, parle de matériaux/chantiers ; si Digital, parle de marketing/tech).
 - Ne dépasse JAMAIS 400 mots dans ta réponse.
 - Ne suggère JAMAIS de créer de nouvelles factures ou dépenses (reste en mode analyse).
@@ -2182,13 +2659,17 @@ ${dataSummary}`;
           temperature: 0.7,
         });
 
-        const responseText = completion.choices[0]?.message?.content || "Désolé, je n'ai pas pu générer une réponse.";
+        const responseText =
+          completion.choices[0]?.message?.content ||
+          "Désolé, je n'ai pas pu générer une réponse.";
 
         // 4. Word Count Safety Check for Output
         const outputWords = responseText.trim().split(/\s+/);
         let finalResponse = responseText;
         if (outputWords.length > 400) {
-          finalResponse = outputWords.slice(0, 400).join(" ") + "... [Réponse tronquée à 400 mots]";
+          finalResponse =
+            outputWords.slice(0, 400).join(" ") +
+            "... [Réponse tronquée à 400 mots]";
         }
 
         // 5. Increment Quota
@@ -2196,22 +2677,20 @@ ${dataSummary}`;
           where: { id: userId },
           data: {
             dailyAiCount: currentCount + 1,
-            dailyAiResetAt: now
-          }
+            dailyAiResetAt: now,
+          },
         });
 
         return { response: finalResponse };
       } catch (error) {
-        console.error("Erreur IA Advisor:", error);
-        
         // Handle specific OpenAI error codes securely
         if (error.status === 429) throw new Error("ERR_AI_QUOTA");
         if (error.status >= 500) throw new Error("ERR_AI_API");
-        
+
         throw new Error("ERR_AI_API"); // Generic AI error instead of technical internal error
       }
-    }
-  }
+    },
+  },
 };
 
 // ---- Subscription data handler ----

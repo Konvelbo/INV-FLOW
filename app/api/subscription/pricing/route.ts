@@ -4,7 +4,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { detectCountryFromIP, getPricingForCountry } from "@/lib/currency";
 
-export const dynamic = 'force-dynamic';
+// Force static for Electron build compatibility with output: "export"
+// On Vercel at runtime, this will still execute the GET handler normally
+export const dynamic = "force-static";
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,7 +29,12 @@ export async function GET(req: NextRequest) {
     // Fallback to USD
     return NextResponse.json({
       country: "US",
-      currency: { code: "USD", symbol: "$", locale: "en-US", name: "Dollar américain" },
+      currency: {
+        code: "USD",
+        symbol: "$",
+        locale: "en-US",
+        name: "Dollar américain",
+      },
       monthly: { usd: 10.99, local: 10.99, formatted: "$10.99" },
       yearly: {
         usd: 109.99,

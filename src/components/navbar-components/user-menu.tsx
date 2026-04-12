@@ -48,7 +48,7 @@ export default function UserMenu() {
   const router = useRouter();
   const { performAction, loading: actionLoading } = useIPCAction();
   const { currency, setCurrency } = useInvoice();
-  const { language, setLanguage, dict } = useLanguage();
+  const { language, setLanguage, dict, t } = useLanguage();
   const { subscription } = useSubscription();
   const isPro = subscription?.plan && subscription.plan !== "free";
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -107,13 +107,13 @@ export default function UserMenu() {
 
             window.dispatchEvent(new Event("storage")); // important
 
-            toast.success("Avatar mis à jour !");
+            toast.success(t("avatarUpdated"));
           } else {
-            toast.error(res.error || "Échec de l'upload de l'avatar");
+            toast.error(res.error || t("avatarUploadFailed"));
           }
         } catch (error) {
           console.error("Failed to upload avatar", error);
-          toast.error("Échec de l'upload de l'avatar");
+          toast.error(t("avatarUploadFailed"));
         }
       };
       reader.readAsDataURL(file);
@@ -260,7 +260,7 @@ export default function UserMenu() {
                     value={currency}
                     onValueChange={(val) => {
                       setCurrency(val);
-                      toast.success(`${dict.currencyChanged} ${val}`);
+                      toast.success(`${t("currencyChanged")} ${val}`);
                     }}
                   >
                     {currencies.map((curr) => (
@@ -296,7 +296,7 @@ export default function UserMenu() {
                     onValueChange={(val) => {
                       setLanguage(val as any);
                       toast.success(
-                        `${dict.languageChanged} ${val === "fr" ? "Français" : "English"}`,
+                        `${t("languageChanged")} ${t(val === "fr" ? "french" : "english")}`,
                       );
                     }}
                   >
@@ -305,7 +305,7 @@ export default function UserMenu() {
                       className="flex items-center justify-between gap-4 p-3 rounded-lg cursor-pointer hover:bg-primary/10"
                     >
                       <span className="font-sans text-sm font-medium">
-                        Français
+                        {t("french")}
                       </span>
                     </DropdownMenuRadioItem>
                     <DropdownMenuRadioItem
@@ -313,7 +313,7 @@ export default function UserMenu() {
                       className="flex items-center justify-between gap-4 p-3 rounded-lg cursor-pointer hover:bg-primary/10"
                     >
                       <span className="font-sans text-sm font-medium">
-                        English
+                        {t("english")}
                       </span>
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>

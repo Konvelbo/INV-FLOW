@@ -17,12 +17,15 @@ export default function OptimizedTextarea({
   debounce = 300,
   ...props
 }: OptimizedTextareaProps) {
-  const [localValue, setLocalValue] = useState(value);
+  const [localValue, setLocalValue] = useState(value || "");
+  const lastValueProp = useRef(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+  // Sync state if prop changes externally (e.g. loaded from API)
+  if (value !== lastValueProp.current) {
+    setLocalValue(value || "");
+    lastValueProp.current = value;
+  }
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -54,7 +57,7 @@ export default function OptimizedTextarea({
     <textarea
       {...props}
       ref={textareaRef}
-      value={localValue}
+      value={localValue || ""}
       onChange={(e) => setLocalValue(e.target.value)}
       onBlur={handleBlur}
       style={{ overflow: "hidden", ...props.style }}

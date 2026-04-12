@@ -73,8 +73,14 @@ export const TaskDialog = memo(function TaskDialog({
       initialValues
         ? {
             ...initialValues,
-            startTime: initialValues.startTime?.slice(0, 16) || "",
-            endTime: initialValues.endTime?.slice(0, 16) || "",
+            startTime:
+              typeof initialValues.startTime === "string"
+                ? initialValues.startTime.slice(0, 16)
+                : "",
+            endTime:
+              typeof initialValues.endTime === "string"
+                ? initialValues.endTime.slice(0, 16)
+                : "",
           }
         : {
             title: "",

@@ -115,7 +115,7 @@ const InvoiceEmail = ({
           )
         ),
         invoiceId && e("img", {
-          src: `https://essor.app/api/track/v?id=${invoiceId}`,
+          src: `${process.env.NEXT_PUBLIC_APP_URL || 'https://essor.app'}/api/track/v?id=${invoiceId}`,
           width: "1",
           height: "1",
           alt: "",

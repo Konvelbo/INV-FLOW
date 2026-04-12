@@ -14,6 +14,8 @@ import {
   User,
   Mail,
   Send,
+  CalendarClock,
+  Clock,
 } from "lucide-react";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { formatPrice } from "@/lib/currency";
@@ -28,6 +30,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/src/context/NotificationContext";
 import { useIPCAction } from "@/hooks/useIPCAction";
+import { useSubscription } from "@/src/context/SubscriptionContext";
+import { format } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 
 interface HistoryClientProps {
   initialInvoices: any[];
@@ -44,6 +49,14 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
   const [isFetchingClients, setIsFetchingClients] = useState(false);
+
+  // Scheduling State (used in email modal only)
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState("");
+
+  const { subscription } = useSubscription();
+  const isPaid =
+    subscription?.plan === "monthly" || subscription?.plan === "yearly";
 
   useEffect(() => {
     setInvoices(initialInvoices);
@@ -63,7 +76,11 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
             const userId = user.id;
             const companyId = user.activeCompanyId || undefined;
             // @ts-ignore
-            const res = await window.electronAPI.getData("clients", userId, companyId);
+            const res = await window.electronAPI.getData(
+              "clients",
+              userId,
+              companyId,
+            );
             if (res.success) {
               setClients(res.data);
             }
@@ -131,30 +148,84 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
 
     const invoiceId = selectedInvoiceForEmail.id;
 
-    const res = await performAction("invoices", "send", invoiceId, targetEmail, currency);
+    try {
+      if (isScheduled && scheduledDate) {
+        // If scheduling is selected, patch the invoice to set nextIssueDate and mark pending
+        const res = await performAction("invoices", "patch", invoiceId, {
+          nextIssueDate: new Date(scheduledDate),
+          status: "pending",
+        });
 
-    if (res.success) {
-      toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
-      addNotification({
-        user: "Système",
-        action: "a envoyé",
-        target: `la facture ${selectedInvoiceForEmail.reference} par e-mail`,
-        type: "invoice",
-        silent: true,
-      });
-      setIsEmailModalOpen(false);
-      setTargetEmail("");
+        if (res.success) {
+          toast.success(t("scheduleSuccess") || "Envoi planifié avec succès !");
+          addNotification({
+            user: "Système",
+            action: "a planifié",
+            target: `l'envoi de la facture ${selectedInvoiceForEmail.reference}`,
+            type: "invoice",
+            silent: true,
+          });
+          // Update local state to reflect scheduling
+          setInvoices(
+            invoices.map((inv) =>
+              inv.id === selectedInvoiceForEmail.id
+                ? { ...inv, nextIssueDate: scheduledDate, status: "pending" }
+                : inv,
+            ),
+          );
+          setIsEmailModalOpen(false);
+          setTargetEmail("");
+        } else {
+          toast.error(
+            res.error ||
+              (t as any)("scheduleFail") ||
+              "Échec de la planification.",
+          );
+        }
+      } else {
+        // Immediate send
+        const res = await performAction(
+          "invoices",
+          "send",
+          invoiceId,
+          targetEmail,
+          currency,
+        );
 
-      // Update local state if needed (e.g. status)
-      setInvoices(
-        invoices.map((inv) =>
-          inv.id === selectedInvoiceForEmail.id
-            ? { ...inv, status: "pending" }
-            : inv,
-        ),
-      );
+        if (res.success) {
+          toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
+          addNotification({
+            user: "Système",
+            action: "a envoyé",
+            target: `la facture ${selectedInvoiceForEmail.reference} par e-mail`,
+            type: "invoice",
+            silent: true,
+          });
+          setIsEmailModalOpen(false);
+          setTargetEmail("");
+
+          // Update local state if needed (e.g. status)
+          setInvoices(
+            invoices.map((inv) =>
+              inv.id === selectedInvoiceForEmail.id
+                ? { ...inv, status: "pending" }
+                : inv,
+            ),
+          );
+        } else {
+          toast.error(
+            res.error ||
+              (t as any)("emailSendFail") ||
+              "Échec de l'envoi de l'e-mail.",
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Send email/schedule error:", error);
+      toast.error(t("unexpectedError") || "Une erreur est survenue.");
+    } finally {
+      setIsSendingEmail(false);
     }
-    setIsSendingEmail(false);
   };
 
   const filteredInvoices = invoices.filter((invoice) => {
@@ -207,17 +278,29 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
               onClick={async () => {
                 const userStr = localStorage.getItem("user");
                 const userId = userStr ? JSON.parse(userStr).id : null;
-                const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
-                const res = await window.electronAPI.getData("export", userId, "invoices", activeCompanyId, "excel");
+                const activeCompanyId = userStr
+                  ? JSON.parse(userStr).activeCompanyId
+                  : undefined;
+                const res = await window.electronAPI.getData(
+                  "export",
+                  userId,
+                  "invoices",
+                  activeCompanyId,
+                  "excel",
+                );
                 if (res.success && res.data) {
-                  const blob = new Blob([res.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                  const blob = new Blob([res.data], {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `Export_Factures_${new Date().toISOString().split('T')[0]}.xlsx`;
+                  a.download = `Export_Factures_${new Date().toISOString().split("T")[0]}.xlsx`;
                   a.click();
                   URL.revokeObjectURL(url);
-                  toast.success(t("exportSuccess") || "Export Excel réussi !");
+                  toast.success(
+                    (t as any)("exportSuccess") || "Export Excel réussi !",
+                  );
                 }
               }}
               variant="outline"
@@ -431,6 +514,15 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                       e.stopPropagation();
                       setTargetEmail(invoice.client?.email || "");
                       setSelectedInvoiceForEmail(invoice);
+                      // Initialize scheduling state from invoice data so the email modal shows the correct values
+                      setIsScheduled(!!invoice.nextIssueDate);
+                      setScheduledDate(
+                        invoice.nextIssueDate
+                          ? new Date(invoice.nextIssueDate)
+                              .toISOString()
+                              .slice(0, 16)
+                          : "",
+                      );
                       setIsEmailModalOpen(true);
                     }}
                     title={t("sent")}
@@ -468,7 +560,8 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-card w-full max-w-md rounded-2xl border border-border/50 shadow-2xl p-6 animate-fade-in-up">
             <h3 className="text-xl font-bold mb-2">
-              {t("sendInvoiceEmail") || "Envoyer la facture par e-mail"}
+              {(t as any)("sendInvoiceEmail") ||
+                "Envoyer la facture par e-mail"}
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
               {t("sendInvoiceEmailDesc") || "Envoyez"}{" "}
@@ -526,6 +619,35 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                   />
                 </div>
               </div>
+
+              {/* Scheduling controls integrated into the email modal */}
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={isScheduled}
+                  onChange={(e) => {
+                    setIsScheduled(e.target.checked);
+                    if (!e.target.checked) setScheduledDate("");
+                  }}
+                  className="rounded text-primary focus:ring-primary w-4 h-4"
+                />
+                <span className="text-sm font-bold">
+                  {t("scheduleSend") || "Planifier l'envoi"}
+                </span>
+              </label>
+
+              {isScheduled && (
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="datetime-local"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="w-full bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary transition-all text-foreground cursor-pointer"
+                  />
+                </div>
+              )}
+
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"

@@ -349,7 +349,7 @@ export default function ClientsClient({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="age">{"Âge"}</Label>
+                        <Label htmlFor="age">{t("age") || "Âge"}</Label>
                         <Input
                           id="age"
                           type="text"
@@ -362,7 +362,7 @@ export default function ClientsClient({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="sexe">{"Sexe"}</Label>
+                        <Label htmlFor="sexe">{t("gender")}</Label>
                         <select
                           id="sexe"
                           value={formData.sexe}
@@ -371,9 +371,9 @@ export default function ClientsClient({
                           }
                           className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <option value="M">Masculin</option>
-                          <option value="F">Féminin</option>
-                          <option value="Autre">Autre</option>
+                          <option value="M">{t("male")}</option>
+                          <option value="F">{t("female")}</option>
+                          <option value="Autre">{t("other")}</option>
                         </select>
                       </div>
                     </div>

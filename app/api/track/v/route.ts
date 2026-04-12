@@ -1,44 +1,55 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@/src/p_client";
 
-const prisma = new PrismaClient();
+// force-static is required for Electron's static export build compatibility
+// On Vercel, the route will still execute at runtime normally
+export const dynamic = "force-static";
 
 // 1x1 transparent base64 image (gif)
 const TRANSPARENT_GIF_BUFFER = Buffer.from(
-    "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-    "base64"
+  "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+  "base64",
 );
 
 export async function GET(request: Request) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get("id");
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
 
-        if (id) {
-            await prisma.invoice.updateMany({
-                where: { id },
-                data: {
-                    isRead: true,
-                    readAt: new Date(),
-                },
-            });
-        }
+    // Only attempt database operations on Vercel (has database access)
+    if (id && process.env.VERCEL) {
+      try {
+        const { PrismaClient } = await import("@prisma/client");
+        const prisma = new PrismaClient();
 
-        return new NextResponse(TRANSPARENT_GIF_BUFFER, {
-            headers: {
-                "Content-Type": "image/gif",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0",
-            },
+        await prisma.invoice.updateMany({
+          where: { id },
+          data: {
+            isRead: true,
+            readAt: new Date(),
+          },
         });
-    } catch (error) {
-        console.error("Error tracking invoice:", error);
-        // Still return the image so it doesn't break the email layout
-        return new NextResponse(TRANSPARENT_GIF_BUFFER, {
-            headers: {
-                "Content-Type": "image/gif",
-            },
-        });
+
+        await prisma.$disconnect();
+      } catch (dbError) {
+        // Continue - still return the image
+      }
     }
+
+    return new NextResponse(TRANSPARENT_GIF_BUFFER, {
+      headers: {
+        "Content-Type": "image/gif",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
+  } catch (error) {
+    // Still return the image so it doesn't break the email layout
+    return new NextResponse(TRANSPARENT_GIF_BUFFER, {
+      headers: {
+        "Content-Type": "image/gif",
+      },
+    });
+  }
 }

@@ -5,11 +5,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/src/p_client";
 import crypto from "crypto";
 
+// Force static for Electron build compatibility with output: "export"
+// On Vercel at runtime, this will still execute the POST handler normally
+export const dynamic = "force-static";
+
 const prisma = new PrismaClient();
 
-async function verifySignature(rawBody: string, signature: string): Promise<boolean> {
+async function verifySignature(
+  rawBody: string,
+  signature: string,
+): Promise<boolean> {
   const secret = process.env.LIGDICASH_WEBHOOK_SECRET;
-  if (!secret) return true; // Allow in dev if secret not set
+  const isDev = process.env.NODE_ENV === "development";
+
+  if (!secret) {
+    if (isDev) {
+      return true;
+    }
+    return false;
+  }
 
   try {
     const expected = crypto
@@ -19,7 +33,7 @@ async function verifySignature(rawBody: string, signature: string): Promise<bool
 
     return crypto.timingSafeEqual(
       Buffer.from(signature.replace("sha256=", ""), "hex"),
-      Buffer.from(expected, "hex")
+      Buffer.from(expected, "hex"),
     );
   } catch {
     return false;
@@ -36,7 +50,6 @@ export async function POST(req: NextRequest) {
     "";
 
   if (!(await verifySignature(rawBody, signature))) {
-    console.error("Webhook: Invalid signature");
     return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
   }
 
@@ -59,12 +72,10 @@ export async function POST(req: NextRequest) {
   });
 
   if (!existingTx) {
-    console.warn(`Webhook: Unknown reference ${reference}`);
     return NextResponse.json({ ok: true }); // Acknowledge without error
   }
 
   if (existingTx.status === "success") {
-
     return NextResponse.json({ ok: true }); // Already processed
   }
 
@@ -105,7 +116,6 @@ export async function POST(req: NextRequest) {
       data: { status: "success", processedAt: now },
     }),
   ]);
-
 
   return NextResponse.json({ ok: true });
 }

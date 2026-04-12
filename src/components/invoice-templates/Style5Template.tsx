@@ -411,7 +411,7 @@ export default function Style5Template({
           {/* Footer Totals */}
           <div className="border-t border-zinc-100 pt-8 mt-8">
             <div className="flex justify-between items-end gap-12 mb-12">
-              <div className="flex-1 pb-4">
+              <div className="flex-1 pb-4 flex flex-col gap-1">
                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
                   {dict.description}
                 </div>

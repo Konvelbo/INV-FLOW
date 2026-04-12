@@ -1,8 +1,10 @@
 "use client";
 
 import { format, isSameDay } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import { XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 import { type CalendarEvent } from "./types";
 import { EventItem } from "./event-item";
@@ -23,6 +25,8 @@ export function EventsPopup({
   onEventSelect,
 }: EventsPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
+  const { language, t } = useLanguage();
+  const currentLocale = language === "fr" ? fr : enUS;
 
   // Handle click outside to close popup
   useEffect(() => {
@@ -94,9 +98,9 @@ export function EventsPopup({
       }}
     >
       <div className="sticky top-0 flex items-center justify-between border-b bg-background p-3">
-        <h3 className="font-medium">{format(date, "d MMMM yyyy")}</h3>
+        <h3 className="font-medium capitalize">{format(date, "d MMMM yyyy", { locale: currentLocale })}</h3>
         <button
-          aria-label="Close"
+          aria-label={t("close")}
           className="rounded-full p-1 hover:bg-muted"
           onClick={onClose}
           type="button"
@@ -107,7 +111,7 @@ export function EventsPopup({
 
       <div className="space-y-2 p-3">
         {events.length === 0 ? (
-          <div className="py-2 text-muted-foreground text-sm">No events</div>
+          <div className="py-2 text-muted-foreground text-sm">{t("noEvents")}</div>
         ) : (
           events.map((event) => {
             const eventStart = new Date(event.start);

@@ -234,7 +234,7 @@ export default function Style4Template({
                 value={object}
                 onValueChange={setObject}
                 placeholder={dict.object}
-                className="text-md text-slate-700 w-full h-24 resize-none bg-slate-50 p-3 rounded-md"
+                className="text-md text-slate-700 w-full resize-none bg-slate-50 p-3 rounded-md"
               />
             </div>
           </div>

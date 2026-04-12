@@ -1,3 +1,4 @@
+import { useLanguage } from "@/src/context/LanguageContext";
 import {
   BookIcon,
   InfoIcon,
@@ -15,6 +16,8 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 
 export default function InfoMenu() {
+  const { t } = useLanguage();
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,14 +35,14 @@ export default function InfoMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="pb-2">
-        <DropdownMenuLabel>Need help?</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("needHelp")}</DropdownMenuLabel>
         <DropdownMenuItem
           asChild
           className="cursor-pointer py-1 focus:bg-transparent focus:underline"
         >
           <a href="#">
             <BookIcon aria-hidden="true" className="opacity-60" size={16} />
-            Documentation
+            {t("documentation")}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -48,7 +51,7 @@ export default function InfoMenu() {
         >
           <a href="#">
             <LifeBuoyIcon aria-hidden="true" className="opacity-60" size={16} />
-            Support
+            {t("support")}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -61,7 +64,7 @@ export default function InfoMenu() {
               className="opacity-60"
               size={16}
             />
-            Contact us
+            {t("contactUs")}
           </a>
         </DropdownMenuItem>
       </DropdownMenuContent>

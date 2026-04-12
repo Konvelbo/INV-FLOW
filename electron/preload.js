@@ -34,4 +34,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("invoice-read-notification", subscription);
     return () => ipcRenderer.removeListener("invoice-read-notification", subscription);
   },
+  onAutomationEvent: (callback) => {
+    const subscription = (_event, data) => callback(data);
+    ipcRenderer.on("automation-event", subscription);
+    return () => ipcRenderer.removeListener("automation-event", subscription);
+  },
 });

@@ -6,8 +6,10 @@ const {
   ipcMain,
   Notification,
   shell,
+  Tray,
   Menu,
   protocol,
+  dialog,
 } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
@@ -30,6 +32,8 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 let win;
+let tray = null;
+let isQuitting = false;
 
 // Force single instance
 const gotTheLock = app.requestSingleInstanceLock();
@@ -54,7 +58,7 @@ if (!gotTheLock) {
             win.webContents.send("login-success", { token, data });
           }
         } catch (e) {
-          console.error("Failed to parse second-instance deep link URL:", e);
+          // Error parsing deep link
         }
       }
     }
@@ -67,6 +71,7 @@ if (!gotTheLock) {
       minWidth: 1000,
       minHeight: 700,
       titleBarStyle: "hiddenInset",
+      show: false, // Don't show the window until it's ready, preventing black/flicker
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
         nodeIntegration: false,
@@ -75,6 +80,20 @@ if (!gotTheLock) {
         devTools: !app.isPackaged, // Disable DevTools in production
       },
       backgroundColor: "#000000",
+    });
+
+    // Gracefully show the window once it's ready to be displayed
+    win.once("ready-to-show", () => {
+      win.show();
+    });
+    
+    // Support background mode: hide window instead of closing
+    win.on("close", (event) => {
+      if (!isQuitting) {
+        event.preventDefault();
+        win.hide();
+        return false;
+      }
     });
 
     // Menu.setApplicationMenu(null);
@@ -104,44 +123,123 @@ if (!gotTheLock) {
       win.loadURL("http://localhost:3000");
     } else {
       const fs = require("fs");
+
+      // Helper: convert Windows backslash path -> proper file:// URL
+      const toFileUrl = (absPath) =>
+        "file:///" + absPath.replace(/\\/g, "/");
+
+      // Helper: guess MIME type from extension (no external dep needed)
+      const getMime = (filePath) => {
+        const ext = filePath.split(".").pop().toLowerCase();
+        const map = {
+          html: "text/html; charset=utf-8",
+          js: "application/javascript; charset=utf-8",
+          mjs: "application/javascript; charset=utf-8",
+          css: "text/css; charset=utf-8",
+          json: "application/json; charset=utf-8",
+          txt: "text/plain; charset=utf-8",
+          png: "image/png",
+          jpg: "image/jpeg",
+          jpeg: "image/jpeg",
+          gif: "image/gif",
+          svg: "image/svg+xml",
+          ico: "image/x-icon",
+          woff: "font/woff",
+          woff2: "font/woff2",
+          ttf: "font/ttf",
+          mp3: "audio/mpeg",
+          webp: "image/webp",
+          map: "application/json",
+        };
+        return map[ext] || "application/octet-stream";
+      };
+
       protocol.handle("app", (request) => {
+        const originalUrl = request.url;
         let urlPath = "";
+
         try {
-          const parsedUrl = new URL(request.url);
+          const parsedUrl = new URL(originalUrl);
           urlPath = decodeURIComponent(parsedUrl.pathname);
         } catch (e) {
-          urlPath = request.url.replace("app://", "");
+          urlPath = originalUrl.replace(/^app:\/\/[^/]*/, "");
         }
 
-        // Remove query strings or hashes
+        // Strip query strings and hashes from path
         urlPath = urlPath.split("?")[0].split("#")[0];
 
-        // Remove leading prefixes
+        // Normalize leading prefix
         if (urlPath.startsWith("./")) urlPath = urlPath.slice(2);
         if (urlPath.startsWith("/")) urlPath = urlPath.slice(1);
         if (urlPath === "." || urlPath === "") urlPath = "index.html";
 
-        let finalPath = path.join(__dirname, "../out", urlPath);
+        const outDir = path.join(__dirname, "../out");
+        let finalPath = path.join(outDir, urlPath);
 
-        // Next.js App Router creates both a .html file and a directory for the RSC chunks
-        // Check for .html first to avoid incorrectly serving directory contents
+        // Detect RSC (soft-navigation) requests from Next.js router
+        const isRSC =
+          originalUrl.includes("_rsc=") ||
+          originalUrl.includes("?rsc=") ||
+          (request.headers &&
+            (request.headers.get("RSC") === "1" ||
+              request.headers.get("rsc") === "1" ||
+              request.headers.get("Next-Router-Prefetch") === "1" ||
+              request.headers.get("Next-Router-State-Tree") !== null));
+
+        if (isRSC && fs.existsSync(`${finalPath}.txt`)) {
+          // Serve the RSC payload with the correct content-type so the
+          // Next.js client router can apply the patch without a full reload
+          const content = fs.readFileSync(`${finalPath}.txt`);
+          return new Response(content, {
+            headers: { "content-type": "text/x-component; charset=utf-8" },
+          });
+        }
+
+        // Prefer .html for full-page requests
         if (fs.existsSync(`${finalPath}.html`)) {
           finalPath = `${finalPath}.html`;
-        } else if (fs.existsSync(finalPath) && fs.statSync(finalPath).isDirectory()) {
-          if (fs.existsSync(path.join(finalPath, "index.html"))) {
-            finalPath = path.join(finalPath, "index.html");
+        } else if (
+          fs.existsSync(finalPath) &&
+          fs.statSync(finalPath).isDirectory()
+        ) {
+          const indexHtml = path.join(finalPath, "index.html");
+          if (fs.existsSync(indexHtml)) {
+            finalPath = indexHtml;
           }
         }
 
-        // Final fallback if file doesn't exist (e.g. for client-side routing)
+        // Final fallback: SPA shell (index.html) for unknown client-side routes
         if (!fs.existsSync(finalPath)) {
-          finalPath = path.join(__dirname, "../out/index.html");
+          finalPath = path.join(outDir, "index.html");
         }
 
-        return session.defaultSession.fetch(`file://${finalPath}`);
+        // Read file and return with correct MIME type
+        try {
+          if (fs.existsSync(finalPath) && fs.statSync(finalPath).isFile()) {
+            const content = fs.readFileSync(finalPath);
+            return new Response(content, {
+              headers: { "content-type": getMime(finalPath) },
+            });
+          }
+          throw new Error("File not found or is not a file");
+        } catch (err) {
+          // Log only in non-production or for critical assets
+          if (!app.isPackaged) {
+             console.error(`[Protocol] Error serving: ${finalPath}`, err.message);
+          }
+          return new Response("Not Found", { status: 404 });
+        }
       });
 
-      win.loadURL("app://./index.html");
+      const indexPath = path.join(__dirname, "../out/index.html");
+      if (app.isPackaged && !fs.existsSync(indexPath)) {
+        dialog.showErrorBox(
+          "Erreur d'Intégrité",
+          "Les fichiers de l'application (index.html) sont manquants dans le répertoire 'out'. Veuillez reconstruire l'application ou réinstaller.",
+        );
+      }
+
+      win.loadURL("app://index.html");
     }
 
     // ... (deep linking and notifications)
@@ -156,7 +254,7 @@ if (!gotTheLock) {
             win.webContents.send("login-success", { token, data });
           }
         } catch (e) {
-          console.error("Failed to parse startup deep link:", e);
+          // Error parsing deep link
         }
       });
     }
@@ -234,13 +332,14 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     createWindow();
+    createTray();
 
     // Start background automation service (recurring invoices, reminders)
-    startAutomationService();
+    startAutomationService(win);
 
     // Auto-check for updates on startup
     autoUpdater.checkForUpdatesAndNotify()
-      .catch(err => console.error("AutoUpdater: Initial check failed", err));
+      .catch(() => {});
 
     // Auto Update configuration
     autoUpdater.autoDownload = true; // Download updates automatically in the background
@@ -283,11 +382,50 @@ if (!gotTheLock) {
     });
 
     ipcMain.handle("quit-and-install", () => {
+      isQuitting = true;
       autoUpdater.quitAndInstall();
     });
   });
 
+  function createTray() {
+    const iconPath = path.join(__dirname, "../public/black-caractere-non-black.png");
+    tray = new Tray(iconPath);
+    
+    const contextMenu = Menu.buildFromTemplate([
+      { 
+        label: "Ouvrir ESSOR", 
+        click: () => {
+          win.show();
+        } 
+      },
+      { type: "separator" },
+      { 
+        label: "Quitter", 
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        } 
+      }
+    ]);
+    
+    tray.setToolTip("ESSOR - Gestion de Facturation");
+    tray.setContextMenu(contextMenu);
+    
+    tray.on("double-click", () => {
+      win.show();
+    });
+  }
+
+  app.on("before-quit", () => {
+    isQuitting = true;
+  });
+
   app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") app.quit();
+    // Keep the app running in the background (tray)
+    // On macOS it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if (process.platform === "darwin") {
+      // Standard macOS behavior
+    }
   });
 }

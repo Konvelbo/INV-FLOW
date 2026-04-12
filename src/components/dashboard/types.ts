@@ -12,6 +12,7 @@ export interface RecentInvoice {
   totalHT: number;
   isScaled: boolean;
   createdAt: string;
+  nextIssueDate?: string | null;
 }
 
 export interface DashboardStats {

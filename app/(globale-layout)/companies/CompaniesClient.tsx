@@ -283,7 +283,7 @@ export default function CompaniesClient({
 
   const handleGlobalExport = async () => {
     setIsExporting(true);
-    const toastId = toast.loading(t("processing") || "Génération de l'archive...", { id: "global-export" });
+    const toastId = toast.loading(t("processing"), { id: "global-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
@@ -299,7 +299,7 @@ export default function CompaniesClient({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(t("exportZipSuccess") || "Archive globale générée !", { id: "global-export" });
+        toast.success(t("exportZipSuccess"), { id: "global-export" });
       }
     } catch (error) {
       console.error("Global Export error", error);
@@ -331,13 +331,13 @@ export default function CompaniesClient({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(`Export de ${companyName} réussi`);
+        toast.success(t("exportSuccessCompany").replace("{name}", companyName));
       } else {
-        toast.error("Aucune donnée à exporter pour cette entreprise");
+        toast.error(t("exportNoData"));
       }
     } catch (error) {
       console.error(error);
-      toast.error("Erreur lors de l'export");
+      toast.error(t("exportError"));
     }
   };
 

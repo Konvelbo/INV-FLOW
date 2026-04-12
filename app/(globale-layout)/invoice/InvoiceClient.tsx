@@ -30,6 +30,8 @@ import { Label } from "@/src/components/ui/label";
 import { useIPCAction } from "@/hooks/useIPCAction";
 import { invoiceTemplate } from "@/lib/invoice-pdf";
 import { usePricingRedirect } from "@/hooks/usePricingRedirect";
+import { useSubscription } from "@/src/context/SubscriptionContext";
+import { calculateNextIssueDate } from "@/lib/date-utils";
 
 interface InvoiceClientProps {
   initialData?: any;
@@ -44,7 +46,10 @@ export default function InvoiceClient({
   const divRef = useRef(null);
   const { performAction, loading: actionLoading } = useIPCAction();
   const { t, language } = useLanguage();
-  const { checkInvoiceQuota } = usePricingRedirect();
+  const { checkInvoiceQuota, redirectToPricing } = usePricingRedirect();
+  const { subscription } = useSubscription();
+  const isPaidPlan =
+    subscription?.plan === "monthly" || subscription?.plan === "yearly";
   const {
     itemsArr,
     city,
@@ -55,7 +60,6 @@ export default function InvoiceClient({
     reference,
     object,
     managerName,
-    amountWords,
     style,
     currency,
     description,
@@ -67,6 +71,7 @@ export default function InvoiceClient({
     invoiceType,
     setInvoiceType,
     companyName,
+    companyAddress,
     clientPaidCount,
     clientUnpaidCount,
   } = useInvoice();
@@ -83,6 +88,12 @@ export default function InvoiceClient({
   const [isRecurring, setIsRecurring] = useState(
     initialData?.isRecurring || false,
   );
+  // A scheduled invoice and a recurring invoice are mutually exclusive.
+  // If the invoice has both fields set in initialData, prefer recurring and treat scheduled as disabled.
+  const [isScheduled, setIsScheduled] = useState(
+    initialData?.nextIssueDate && !initialData?.isRecurring ? true : false,
+  );
+
   const [frequency, setFrequency] = useState(
     initialData?.recurrenceFreq || "monthly",
   );
@@ -92,6 +103,11 @@ export default function InvoiceClient({
   );
   const [reminderTone, setReminderTone] = useState(
     initialData?.reminderTone || "professional",
+  );
+  const [scheduledDate, setScheduledDate] = useState(
+    initialData?.nextIssueDate && !initialData?.isRecurring
+      ? new Date(initialData.nextIssueDate).toISOString().slice(0, 16)
+      : "",
   );
 
   // Email State
@@ -127,7 +143,11 @@ export default function InvoiceClient({
             const userId = user.id;
             const companyId = user.activeCompanyId || undefined;
             // @ts-ignore
-            const res = await window.electronAPI.getData("clients", userId, companyId);
+            const res = await window.electronAPI.getData(
+              "clients",
+              userId,
+              companyId,
+            );
             if (res.success) {
               setClients(res.data);
             }
@@ -172,11 +192,11 @@ export default function InvoiceClient({
           0,
         ),
         managerName,
-        amountWords,
         description,
         style,
         type: invoiceType,
         companyName,
+        companyAddress,
         currencyCode: currency,
         language,
       };
@@ -232,16 +252,23 @@ export default function InvoiceClient({
         (sum: number, item: any) => sum + Number(item.quantity),
         0,
       ),
-      amountWords: amountWords || "",
       description: description || "",
       items: itemsArr || [],
       currencyCode: currency,
       style: style || "default",
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-      isRecurring,
-      recurrenceFreq: isRecurring ? frequency : null,
+      // Enforce mutual exclusivity: an invoice cannot be both recurring and scheduled.
+      // If user marked the invoice as recurring, we ensure there's no scheduled date.
+      isRecurring: isRecurring && !isScheduled,
+      recurrenceFreq: isRecurring && !isScheduled ? frequency : null,
       autoReminders,
       reminderTone,
+      // Set nextIssueDate based on either scheduling or recurrence
+      nextIssueDate: isScheduled && !isRecurring
+          ? new Date(scheduledDate).toISOString()
+          : (isRecurring && !isScheduled)
+            ? calculateNextIssueDate(new Date(), frequency).toISOString()
+            : null,
       clientId: clientId || null,
     };
 
@@ -301,11 +328,11 @@ export default function InvoiceClient({
           0,
         ),
         managerName,
-        amountWords,
         description,
         style,
         type: invoiceType,
         companyName,
+        companyAddress,
         currencyCode: currency,
         language,
       };
@@ -320,7 +347,7 @@ export default function InvoiceClient({
         invoiceId,
         targetEmail,
         currency,
-        Array.from(new Uint8Array(pdfBuffer))
+        Array.from(new Uint8Array(pdfBuffer)),
       );
 
       if (res.success) {
@@ -385,45 +412,47 @@ export default function InvoiceClient({
       <SmartAutofill />
 
       {/* Smart Automation Suggestion */}
-      {(clientPaidCount + clientUnpaidCount) >= 2 && !isRecurring && showSuggestion && (
-        <div className="w-full max-w-[1300px] px-8 mb-6 animate-bounce-in">
-          <div className="bg-linear-to-r from-indigo-600/20 to-primary/20 backdrop-blur-xl border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-2xl">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/20 rounded-xl">
-                <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+      {clientPaidCount + clientUnpaidCount >= 2 &&
+        !isRecurring &&
+        showSuggestion && (
+          <div className="w-full max-w-[1300px] px-8 mb-6 animate-bounce-in">
+            <div className="bg-linear-to-r from-indigo-600/20 to-primary/20 backdrop-blur-xl border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-2xl">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/20 rounded-xl">
+                  <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-foreground">
+                    {t("suggestAutomation")}
+                  </h4>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {t("suggestAutomationDesc")}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-foreground">
-                  {t("suggestAutomation")}
-                </h4>
-                <p className="text-xs text-muted-foreground font-medium">
-                  {t("suggestAutomationDesc")}
-                </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => {
+                    setIsRecurring(true);
+                    setShowSuggestion(false);
+                    toast.success(t("automationTip"));
+                  }}
+                  className="bg-primary text-white font-bold text-xs h-9 px-4 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                >
+                  {t("getStarted")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSuggestion(false)}
+                  className="size-8 text-muted-foreground hover:bg-white/10 rounded-lg"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => {
-                  setIsRecurring(true);
-                  setShowSuggestion(false);
-                  toast.success(t("automationTip"));
-                }}
-                className="bg-primary text-white font-bold text-xs h-9 px-4 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all"
-              >
-                {t("getStarted")}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSuggestion(false)}
-                className="size-8 text-muted-foreground hover:bg-white/10 rounded-lg"
-              >
-                <X className="w-4 h-4" />
-              </Button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       <div className="w-full max-w-[1300px] px-8 mb-6 flex justify-end animate-fade-in-up">
         <Popover>
@@ -489,18 +518,38 @@ export default function InvoiceClient({
             </div>*/}
 
             <div className="space-y-3 pt-3 border-t border-border/50">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label
+                className={`flex items-center gap-2 ${isPaidPlan ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
+                onClick={
+                  !isPaidPlan
+                    ? () =>
+                        redirectToPricing({
+                          message:
+                            "Les factures récurrentes sont réservées aux abonnés Premium (mensuel ou annuel) 🔒",
+                          delay: 2000,
+                        })
+                    : undefined
+                }
+              >
                 <input
                   type="checkbox"
                   checked={isRecurring}
-                  onChange={(e) => setIsRecurring(e.target.checked)}
+                  disabled={!isPaidPlan}
+                  onChange={(e) =>
+                    isPaidPlan && setIsRecurring(e.target.checked)
+                  }
                   className="rounded text-primary focus:ring-primary w-4 h-4"
                 />
-                <span className="text-sm font-bold">
+                <span className="text-sm font-bold flex items-center gap-2">
                   {t("recurringInvoice")}
+                  {!isPaidPlan && (
+                    <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                      PRO
+                    </span>
+                  )}
                 </span>
               </label>
-              {isRecurring && (
+              {isRecurring && isPaidPlan && (
                 <div className="pl-6 animate-in slide-in-from-left-2 duration-300">
                   <select
                     value={frequency}
@@ -542,6 +591,42 @@ export default function InvoiceClient({
                       <option value="friendly">{t("friendly")}</option>
                     </select>
                   </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/50">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between">
+                  {t("scheduleSend") || "Planifier l'envoi"}
+                  <input
+                    type="checkbox"
+                    checked={isScheduled}
+                    onChange={(e) => {
+                      setIsScheduled(e.target.checked);
+                      if (!e.target.checked) {
+                        setScheduledDate("");
+                      }
+                    }}
+                    className="rounded text-primary focus:ring-primary w-4 h-4 ml-2"
+                  />
+                </label>
+                {isScheduled && (
+                  <div className="relative mt-2">
+                    <input
+                      type="datetime-local"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      className={cn(
+                        "w-full h-10 rounded-xl border border-border/50 bg-background/50 px-3 text-xs focus:outline-none focus:border-primary transition-all",
+                      )}
+                    />
+                  </div>
+                )}
+                {scheduledDate && isPaidPlan && (
+                  <p className="text-[10px] text-emerald-500 font-bold animate-pulse">
+                    🚀 Envoi prévu le {new Date(scheduledDate).toLocaleString()}
+                  </p>
                 )}
               </div>
             </div>

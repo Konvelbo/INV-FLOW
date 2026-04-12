@@ -246,6 +246,7 @@ exports.Prisma.TodoScalarFieldEnum = {
   endTime: 'endTime',
   reminderAt: 'reminderAt',
   userId: 'userId',
+  companyId: 'companyId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

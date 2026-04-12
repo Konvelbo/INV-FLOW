@@ -53,18 +53,24 @@ export const CalendarGrid = memo(function CalendarGrid({
     t("sun"),
   ];
 
-  const getPriorityColor = (p?: string) => {
-    switch (p) {
-      case "high":
-        return "bg-rose-500/10 border-rose-500/20 text-rose-600";
-      case "medium":
-        return "bg-amber-500/10 border-amber-500/20 text-amber-600";
-      case "low":
-        return "bg-emerald-500/10 border-emerald-500/20 text-emerald-600";
-      default:
-        return "bg-primary/10 border-primary/20 text-primary";
-    }
-  };
+    const getPriorityColor = (t: Todo) => {
+      if ((t as any).invoiceType === "recurring") {
+        return "bg-indigo-500/10 border-indigo-500/30 text-indigo-700 shadow-sm";
+      }
+      if ((t as any).invoiceType === "scheduled") {
+        return "bg-amber-500/10 border-amber-500/30 text-amber-700 shadow-sm";
+      }
+      switch (t.priority) {
+        case "high":
+          return "bg-rose-500/10 border-rose-500/20 text-rose-600";
+        case "medium":
+          return "bg-amber-500/10 border-amber-500/20 text-amber-600";
+        case "low":
+          return "bg-emerald-500/10 border-emerald-500/20 text-emerald-600";
+        default:
+          return "bg-primary/10 border-primary/20 text-primary";
+      }
+    };
 
   return (
     <div className="flex-1 flex flex-col bg-background rounded-3xl ">
@@ -130,7 +136,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                         "px-2 py-1 text-[10px] font-medium rounded-md truncate border relative group/task",
                         todo.status === "done"
                           ? "bg-muted text-muted-foreground/60 line-through opacity-50"
-                          : getPriorityColor(todo.priority),
+                          : getPriorityColor(todo),
                         conflicts.has(todo.id) &&
                         "border-rose-500 border-2 animate-pulse",
                       )}
@@ -142,6 +148,8 @@ export const CalendarGrid = memo(function CalendarGrid({
                             title={t("scheduleConflict")}
                           />
                         )}
+                        {(todo as any).invoiceType === 'recurring' && <span className="mr-0.5" title="Récurrente">🔁</span>}
+                        {(todo as any).invoiceType === 'scheduled' && <span className="mr-0.5" title="Planifiée">⏱️</span>}
                         <span className="truncate">{todo.title}</span>
                       </div>
                       <div className="flex items-center justify-between mt-0.5">

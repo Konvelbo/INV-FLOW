@@ -11,8 +11,9 @@ import {
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
-import { Download, RefreshCw, XCircle, CheckCircle2 } from "lucide-react";
+import { RefreshCw, XCircle, CheckCircle2 } from "lucide-react";
 import { Progress } from "@/src/components/ui/progress";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function UpdateManager() {
   const [status, setStatus] = useState<
@@ -22,6 +23,7 @@ export default function UpdateManager() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.electronAPI) return;
@@ -42,7 +44,7 @@ export default function UpdateManager() {
         
         // Only show toast for critical errors (not for checking failures)
         if (status === "downloading" || status === "downloaded") {
-          toast.error("Un problème est survenu lors de la mise à jour. Nous réessaierons plus tard.");
+          toast.error(t("systemUpdateError"));
         }
       } else if (newStatus === "not-available") {
         // Silent for auto-check
@@ -86,13 +88,13 @@ export default function UpdateManager() {
             {status === "downloading" && <RefreshCw className="animate-spin text-primary" />}
             {status === "downloaded" && <CheckCircle2 className="text-emerald-500" />}
             {status === "error" && <XCircle className="text-destructive" />}
-            Mise à jour système
+            {t("updateSystem")}
           </DialogTitle>
           <DialogDescription>
-            {status === "available" && `Une nouvelle version (${updateInfo?.version}) est disponible.`}
-            {status === "downloading" && "Téléchargement de la mise à jour..."}
-            {status === "downloaded" && "La mise à jour a été téléchargée et est prête à être installée."}
-            {status === "error" && "Une erreur est survenue lors de la mise à jour."}
+            {status === "available" && t("updateAvailable").replace("{version}", updateInfo?.version || "")}
+            {status === "downloading" && t("updateDownloading")}
+            {status === "downloaded" && t("updateDownloaded")}
+            {status === "error" && t("systemUpdateError")}
           </DialogDescription>
         </DialogHeader>
 
@@ -100,25 +102,25 @@ export default function UpdateManager() {
           <div className="py-4 space-y-2">
             <Progress value={progress} className="h-2" />
             <p className="text-xs text-center text-muted-foreground">
-              {Math.round(progress)}% téléchargé
+              {t("percentDownloaded").replace("{percent}", Math.round(progress).toString())}
             </p>
           </div>
         )}
 
         <DialogFooter className="flex sm:justify-between gap-2">
           <Button variant="ghost" onClick={() => setShowModal(false)} className="rounded-xl">
-            Plus tard
+            {t("later")}
           </Button>
           
           {status === "available" && (
             <Button onClick={handleStartDownload} className="rounded-xl bg-primary hover:bg-primary/90">
-              Télécharger maintenant
+              {t("downloadNow")}
             </Button>
           )}
 
           {status === "downloaded" && (
             <Button onClick={handleInstall} className="rounded-xl bg-emerald-600 hover:bg-emerald-700">
-              Installer et redémarrer
+              {t("installAndRestart")}
             </Button>
           )}
         </DialogFooter>

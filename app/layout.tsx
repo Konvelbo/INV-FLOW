@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-// Removed failing Google Font imports to unblock build
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { InvoiceProvider } from "@/src/context/InvoiceContext";
-import { LanguageProvider } from "@/src/context/LanguageContext";
-import { Toaster } from "react-hot-toast";
-import CanvasProvider from "@/src/context/canvasContext";
-import { NotificationProvider } from "@/src/context/NotificationContext";
-import { ThemeProvider } from "@/src/components/theme-provider";
-import UpdateManager from "@/src/components/UpdateManager";
+import { ClientProviders } from "./client-providers";
 
 // Fallback variables for system fonts
 const jakarta = { variable: "font-jakarta" };
@@ -34,22 +27,7 @@ export default function RootLayout({
           "w-full h-full bg-background text-foreground",
         )}
       >
-        <Toaster />
-        <LanguageProvider>
-            <NotificationProvider>
-              <UpdateManager />
-              <CanvasProvider>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="dark"
-                  enableSystem={false}
-                  disableTransitionOnChange
-                >
-                  <InvoiceProvider>{children}</InvoiceProvider>
-                </ThemeProvider>
-              </CanvasProvider>
-            </NotificationProvider>
-        </LanguageProvider>
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );

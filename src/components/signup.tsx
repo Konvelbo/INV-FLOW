@@ -32,11 +32,8 @@ export default function SignUp({
 }) {
   const router = useRouter();
   const { t } = useLanguage();
-  const isLogin = choice === "Connexion" || choice === t("loginAction");
-  const isRegistration =
-    choice === "Creer votre compte" ||
-    choice === "Créer votre compte" ||
-    choice === t("createAccount");
+  const isLogin = choice === t("loginAction");
+  const isRegistration = choice === t("createAccount");
   const schema = isLogin ? LoginSchema : authSchema;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -73,7 +70,6 @@ export default function SignUp({
           toast.error(res.error || t("authError"));
         }
       } else if (
-        choice === "Mot de passe oublié ?" ||
         choice === t("forgotPassword")
       ) {
         const res = await performAction("auth", "forgotPassword", {
@@ -86,7 +82,7 @@ export default function SignUp({
         } else {
           toast.error(res.error || t("authError"));
         }
-      } else if (choice === "Vérification OTP" || choice === t("verifyOtp")) {
+      } else if (choice === t("verifyOtp")) {
         const res = await performAction("auth", "resetPassword", {
           email: data.email,
           otp: data.otp,
@@ -204,13 +200,13 @@ export default function SignUp({
               )}
             </div>
 
-            {(choice === "Vérification OTP" || choice === t("verifyOtp")) && (
+            {choice === t("verifyOtp") && (
               <div className="space-y-2.5">
                 <Label
                   htmlFor="otp"
                   className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
                 >
-                  Code OTP
+                  {t("otpCode") || "Code OTP"}
                 </Label>
                 <Input
                   id="otp"
@@ -228,7 +224,7 @@ export default function SignUp({
                   htmlFor="password"
                   className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
                 >
-                  {choice === "Vérification OTP" || choice === t("verifyOtp")
+                  {choice === t("verifyOtp")
                     ? t("newPassword")
                     : t("password")}
                 </Label>
@@ -261,7 +257,6 @@ export default function SignUp({
             )}
 
             {(isRegistration ||
-              choice === "Vérification OTP" ||
               choice === t("verifyOtp")) && (
               <div className="space-y-2.5">
                 <Label
