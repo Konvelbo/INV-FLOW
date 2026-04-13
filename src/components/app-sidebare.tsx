@@ -146,6 +146,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                     >
                       <Link
                         id="sidebare-link"
+                        prefetch={false}
                         onClick={(e) => {
                           if (item.id === "Assistant IA") {
                             // e.preventDefault();

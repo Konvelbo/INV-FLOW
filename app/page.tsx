@@ -16,6 +16,7 @@ import {
   RefreshCw,
   FileCheck,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/src/components/navbar-components/logo";
 import { SparklesText } from "@/src/components/ui/sparkles-text";
 import { TypingText } from "@/src/components/ui/typing-text";
@@ -67,6 +68,30 @@ export default function Home() {
   }, [router]);
 
   if (!mounted) return null;
+  
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: "-100px" },
+    transition: { duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }
+  };
+
+  const staggerContainer = {
+    initial: {},
+    whileInView: {
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    },
+    viewport: { once: true, margin: "-100px" }
+  };
+
+  const cardHover = {
+    scale: 1.03,
+    y: -8,
+    transition: { duration: 0.3, ease: "easeOut" }
+  };
 
   return (
     <div
@@ -91,19 +116,25 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 w-full z-50 transition-all duration-300 bg-background/80 backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-center gap-3 cursor-pointer"
+          >
             <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/20">
               <Logo logoUrl={"/black-caractere-non-black.png"} w={45} h={45} />
             </div>
             <span className="text-xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent">
               Essor
             </span>
-          </div>
+          </motion.div>
 
           {!storage ? (
             <div className="flex items-center gap-6">
-              <span
+              <motion.span
                 id="landing_page_conBtn"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
                 onClick={() => {
                   setSignUpChoise(t("loginAction"));
                   setVisibility(true);
@@ -111,25 +142,35 @@ export default function Home() {
                 className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer uppercase tracking-widest"
               >
                 {t("login")}
-              </span>
-              <Button
-                onClick={() => {
-                  setSignUpChoise(t("createAccount"));
-                  setVisibility(true);
-                }}
-                className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
+              </motion.span>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
               >
-                {t("startBtn")}
-              </Button>
+                <Button
+                  onClick={() => {
+                    setSignUpChoise(t("createAccount"));
+                    setVisibility(true);
+                  }}
+                  className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
+                >
+                  {t("startNow")}
+                </Button>
+              </motion.div>
             </div>
           ) : (
-            <Link
-              href="/invoice"
-              onClick={() => clearInvoiceData()}
-              className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
             >
-              {t("getStarted")}
-            </Link>
+              <Link
+                href="/invoice"
+                onClick={() => clearInvoiceData()}
+                className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
+              >
+                {t("getStarted")}
+              </Link>
+            </motion.div>
           )}
         </div>
       </header>
@@ -163,24 +204,34 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
             {storage ? (
-              <Link
-                href="/dashboard"
-                className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em]"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
               >
-                {t("dashboard")}
-                <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
-              </Link>
+                <Link
+                  href="/dashboard"
+                  className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em]"
+                >
+                  {t("dashboard")}
+                  <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </motion.div>
             ) : (
-              <Button
-                onClick={() => {
-                  setSignUpChoise(t("createAccount"));
-                  setVisibility(true);
-                }}
-                className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em] h-auto"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
               >
-                {t("signUpFree")}
-                <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
-              </Button>
+                <Button
+                  onClick={() => {
+                    setSignUpChoise(t("createAccount"));
+                    setVisibility(true);
+                  }}
+                  className="group relative inline-flex items-center justify-center px-12 py-6 text-xs font-black text-primary-foreground transition-all duration-500 bg-primary rounded-2xl hover:bg-primary/90 hover:shadow-[0_20px_50px_-10px_rgba(16,185,129,0.5)] uppercase tracking-[0.2em] h-auto"
+                >
+                  {t("signUpFree")}
+                  <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </motion.div>
             )}
 
             <Link
@@ -212,10 +263,20 @@ export default function Home() {
               {t("ecosystemDesc")}
             </p>
           </div>
-
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+  
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid gap-10 md:grid-cols-2 lg:grid-cols-3"
+          >
             {/* Feature 1: Advanced Billing */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+            <motion.div 
+              variants={fadeInUp}
+              whileHover={cardHover}
+              className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all" />
               <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary/20 transition-all duration-500 group-hover:rotate-6 shadow-inner shadow-white/5 text-primary">
                 <FileText className="w-10 h-10" />
@@ -226,10 +287,14 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
                 {t("feature1Desc")}
               </p>
-            </div>
-
+            </motion.div>
+  
             {/* Feature 2: Strategic Dashboard */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-blue-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+            <motion.div 
+              variants={fadeInUp}
+              whileHover={cardHover}
+              className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-blue-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-blue-400/10 transition-all" />
               <div className="w-20 h-20 rounded-3xl bg-blue-400/10 flex items-center justify-center mb-8 group-hover:bg-blue-400/20 transition-all duration-500 group-hover:-rotate-6 shadow-inner shadow-white/5 text-blue-400">
                 <LayoutDashboard className="w-10 h-10" />
@@ -240,10 +305,14 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
                 {t("feature2Desc")}
               </p>
-            </div>
-
+            </motion.div>
+  
             {/* Feature 3: CRM & Client Management */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-orange-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+            <motion.div 
+              variants={fadeInUp}
+              whileHover={cardHover}
+              className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-orange-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-orange-400/10 transition-all" />
               <div className="w-20 h-20 rounded-3xl bg-orange-400/10 flex items-center justify-center mb-8 group-hover:bg-orange-400/20 transition-all duration-500 group-hover:scale-110 shadow-inner shadow-white/5 text-orange-400">
                 <Users className="w-10 h-10" />
@@ -254,10 +323,14 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
                 {t("feature3Desc")}
               </p>
-            </div>
-
+            </motion.div>
+  
             {/* Feature 4: Planning & Alerts */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-red-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+            <motion.div 
+              variants={fadeInUp}
+              whileHover={cardHover}
+              className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-red-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-red-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-red-400/10 transition-all" />
               <div className="w-20 h-20 rounded-3xl bg-red-400/10 flex items-center justify-center mb-8 group-hover:bg-red-400/20 transition-all duration-500 group-hover:rotate-12 shadow-inner shadow-white/5 text-red-400">
                 <Bell className="w-10 h-10" />
@@ -268,10 +341,14 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
                 {t("feature4Desc")}
               </p>
-            </div>
-
+            </motion.div>
+  
             {/* Feature 5: Intelligence Pulse™ */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-emerald-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+            <motion.div 
+              variants={fadeInUp}
+              whileHover={cardHover}
+              className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-emerald-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-emerald-400/10 transition-all" />
               <div className="w-20 h-20 rounded-3xl bg-emerald-400/10 flex items-center justify-center mb-8 group-hover:bg-emerald-400/20 transition-all duration-500 group-hover:-rotate-12 shadow-inner shadow-white/5 text-emerald-400">
                 <Brain className="w-10 h-10" />
@@ -282,10 +359,14 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
                 {t("feature5Desc")}
               </p>
-            </div>
-
+            </motion.div>
+  
             {/* Feature 6: Security & Archives */}
-            <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-indigo-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-2 text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden">
+            <motion.div 
+              variants={fadeInUp}
+              whileHover={cardHover}
+              className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-indigo-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-indigo-400/10 transition-all" />
               <div className="w-20 h-20 rounded-3xl bg-indigo-400/10 flex items-center justify-center mb-8 group-hover:bg-indigo-400/20 transition-all duration-500 group-hover:scale-110 shadow-inner shadow-white/5 text-indigo-400">
                 <ShieldCheck className="w-10 h-10" />
@@ -296,8 +377,8 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-sans text-sm font-medium">
                 {t("feature6Desc")}
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -312,9 +393,19 @@ export default function Home() {
               {t("detailFeaturesTitle")}
             </h2>
           </div>
-          <div className="grid gap-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid gap-8"
+          >
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex flex-col md:flex-row gap-8 items-start p-8 md:p-10 rounded-[2.5rem] bg-card/50 border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:bg-card hover:-translate-y-1 relative overflow-hidden group">
+              <motion.div 
+                key={i} 
+                variants={fadeInUp}
+                className="flex flex-col md:flex-row gap-8 items-start p-8 md:p-10 rounded-[2.5rem] bg-card/50 border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:bg-card relative overflow-hidden group cursor-default"
+              >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all" />
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 shadow-inner shadow-white/5 flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform">
                   <span className="text-primary font-black text-2xl">{i}</span>
@@ -329,9 +420,9 @@ export default function Home() {
                     {t(`detailList${i}Desc`)}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -344,21 +435,27 @@ export default function Home() {
           <div className="bg-linear-to-br from-card/80 to-background border border-border/50 rounded-[3.5rem] p-12 md:p-24 backdrop-blur-3xl relative">
             <div className="absolute top-0 left-0 w-full h-full bg-linear-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
 
-            <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10">
+            <motion.div 
+              variants={staggerContainer}
+              initial="initial"
+              whileInView="whileInView"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid lg:grid-cols-2 gap-20 items-center relative z-10"
+            >
               <div className="space-y-8">
-                <div className="inline-flex items-center px-4 py-2 space-x-2 text-[10px] font-black text-primary bg-primary/10 border border-primary/20 rounded-full uppercase tracking-widest">
+                <motion.div variants={fadeInUp} className="inline-flex items-center px-4 py-2 space-x-2 text-[10px] font-black text-primary bg-primary/10 border border-primary/20 rounded-full uppercase tracking-widest">
                   <Brain className="w-4 h-4" />
                   <span>{t("pulseModule")}</span>
-                </div>
+                </motion.div>
 
-                <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight">
+                <motion.h2 variants={fadeInUp} className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight">
                   {t("aiSectionTitle")} <br />
                   <span className="text-primary">{t("aiSectionSubtitle")}</span>
-                </h2>
+                </motion.h2>
 
-                <p className="text-lg text-muted-foreground font-sans leading-relaxed">
+                <motion.p variants={fadeInUp} className="text-lg text-muted-foreground font-sans leading-relaxed">
                   {t("aiSectionDesc")}
-                </p>
+                </motion.p>
 
                 <div className="grid gap-6">
                   {[
@@ -375,9 +472,11 @@ export default function Home() {
                       desc: t("financialHealthDesc"),
                     },
                   ].map((item, idx) => (
-                    <div
+                    <motion.div
                       key={idx}
-                      className="flex gap-5 p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group"
+                      variants={fadeInUp}
+                      whileHover={{ x: 10, backgroundColor: "rgba(255,255,255,0.08)" }}
+                      className="flex gap-5 p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group cursor-default"
                     >
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
                         <ArrowRight className="w-5 h-5 text-primary" />
@@ -390,12 +489,12 @@ export default function Home() {
                           {item.desc}
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
 
-              <div className="relative group">
+              <motion.div variants={fadeInUp} className="relative group">
                 {/* Decorative Elements for AI Graphic */}
                 <div className="absolute -inset-10 bg-primary/20 rounded-full blur-[100px] opacity-20 group-hover:opacity-40 transition duration-1000 animate-pulse" />
                 <div className="absolute -inset-10 bg-secondary/20 rounded-full blur-[100px] opacity-20 group-hover:opacity-40 transition duration-1000 delay-500" />
@@ -403,25 +502,39 @@ export default function Home() {
                 <div className="relative p-1 rounded-[3rem] bg-linear-to-tr from-primary/50 via-white/10 to-secondary/50 shadow-2xl overflow-hidden">
                   <div className="rounded-[2.8rem] bg-slate-950 p-10 aspect-square flex items-center justify-center">
                     <div className="relative w-full h-200 flex flex-col items-center justify-center space-y-8">
-                      <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 1.1, 1],
+                          opacity: [0.8, 1, 0.8]
+                        }}
+                        transition={{ 
+                          duration: 4, 
+                          repeat: Infinity, 
+                          ease: "easeInOut" 
+                        }}
+                        className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center"
+                      >
                         <Brain className="w-16 h-16 text-primary drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-                      </div>
+                      </motion.div>
                       <div className="space-y-4 w-full">
                         {[1, 2, 3].map((i) => (
-                          <div
+                          <motion.div
                             key={i}
-                            className={`h-2 rounded-full bg-linear-to-r from-primary/40 to-transparent w-[${100 - i * 20}%] mx-auto animate-pulse`}
-                            style={{
-                              animationDelay: `${i * 200}ms`,
-                              width: `${90 - i * 15}%`,
-                            }}
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${90 - i * 15}%` }}
+                            transition={{ duration: 1, delay: 0.5 + (i * 0.2) }}
+                            className={`h-2 rounded-full bg-linear-to-r from-primary/40 to-transparent mx-auto`}
                           />
                         ))}
                       </div>
                       <div className="text-center">
-                        <span className="text-primary font-mono text-3xl font-black">
+                        <motion.span 
+                          initial={{ opacity: 0 }}
+                          whileInView={{ opacity: 1 }}
+                          className="text-primary font-mono text-3xl font-black"
+                        >
                           98.4%
-                        </span>
+                        </motion.span>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold mt-1">
                           {t("aiConfidence")}
                         </p>
@@ -429,8 +542,8 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -450,7 +563,13 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
+          >
             {[
               { id: 1, icon: Zap },
               { id: 2, icon: Bell },
@@ -459,7 +578,12 @@ export default function Home() {
               { id: 5, icon: FileCheck },
               { id: 6, icon: RefreshCw },
             ].map((item) => (
-              <div key={item.id} className="group p-8 rounded-[2.5rem] bg-card/40 border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden">
+              <motion.div 
+                key={item.id} 
+                variants={fadeInUp}
+                whileHover={cardHover}
+                className="group p-8 rounded-[2.5rem] bg-card/40 border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-2xl relative overflow-hidden cursor-default"
+              >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-[40px] rounded-full -mr-12 -mt-12 group-hover:bg-primary/10 transition-all" />
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 text-primary">
                   <item.icon className="w-7 h-7" />
@@ -472,9 +596,9 @@ export default function Home() {
                   {/* @ts-ignore */}
                   {t(`update${item.id}Desc`)}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -496,7 +620,13 @@ export default function Home() {
             <div className="h-1 w-32 bg-primary rounded-full mb-4 hidden md:block" />
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid md:grid-cols-4 gap-8"
+          >
             {[
               {
                 icon: FileText,
@@ -519,7 +649,7 @@ export default function Home() {
                 desc: t("step4Desc"),
               },
             ].map((step, idx) => (
-              <div key={idx} className="space-y-6 group">
+              <motion.div key={idx} variants={fadeInUp} className="space-y-6 group cursor-default">
                 <div className="relative">
                   <div className="w-20 h-20 rounded-2xl bg-card border border-border/50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-xl group-hover:shadow-primary/25">
                     <step.icon className="w-8 h-8" />
@@ -541,9 +671,9 @@ export default function Home() {
                     {step.desc}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -563,7 +693,13 @@ export default function Home() {
                 {t("ctaSubtitle")}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-6"
+              >
                 {!storage ? (
                   <Button
                     onClick={() => {
@@ -583,7 +719,7 @@ export default function Home() {
                     {t("startNow")}
                   </Link>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

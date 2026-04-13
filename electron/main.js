@@ -123,10 +123,7 @@ if (!gotTheLock) {
       win.loadURL("http://localhost:3000");
     } else {
       const fs = require("fs");
-
-      // Helper: convert Windows backslash path -> proper file:// URL
-      const toFileUrl = (absPath) =>
-        "file:///" + absPath.replace(/\\/g, "/");
+      const fsPromises = fs.promises;
 
       // Helper: guess MIME type from extension (no external dep needed)
       const getMime = (filePath) => {
@@ -137,7 +134,7 @@ if (!gotTheLock) {
           mjs: "application/javascript; charset=utf-8",
           css: "text/css; charset=utf-8",
           json: "application/json; charset=utf-8",
-          txt: "text/plain; charset=utf-8",
+          txt: "text/x-component; charset=utf-8",
           png: "image/png",
           jpg: "image/jpeg",
           jpeg: "image/jpeg",
@@ -154,7 +151,7 @@ if (!gotTheLock) {
         return map[ext] || "application/octet-stream";
       };
 
-      protocol.handle("app", (request) => {
+      protocol.handle("app", async (request) => {
         const originalUrl = request.url;
         let urlPath = "";
 
@@ -186,44 +183,77 @@ if (!gotTheLock) {
               request.headers.get("Next-Router-Prefetch") === "1" ||
               request.headers.get("Next-Router-State-Tree") !== null));
 
-        if (isRSC && fs.existsSync(`${finalPath}.txt`)) {
-          // Serve the RSC payload with the correct content-type so the
-          // Next.js client router can apply the patch without a full reload
-          const content = fs.readFileSync(`${finalPath}.txt`);
-          return new Response(content, {
-            headers: { "content-type": "text/x-component; charset=utf-8" },
-          });
-        }
-
-        // Prefer .html for full-page requests
-        if (fs.existsSync(`${finalPath}.html`)) {
-          finalPath = `${finalPath}.html`;
-        } else if (
-          fs.existsSync(finalPath) &&
-          fs.statSync(finalPath).isDirectory()
-        ) {
-          const indexHtml = path.join(finalPath, "index.html");
-          if (fs.existsSync(indexHtml)) {
-            finalPath = indexHtml;
-          }
-        }
-
-        // Final fallback: SPA shell (index.html) for unknown client-side routes
-        if (!fs.existsSync(finalPath)) {
-          finalPath = path.join(outDir, "index.html");
-        }
-
-        // Read file and return with correct MIME type
         try {
-          if (fs.existsSync(finalPath) && fs.statSync(finalPath).isFile()) {
-            const content = fs.readFileSync(finalPath);
+          // 1. Try serving exact path if it exists as a file
+          let stats = await fsPromises.stat(finalPath).catch(() => null);
+          
+          if (stats && stats.isFile()) {
+            const content = await fsPromises.readFile(finalPath);
             return new Response(content, {
-              headers: { "content-type": getMime(finalPath) },
+              headers: { 
+                "content-type": getMime(finalPath),
+                "content-length": content.length.toString()
+              },
             });
           }
-          throw new Error("File not found or is not a file");
+
+          // 2. Handle Next.js RSC requests (.txt files for segments)
+          if (isRSC) {
+            const rscPath = `${finalPath}.txt`;
+            const rscStats = await fsPromises.stat(rscPath).catch(() => null);
+            if (rscStats && rscStats.isFile()) {
+              const content = await fsPromises.readFile(rscPath);
+              return new Response(content, {
+                headers: { 
+                  "content-type": "text/x-component; charset=utf-8",
+                  "content-length": content.length.toString()
+                },
+              });
+            }
+          }
+
+          // 3. Handle folder index or .html extension fallback
+          const htmlPath = finalPath.endsWith(".html") ? finalPath : `${finalPath}.html`;
+          const htmlStats = await fsPromises.stat(htmlPath).catch(() => null);
+          if (htmlStats && htmlStats.isFile()) {
+            const content = await fsPromises.readFile(htmlPath);
+            return new Response(content, {
+              headers: { 
+                "content-type": "text/html; charset=utf-8",
+                "content-length": content.length.toString()
+              },
+            });
+          }
+
+          // 4. Handle Directory index.html
+          if (stats && stats.isDirectory()) {
+            const indexHtml = path.join(finalPath, "index.html");
+            const indexStats = await fsPromises.stat(indexHtml).catch(() => null);
+            if (indexStats && indexStats.isFile()) {
+              const content = await fsPromises.readFile(indexHtml);
+              return new Response(content, {
+                headers: { 
+                  "content-type": "text/html; charset=utf-8",
+                  "content-length": content.length.toString()
+                },
+              });
+            }
+          }
+
+          // 5. Final fallback: SPA shell (index.html) for unknown client-side routes
+          const spaShell = path.join(outDir, "index.html");
+          if (fs.existsSync(spaShell)) {
+             const shellContent = await fsPromises.readFile(spaShell);
+             return new Response(shellContent, {
+               headers: { 
+                 "content-type": "text/html; charset=utf-8",
+                 "content-length": shellContent.length.toString()
+               },
+             });
+          }
+
+          return new Response("Not Found", { status: 404 });
         } catch (err) {
-          // Log only in non-production or for critical assets
           if (!app.isPackaged) {
              console.error(`[Protocol] Error serving: ${finalPath}`, err.message);
           }

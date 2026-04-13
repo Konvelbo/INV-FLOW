@@ -396,7 +396,6 @@ const config = {
   ],
   "activeProvider": "mongodb",
   "postinstall": false,
-  "ciName": "Vercel",
   "inlineDatasources": {
     "db": {
       "url": {

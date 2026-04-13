@@ -127,7 +127,7 @@ export default function Topbar() {
                 exit={{ opacity: 0, scale: 0.85, x: 10 }}
                 transition={{ type: "spring", stiffness: 350, damping: 25 }}
               >
-                <Link href="/companies">
+                <Link href="/companies" prefetch={false}>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.96 }}
@@ -154,7 +154,7 @@ export default function Topbar() {
                 exit={{ opacity: 0, scale: 0.8, y: -4 }}
                 transition={{ type: "spring", stiffness: 400, damping: 22 }}
               >
-                <Link href="/pricing">
+                <Link href="/pricing" prefetch={false}>
                   <motion.div
                     whileHover={{ scale: 1.06, y: -1 }}
                     whileTap={{ scale: 0.94 }}
@@ -193,7 +193,7 @@ export default function Topbar() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ type: "spring", stiffness: 400, damping: 22 }}
               >
-                <Link href="/pricing">
+                <Link href="/pricing" prefetch={false}>
                   <motion.div
                     whileHover={{ scale: 1.06, y: -1 }}
                     whileTap={{ scale: 0.94 }}
