@@ -375,7 +375,7 @@ export default function CompaniesClient({
                 {t("companySettings")}
               </span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black md:tracking-tighter bg-gradient-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans uppercase">
+            <h1 className="text-4xl md:text-6xl font-black md:tracking-tighter bg-linear-to-br from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent font-sans uppercase">
               {t("companies")}
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl font-sans italic">
@@ -415,7 +415,7 @@ export default function CompaniesClient({
                     }
                   }}
                 >
-                  <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-primary-foreground/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   <Plus className="w-5 h-5 relative z-10" />
                   <span className="relative z-10">{t("addStructure")}</span>
                 </Button>

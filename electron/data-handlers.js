@@ -3,9 +3,7 @@ const { PrismaClient } = require("../src/p_client");
 const prisma = new PrismaClient();
 const crypto = require("crypto");
 // Start connection immediately in background to reduce first-query latency
-prisma
-  .$connect()
-  .catch((err) => { });
+prisma.$connect().catch((err) => {});
 
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
@@ -1054,8 +1052,7 @@ const handlers = {
             content: pdf,
             folder: "Factures_PDF",
           });
-        } catch (err) {
-        }
+        } catch (err) {}
       }
     }
     return await generateZip(zipFiles);
@@ -1473,8 +1470,7 @@ const actionHandlers = {
                 content: pdf,
                 folder: `${compDir}/Historique_Factures`,
               });
-            } catch (e) {
-            }
+            } catch (e) {}
           }
         }
       }
@@ -1775,11 +1771,12 @@ const actionHandlers = {
   },
   expenses: {
     create: async (userId, data) => {
-      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
+      // if (!userId) throw new Error("ERR_AUTH_REQUIRED");
       const activeCompanyId = await getActiveCompanyId(userId);
+      // console.log("Valid ObjectId:", ObjectId.isValid(data.companyId));
       return await prisma.expense.create({
         data: {
-          ...sanitizeData(data, true),
+          ...sanitizeData(data, false),
           userId,
           companyId: data.companyId || activeCompanyId,
           date: new Date(data.date),

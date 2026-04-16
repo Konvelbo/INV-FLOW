@@ -364,7 +364,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\user\\Desktop\\ESSOR\\essor\\src\\p_client",
+      "value": "C:\\Users\\user\\Desktop\\Essor\\essor\\src\\p_client",
       "fromEnvVar": null
     },
     "config": {
@@ -382,7 +382,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\user\\Desktop\\ESSOR\\essor\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\user\\Desktop\\Essor\\essor\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

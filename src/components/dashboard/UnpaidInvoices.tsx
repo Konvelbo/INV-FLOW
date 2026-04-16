@@ -84,11 +84,11 @@ export function UnpaidInvoices({
                 {invoices.map((invoice) => (
                     <div
                         key={invoice.id}
-                        className="flex items-center justify-between p-4 rounded-2xl bg-slate-900/30 border border-white/5 hover:border-amber-500/30 hover:bg-slate-900/50 transition-all group"
+                        className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/20 hover:border-amber-500/30 hover:bg-muted/50 transition-all group"
                     >
                         <div className="flex items-center gap-4">
                             <div
-                                className="p-3 rounded-xl bg-slate-900 border border-border group-hover:border-amber-500/50 cursor-pointer"
+                                className="p-3 rounded-xl bg-muted border border-border group-hover:border-amber-500/50 cursor-pointer"
                                 onClick={() => router.push(`/invoice?id=${invoice.id}`)}
                             >
                                 <FileWarning className="w-4 h-4 text-muted-foreground group-hover:text-amber-500" />

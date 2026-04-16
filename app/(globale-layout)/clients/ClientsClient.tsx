@@ -272,7 +272,7 @@ export default function ClientsClient({
                   {t("crm")}
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tighter bg-linear-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tighter bg-linear-to-br from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent font-sans">
                 {t("clients")}
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl font-medium leading-relaxed opacity-80">
@@ -536,8 +536,8 @@ export default function ClientsClient({
                         <div className={cn(
                           "size-8 rounded-full flex items-center justify-center font-black text-xs shadow-lg",
                           index === 0 ? "bg-amber-500 text-white" :
-                            index === 1 ? "bg-slate-300 text-slate-700" :
-                              index === 2 ? "bg-amber-700 text-white" :
+                            index === 1 ? "bg-muted text-foreground border-border" :
+                              index === 2 ? "bg-primary/20 text-primary border-primary/30" :
                                 "bg-muted text-muted-foreground"
                         )}>
                           #{index + 1}
@@ -605,7 +605,7 @@ export default function ClientsClient({
             ].map((stat, i) => (
               <div
                 key={i}
-                className="p-6 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
+                className="p-6 rounded-3xl bg-card/40 border border-border/50 shadow-2xl backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
               >
                 <div
                   className={cn(
@@ -646,7 +646,7 @@ export default function ClientsClient({
             filteredClients.map((client) => (
               <Card
                 key={client.id}
-                className="group bg-card border border-border/40 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
+                className="group bg-card border border-border/40 shadow-lg hover:shadow-md hover:border-primary/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
               >
                 <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
                   <div className="flex justify-between items-start">

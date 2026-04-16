@@ -12,8 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import LineChart2 from "@/src/components/line-chart-2";
-import { RecentInvoices } from "@/src/components/dashboard/RecentInvoices";
-import { InvoiceCalendar } from "@/src/components/dashboard/InvoiceCalendar";
+import { CombinedDashboardTabs } from "@/src/components/dashboard/CombinedDashboardTabs";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useInvoiceState } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
@@ -84,8 +83,6 @@ export default function DashboardClient({
       productiveHours,
     };
   }, [todos]);
-
-   const productCount = stats?.recentProducts?.length || 0;
 
   return (
     <div
@@ -274,55 +271,19 @@ export default function DashboardClient({
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 animate-fade-in-up delay-200 pb-10">
-          <div className="xl:col-span-2 space-y-8">
+        <div className="flex flex-col gap-8 animate-fade-in-up delay-200 pb-10 w-full">
+          {/* Performance Chart - Full Width */}
+          <div className="w-full">
             <LineChart2 externalData={stats.chartData} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <InvoiceCalendar invoices={stats.recentInvoices || []} />
+            
+            {/* Hidden AI Logic */}
+            <div className="hidden">
               <AIInsightCard stats={stats} />
             </div>
           </div>
 
-          <div className="xl:flex flex-col space-y-8">
-            <RecentInvoices invoices={stats.recentInvoices || []} />
-            {stats.recentProducts && (
-              <Card className="border border-border/40 shadow-2xl bg-card/60 backdrop-blur-xl shrink-0 overflow-hidden flex flex-col h-full rounded-2xl max-h-[600px]">
-                <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-muted/10">
-                  <h3 className="font-bold text-lg flex items-center gap-2">
-                    <Package className="w-4 h-4 text-primary" />
-                    {t("recentProducts")}
-                  </h3>
-                  <span className="text-[10px] font-black uppercase text-muted-foreground bg-muted/30 px-2 py-1 rounded">
-                    <span>{productCount}</span> {t("total_stat")}
-                  </span>
-                </div>
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar">
-                  {stats.recentProducts.length > 0 ? (
-                    stats.recentProducts.map((product: any) => (
-                      <Link key={product.id} href="/products">
-                        <div className="flex justify-between items-center group bg-background/40 hover:bg-muted/10 p-3 rounded-lg border border-transparent hover:border-border/30 transition-all cursor-pointer">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-sm font-bold text-foreground truncate max-w-[160px] group-hover:text-primary transition-colors">
-                              {product.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {product.type === "service" ? t("service") : t("catalog")}
-                            </span>
-                          </div>
-                          <div className="text-right">
-                            <span className="block text-xs font-bold font-mono text-foreground">
-                              {formatCurrency(product.price)}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground text-sm">{t("noRecord")}.</div>
-                  )}
-                </div>
-              </Card>
-            )}
+          <div className="w-full">
+            <CombinedDashboardTabs stats={stats} />
           </div>
         </div>
       </div>

@@ -267,7 +267,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                 {t("financialArchives")}
               </span>
             </div>
-            <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent font-sans">
+            <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent font-sans">
               {t("history")}
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl font-sans">
@@ -453,7 +453,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
               </CardHeader>
 
               <CardContent className="space-y-6 px-6 pb-6">
-                <div className="space-y-4 p-4 rounded-2xl bg-background/40 border border-white/5">
+                <div className="space-y-4 p-4 rounded-2xl bg-muted/20 border border-border/20">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-3 text-muted-foreground">
                       <User className="w-4 h-4" />
@@ -480,7 +480,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
                     </span>
                   </div>
 
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                  <div className="pt-2 border-t border-border/10 flex items-center justify-between">
                     <div className="flex items-center gap-3 text-muted-foreground">
                       <DollarSign className="w-4 h-4 text-primary" />
                       <span className="font-black text-[10px] uppercase tracking-widest">

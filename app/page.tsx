@@ -43,8 +43,6 @@ export default function Home() {
     token: string;
   } | null>(null);
 
-
-
   useEffect(() => {
     setMounted(true);
     const userStr = localStorage.getItem("user");
@@ -56,7 +54,9 @@ export default function Home() {
 
           if (!sessionStorage.getItem("hasAutoRedirected")) {
             sessionStorage.setItem("hasAutoRedirected", "true");
-            const hasCompanies = (parsed.companies && parsed.companies.length > 0) || !!parsed.activeCompanyId;
+            const hasCompanies =
+              (parsed.companies && parsed.companies.length > 0) ||
+              !!parsed.activeCompanyId;
             const target = hasCompanies ? "/dashboard" : "/companies";
             router.push(target);
           }
@@ -68,12 +68,12 @@ export default function Home() {
   }, [router]);
 
   if (!mounted) return null;
-  
+
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true, margin: "-100px" },
-    transition: { duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }
+    transition: { duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] },
   };
 
   const staggerContainer = {
@@ -81,16 +81,16 @@ export default function Home() {
     whileInView: {
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
+        delayChildren: 0.2,
+      },
     },
-    viewport: { once: true, margin: "-100px" }
+    viewport: { once: true, margin: "-100px" },
   };
 
   const cardHover = {
     scale: 1.03,
     y: -8,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   };
 
   return (
@@ -114,9 +114,9 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 transition-all duration-300 bg-background/80 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 w-full z-50 transition-all duration-300 bg-background/80 shadow-lg backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
             className="flex items-center gap-3 cursor-pointer"
@@ -184,8 +184,8 @@ export default function Home() {
           </div>
 
           <h1 className="flex flex-col items-center justify-center text-7xl md:text-9xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-white to-slate-500 leading-none">
-            <span className="opacity-40">NEXT-GEN</span>
-            <SparklesText className="text-white text-9xl md:text-[10.5rem] -mt-6">
+            <span>NEXT-GEN</span>
+            <SparklesText className="text-primary text-9xl md:text-[10.5rem] -mt-6">
               {t("appName")}
             </SparklesText>
           </h1>
@@ -263,8 +263,8 @@ export default function Home() {
               {t("ecosystemDesc")}
             </p>
           </div>
-  
-          <motion.div 
+
+          <motion.div
             variants={staggerContainer}
             initial="initial"
             whileInView="whileInView"
@@ -272,7 +272,7 @@ export default function Home() {
             className="grid gap-10 md:grid-cols-2 lg:grid-cols-3"
           >
             {/* Feature 1: Advanced Billing */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={cardHover}
               className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
@@ -288,9 +288,9 @@ export default function Home() {
                 {t("feature1Desc")}
               </p>
             </motion.div>
-  
+
             {/* Feature 2: Strategic Dashboard */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={cardHover}
               className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-blue-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
@@ -306,9 +306,9 @@ export default function Home() {
                 {t("feature2Desc")}
               </p>
             </motion.div>
-  
+
             {/* Feature 3: CRM & Client Management */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={cardHover}
               className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-orange-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
@@ -324,9 +324,9 @@ export default function Home() {
                 {t("feature3Desc")}
               </p>
             </motion.div>
-  
+
             {/* Feature 4: Planning & Alerts */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={cardHover}
               className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-red-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
@@ -342,9 +342,9 @@ export default function Home() {
                 {t("feature4Desc")}
               </p>
             </motion.div>
-  
+
             {/* Feature 5: Intelligence Pulse™ */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={cardHover}
               className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-emerald-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
@@ -360,9 +360,9 @@ export default function Home() {
                 {t("feature5Desc")}
               </p>
             </motion.div>
-  
+
             {/* Feature 6: Security & Archives */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={cardHover}
               className="group p-10 rounded-[2.5rem] bg-card border border-border/50 hover:border-indigo-400/40 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] text-center flex flex-col items-center backdrop-blur-xl relative overflow-hidden cursor-default"
@@ -393,7 +393,7 @@ export default function Home() {
               {t("detailFeaturesTitle")}
             </h2>
           </div>
-          <motion.div 
+          <motion.div
             variants={staggerContainer}
             initial="initial"
             whileInView="whileInView"
@@ -401,8 +401,8 @@ export default function Home() {
             className="grid gap-8"
           >
             {[1, 2, 3, 4, 5].map((i) => (
-              <motion.div 
-                key={i} 
+              <motion.div
+                key={i}
                 variants={fadeInUp}
                 className="flex flex-col md:flex-row gap-8 items-start p-8 md:p-10 rounded-[2.5rem] bg-card/50 border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:bg-card relative overflow-hidden group cursor-default"
               >
@@ -432,10 +432,10 @@ export default function Home() {
         className="relative z-10 py-40 overflow-hidden"
       >
         <div className="container px-6 mx-auto">
-          <div className="bg-linear-to-br from-card/80 to-background border border-border/50 rounded-[3.5rem] p-12 md:p-24 backdrop-blur-3xl relative">
+          <div className="bg-linear-to-br from-card/80 to-background border border-border/50 shadow-xl rounded-[3.5rem] p-12 md:p-24 backdrop-blur-3xl relative">
             <div className="absolute top-0 left-0 w-full h-full bg-linear-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
 
-            <motion.div 
+            <motion.div
               variants={staggerContainer}
               initial="initial"
               whileInView="whileInView"
@@ -443,17 +443,26 @@ export default function Home() {
               className="grid lg:grid-cols-2 gap-20 items-center relative z-10"
             >
               <div className="space-y-8">
-                <motion.div variants={fadeInUp} className="inline-flex items-center px-4 py-2 space-x-2 text-[10px] font-black text-primary bg-primary/10 border border-primary/20 rounded-full uppercase tracking-widest">
+                <motion.div
+                  variants={fadeInUp}
+                  className="inline-flex items-center px-4 py-2 space-x-2 text-[10px] font-black text-primary bg-primary/10 border border-primary/20 rounded-full uppercase tracking-widest"
+                >
                   <Brain className="w-4 h-4" />
                   <span>{t("pulseModule")}</span>
                 </motion.div>
 
-                <motion.h2 variants={fadeInUp} className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight">
+                <motion.h2
+                  variants={fadeInUp}
+                  className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-tight"
+                >
                   {t("aiSectionTitle")} <br />
                   <span className="text-primary">{t("aiSectionSubtitle")}</span>
                 </motion.h2>
 
-                <motion.p variants={fadeInUp} className="text-lg text-muted-foreground font-sans leading-relaxed">
+                <motion.p
+                  variants={fadeInUp}
+                  className="text-lg text-muted-foreground font-sans leading-relaxed"
+                >
                   {t("aiSectionDesc")}
                 </motion.p>
 
@@ -475,7 +484,10 @@ export default function Home() {
                     <motion.div
                       key={idx}
                       variants={fadeInUp}
-                      whileHover={{ x: 10, backgroundColor: "rgba(255,255,255,0.08)" }}
+                      whileHover={{
+                        x: 10,
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                      }}
                       className="flex gap-5 p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group cursor-default"
                     >
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
@@ -502,15 +514,15 @@ export default function Home() {
                 <div className="relative p-1 rounded-[3rem] bg-linear-to-tr from-primary/50 via-white/10 to-secondary/50 shadow-2xl overflow-hidden">
                   <div className="rounded-[2.8rem] bg-slate-950 p-10 aspect-square flex items-center justify-center">
                     <div className="relative w-full h-200 flex flex-col items-center justify-center space-y-8">
-                      <motion.div 
-                        animate={{ 
+                      <motion.div
+                        animate={{
                           scale: [1, 1.1, 1],
-                          opacity: [0.8, 1, 0.8]
+                          opacity: [0.8, 1, 0.8],
                         }}
-                        transition={{ 
-                          duration: 4, 
-                          repeat: Infinity, 
-                          ease: "easeInOut" 
+                        transition={{
+                          duration: 4,
+                          repeat: Infinity,
+                          ease: "easeInOut",
                         }}
                         className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center"
                       >
@@ -522,13 +534,13 @@ export default function Home() {
                             key={i}
                             initial={{ width: 0 }}
                             whileInView={{ width: `${90 - i * 15}%` }}
-                            transition={{ duration: 1, delay: 0.5 + (i * 0.2) }}
+                            transition={{ duration: 1, delay: 0.5 + i * 0.2 }}
                             className={`h-2 rounded-full bg-linear-to-r from-primary/40 to-transparent mx-auto`}
                           />
                         ))}
                       </div>
                       <div className="text-center">
-                        <motion.span 
+                        <motion.span
                           initial={{ opacity: 0 }}
                           whileInView={{ opacity: 1 }}
                           className="text-primary font-mono text-3xl font-black"
@@ -563,7 +575,7 @@ export default function Home() {
             </p>
           </div>
 
-          <motion.div 
+          <motion.div
             variants={staggerContainer}
             initial="initial"
             whileInView="whileInView"
@@ -578,8 +590,8 @@ export default function Home() {
               { id: 5, icon: FileCheck },
               { id: 6, icon: RefreshCw },
             ].map((item) => (
-              <motion.div 
-                key={item.id} 
+              <motion.div
+                key={item.id}
                 variants={fadeInUp}
                 whileHover={cardHover}
                 className="group p-8 rounded-[2.5rem] bg-card/40 border border-border/50 hover:border-primary/40 transition-all duration-500 hover:shadow-2xl relative overflow-hidden cursor-default"
@@ -620,7 +632,7 @@ export default function Home() {
             <div className="h-1 w-32 bg-primary rounded-full mb-4 hidden md:block" />
           </div>
 
-          <motion.div 
+          <motion.div
             variants={staggerContainer}
             initial="initial"
             whileInView="whileInView"
@@ -649,7 +661,11 @@ export default function Home() {
                 desc: t("step4Desc"),
               },
             ].map((step, idx) => (
-              <motion.div key={idx} variants={fadeInUp} className="space-y-6 group cursor-default">
+              <motion.div
+                key={idx}
+                variants={fadeInUp}
+                className="space-y-6 group cursor-default"
+              >
                 <div className="relative">
                   <div className="w-20 h-20 rounded-2xl bg-card border border-border/50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-xl group-hover:shadow-primary/25">
                     <step.icon className="w-8 h-8" />
@@ -693,7 +709,7 @@ export default function Home() {
                 {t("ctaSubtitle")}
               </p>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -731,7 +747,11 @@ export default function Home() {
           <div className="flex flex-col items-center md:items-start gap-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Logo logoUrl={"/black-caractere-non-black.png"} w={45} h={45} />
+                <Logo
+                  logoUrl={"/black-caractere-non-black.png"}
+                  w={45}
+                  h={45}
+                />
               </div>
               <span className="font-black tracking-[0.5em] uppercase text-sm text-foreground">
                 ESSOR

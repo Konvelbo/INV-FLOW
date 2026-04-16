@@ -388,20 +388,20 @@ export default function InvoiceClient({
                 Flow Engine v2
               </span>
             </div>
-            <h1 className="text-5xl font-bold text-foreground tracking-tighter bg-linear-to-b from-white to-slate-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold text-foreground tracking-tighter bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent">
               {t("invoiceEditor")}
             </h1>
           </div>
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
-          <div className="px-6 py-3 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-4 group hover:border-white/20 transition-all">
+          <div className="px-6 py-3 rounded-lg bg-muted/20 border border-border/50 backdrop-blur-xl flex items-center gap-4 group hover:border-primary/30 transition-all">
             <div className="size-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)] animate-pulse" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">
                 Status
               </span>
-              <span className="text-xs font-bold text-white tracking-tight">
+              <span className="text-xs font-bold text-foreground tracking-tight">
                 {t("systemReady")}
               </span>
             </div>
@@ -445,7 +445,7 @@ export default function InvoiceClient({
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSuggestion(false)}
-                  className="size-8 text-muted-foreground hover:bg-white/10 rounded-lg"
+                  className="size-8 text-muted-foreground hover:bg-muted/50 rounded-lg"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -459,7 +459,7 @@ export default function InvoiceClient({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="gap-2 font-bold backdrop-blur-xl border-border/50 shadow-lg"
+              className="gap-2 font-bold backdrop-blur-xl border-border/50 bg-card/50 shadow-lg"
             >
               <Settings2 className="w-4 h-4" />
               {t("documentSettings")}
@@ -655,7 +655,7 @@ export default function InvoiceClient({
               onClick={handleSave}
               disabled={loading}
               className={cn(
-                "h-14 w-14 rounded-lg shadow-2xl border border-white/10 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-emerald-500 hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer",
+                "h-14 w-14 rounded-lg shadow-2xl border border-border/20 bg-card/90 backdrop-blur-2xl text-foreground hover:bg-primary hover:text-primary-foreground hover:-translate-y-1 transition-all duration-300 cursor-pointer",
                 loading && "opacity-50",
               )}
               title={t("save")}

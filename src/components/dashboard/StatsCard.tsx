@@ -90,17 +90,17 @@ export function StatsCard({
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative p-6 rounded-lg bg-card border border-border transition-all duration-500",
-        "shadow-sm hover:shadow-md",
+        "group relative p-6 rounded-lg bg-card border border-border transition-all duration-500 overflow-y-hidden",
+        "shadow-lg hover:shadow-md",
         "hover:border-primary/50 hover:-translate-y-1",
         href && "cursor-pointer",
         className,
       )}
     >
       {/* Sparkline Background Decoration */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 overflow-hidden rounded-b-3xl">
+      <div className="absolute -bottom-4 left-0 right-0 h-28 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 overflow-hidden rounded-b-3xl">
         <svg
-          viewBox="0 0 100 30"
+          viewBox="0 0 90 35"
           className="w-full h-full preserve-3d"
           preserveAspectRatio="none"
         >

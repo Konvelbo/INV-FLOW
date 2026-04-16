@@ -104,24 +104,31 @@ export default function ExpensesClient({
   }, [userId]);
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const method = editingId ? "update" : "create";
+    try {
+      e.preventDefault();
+      const method = editingId ? "update" : "create";
+  
+      const payload = {
+        ...formData,
+        amount: parseFloat(formData.amount),
+        date: new Date(formData.date).toISOString(),
+        companyId: formData.companyId === "none" ? null : formData.companyId,
+      };
+  
+      console.log(payload)
+  
+      const params = editingId ? [editingId, payload] : [payload];
+      const res = await performAction("expenses", method, ...params);
+  
+      if (res.success) {
+        toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
+        setIsDialogOpen(false);
+        resetForm();
+        fetchExpenses();
+      }
 
-    const payload = {
-      ...formData,
-      amount: parseFloat(formData.amount),
-      date: new Date(formData.date).toISOString(),
-      companyId: formData.companyId === "none" ? null : formData.companyId,
-    };
-
-    const params = editingId ? [editingId, payload] : [payload];
-    const res = await performAction("expenses", method, ...params);
-
-    if (res.success) {
-      toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
-      setIsDialogOpen(false);
-      resetForm();
-      fetchExpenses();
+    } catch(e) {
+      throw new Error ("voici l erreur", e)
     }
   };
 
@@ -237,7 +244,7 @@ export default function ExpensesClient({
                   {t("financesHub")}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter bg-linear-to-br from-white via-white to-slate-500 bg-clip-text text-transparent font-sans">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter bg-linear-to-br from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent font-sans">
                 {t("financesTitle")}
               </h1>
               <p className="text-muted-foreground text-base md:text-lg max-w-xl font-medium leading-relaxed opacity-80">
@@ -492,7 +499,7 @@ export default function ExpensesClient({
               ].map((stat, i) => (
                 <div
                   key={i}
-                  className="p-6 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
+                  className="p-6 rounded-3xl bg-card/40 border border-border/50 shadow-2xl backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
                 >
                   <div
                     className={cn(
@@ -552,7 +559,7 @@ export default function ExpensesClient({
               return (
                 <Card
                   key={expense.id}
-                  className="group bg-card border border-border/40 shadow-sm hover:shadow-md hover:border-amber-500/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
+                  className="group bg-card border border-border/40 shadow-lg hover:shadow-md hover:border-amber-500/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
                 >
                   <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
                     <div className="flex justify-between items-start mb-4">

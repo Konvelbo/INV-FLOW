@@ -23,14 +23,14 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
 
   if (!invoices || invoices.length === 0) {
     return (
-      <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm h-full">
+      <Card className="bg-card border-border/50 backdrop-blur-sm h-full">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-500" />
             {t("recentInvoices")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-10 text-slate-500">
+        <CardContent className="flex flex-col items-center justify-center py-10 text-muted-foreground">
           <FileText className="w-12 h-12 mb-4 opacity-20" />
           <p>{t("noInvoicesFound")}.</p>
         </CardContent>
@@ -61,11 +61,11 @@ export function RecentInvoices({ invoices }: { invoices: RecentInvoice[] }) {
         {invoices.map((invoice) => (
           <div
             key={invoice.id}
-            className="flex items-center justify-between p-4 rounded-2xl bg-slate-900/30 border border-white/5 hover:border-primary/30 hover:bg-slate-900/50 transition-all cursor-pointer group"
+            className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/20 hover:border-primary/30 hover:bg-muted/40 transition-all cursor-pointer group"
             onClick={() => router.push(`/invoice?id=${invoice.id}`)}
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-slate-900 border border-border group-hover:border-primary/50 group-hover:scale-110 transition-all duration-300">
+              <div className="p-3 rounded-xl bg-muted border border-border group-hover:border-primary/50 group-hover:scale-110 transition-all duration-300">
                 <FileText className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
               </div>
               <div className="flex flex-col min-w-0 flex-1">

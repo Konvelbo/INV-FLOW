@@ -39,7 +39,7 @@ export default function ManagementClient({
                   Workspace
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent font-sans">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-linear-to-br from-foreground to-foreground/60 bg-clip-text text-transparent font-sans">
                 {t("management")}
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl font-sans">
