@@ -129,6 +129,34 @@ async function incrementInvoiceCount(userId) {
   });
 }
 
+/**
+ * Updates a client's invoice counts in the database.
+ * This ensures the suggestion logic for recurring invoices works correctly.
+ */
+async function updateClientInvoiceCounts(clientId) {
+  if (!clientId) return;
+  try {
+    const [paidCount, unpaidCount] = await Promise.all([
+      prisma.invoice.count({
+        where: { clientId, status: "paid" },
+      }),
+      prisma.invoice.count({
+        where: { clientId, status: { in: ["pending", "overdue", "draft"] } },
+      }),
+    ]);
+
+    await prisma.client.update({
+      where: { id: clientId },
+      data: {
+        paidInvoicesCount: paidCount,
+        unpaidInvoicesCount: unpaidCount,
+      },
+    });
+  } catch (err) {
+    console.error("Failed to update client invoice counts", err);
+  }
+}
+
 async function checkCompanyQuota(userId) {
   const info = await getUserPlan(userId);
   if (info.plan !== "free" && info.isActive) return { allowed: true };
@@ -1851,8 +1879,14 @@ const actionHandlers = {
             userId,
             companyId: invoiceData.companyId || activeCompanyId,
             dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
-            items: {
-              create: (items || []).map((item) => ({
+          },
+        });
+
+        if (items && items.length > 0) {
+          try {
+            await prisma.invoiceItem.createMany({
+              data: items.map((item) => ({
+                invoiceId: created.id,
                 designation: item.designation,
                 unit: item.unit || "U",
                 quantity: Number(item.quantity),
@@ -1860,11 +1894,22 @@ const actionHandlers = {
                 totalPrice: Number(item.totalPrice),
                 productId: item.productId || null,
               })),
-            },
-          },
-        });
+            });
+          } catch (itemError) {
+            // Manual Rollback to maintain atomicity without transactions
+            await prisma.invoice.delete({ where: { id: created.id } });
+            throw itemError;
+          }
+        }
+
         // Increment daily count AFTER successful creation
         await incrementInvoiceCount(userId);
+        
+        // Update client counts
+        if (created.clientId) {
+          await updateClientInvoiceCounts(created.clientId);
+        }
+
         return created;
       } catch (error) {
         // Handle duplicate reference constraint gracefully
@@ -1873,23 +1918,23 @@ const actionHandlers = {
           error.meta?.target?.includes("reference")
         ) {
           const fallbackRef = `${baseReference}-${Date.now().toString().slice(-6)}`;
-          return await prisma.invoice.create({
+          const createdFallback = await prisma.invoice.create({
             data: {
               ...invoiceData,
               reference: fallbackRef,
               userId,
               companyId: invoiceData.companyId || activeCompanyId,
-              dueDate: invoiceData.dueDate
-                ? new Date(invoiceData.dueDate)
-                : null,
-              nextIssueDate: invoiceData.nextIssueDate
-                ? new Date(invoiceData.nextIssueDate)
-                : null,
-              nextReminderDate: invoiceData.nextReminderDate
-                ? new Date(invoiceData.nextReminderDate)
-                : null,
-              items: {
-                create: (items || []).map((item) => ({
+              dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+              nextIssueDate: invoiceData.nextIssueDate ? new Date(invoiceData.nextIssueDate) : null,
+              nextReminderDate: invoiceData.nextReminderDate ? new Date(invoiceData.nextReminderDate) : null,
+            },
+          });
+
+          if (items && items.length > 0) {
+            try {
+              await prisma.invoiceItem.createMany({
+                data: items.map((item) => ({
+                  invoiceId: createdFallback.id,
                   designation: item.designation,
                   unit: item.unit || "U",
                   quantity: Number(item.quantity),
@@ -1897,9 +1942,18 @@ const actionHandlers = {
                   totalPrice: Number(item.totalPrice),
                   productId: item.productId || null,
                 })),
-              },
-            },
-          });
+              });
+            } catch (itemError) {
+              await prisma.invoice.delete({ where: { id: createdFallback.id } });
+              throw itemError;
+            }
+          }
+          
+          if (createdFallback.clientId) {
+            await updateClientInvoiceCounts(createdFallback.clientId);
+          }
+          
+          return createdFallback;
         }
         throw error;
       }
@@ -2031,28 +2085,44 @@ const actionHandlers = {
           : undefined,
       };
 
-      if (items) {
-        updatePayload.items = {
-          deleteMany: {},
-          create: items.map((item) => ({
-            designation: item.designation,
-            unit: item.unit || "U",
-            quantity: Number(item.quantity),
-            unitPrice: Number(item.unitPrice),
-            totalPrice: Number(item.totalPrice),
-            productId: item.productId || null,
-          })),
-        };
-      }
+      const { items: _, ...headerPayload } = updatePayload;
 
       await prisma.invoice.updateMany({
         where: { id, userId },
-        data: updatePayload,
+        data: headerPayload,
       });
-      return await prisma.invoice.findUnique({
+
+      if (items) {
+        // Replace items: delete old ones first, then create new ones
+        // This is the non-atomic equivalent of a nested update
+        await prisma.invoiceItem.deleteMany({ where: { invoiceId: id } });
+        
+        if (items.length > 0) {
+          await prisma.invoiceItem.createMany({
+            data: items.map((item) => ({
+              invoiceId: id,
+              designation: item.designation,
+              unit: item.unit || "U",
+              quantity: Number(item.quantity),
+              unitPrice: Number(item.unitPrice),
+              totalPrice: Number(item.totalPrice),
+              productId: item.productId || null,
+            })),
+          });
+        }
+      }
+
+      const updated = await prisma.invoice.findUnique({
         where: { id, userId },
         include: { items: true, client: true, company: true },
       });
+
+      // Update client counts
+      if (updated?.clientId) {
+        await updateClientInvoiceCounts(updated.clientId);
+      }
+
+      return updated;
     },
     patch: async (userId, id, data) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
@@ -2084,26 +2154,53 @@ const actionHandlers = {
         where: { id, userId },
         data: updateData,
       });
-      return await prisma.invoice.findUnique({ where: { id, userId } });
+
+      const updated = await prisma.invoice.findUnique({ where: { id, userId } });
+      
+      if (updated?.clientId) {
+        await updateClientInvoiceCounts(updated.clientId);
+      }
+
+      return updated;
     },
     delete: async (userId, id) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
-      return await prisma.invoice.delete({
+      const invoice = await prisma.invoice.findUnique({ where: { id, userId } });
+      if (!invoice) throw new Error("Facture non trouvée");
+
+      await prisma.invoice.deleteMany({
         where: { id, userId },
       });
+
+      if (invoice.clientId) {
+        await updateClientInvoiceCounts(invoice.clientId);
+      }
+      return { success: true };
     },
     markAsViewed: async (userId, id) => {
+      // Use findUnique first to check current status
       const currentInvoice = await prisma.invoice.findUnique({ where: { id } });
-      await prisma.invoice.updateMany({
-        where: { id: id },
-        data: {
-          isRead: true,
-          readAt: new Date(),
-          status: {
-            set: currentInvoice?.status === "draft" ? "draft" : "pending",
+      const newStatus = currentInvoice?.status === "draft" ? "draft" : "pending";
+
+      // Use runCommandRaw to bypass transaction engine
+      await prisma.$runCommandRaw({
+        update: "Invoice",
+        updates: [
+          {
+            q: { _id: { $oid: id } },
+            u: {
+              $set: {
+                isRead: true,
+                readAt: { $date: new Date().toISOString() },
+                status: newStatus,
+                updatedAt: { $date: new Date().toISOString() },
+              },
+            },
+            multi: false,
           },
-        },
+        ],
       });
+
       return await prisma.invoice.findUnique({ where: { id } });
     },
   },
@@ -2507,7 +2604,7 @@ const actionHandlers = {
           where: { id: tx.id },
           data: { status: "success", processedAt: new Date() },
         });
-        
+
         await prisma.user.updateMany({
           where: { id: userId },
           data: {

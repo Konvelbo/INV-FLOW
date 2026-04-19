@@ -115,19 +115,34 @@ async function processRecurringInvoices(mainWindow) {
           isRecurring: false,
           createdAt: now,
           updatedAt: now,
-          items: {
-            create: items.map((item) => {
+        },
+      });
+
+      if (items && items.length > 0) {
+        try {
+          await prisma.invoiceItem.createMany({
+            data: items.map((item) => {
               const { id: itemId, invoiceId, ...itemData } = item;
               return {
                 ...itemData,
+                invoiceId: createdInvoice.id,
                 quantity: Number(itemData.quantity),
                 unitPrice: Number(itemData.unitPrice),
                 totalPrice: Number(itemData.totalPrice),
               };
             }),
-          },
-        },
-      });
+          });
+        } catch (itemError) {
+          // Manual Rollback to maintain atomicity
+          await prisma.invoice.delete({ where: { id: createdInvoice.id } });
+          throw itemError;
+        }
+      }
+
+      // Update client counts
+      if (template.clientId) {
+        await updateClientInvoiceCounts(template.clientId);
+      }
 
 
 
@@ -404,3 +419,30 @@ async function runCycle(mainWindow) {
 }
 
 module.exports = { startAutomationService };
+
+/**
+ * Updates a client's invoice counts in the database.
+ */
+async function updateClientInvoiceCounts(clientId) {
+  if (!clientId) return;
+  try {
+    const [paidCount, unpaidCount] = await Promise.all([
+      prisma.invoice.count({
+        where: { clientId, status: "paid" },
+      }),
+      prisma.invoice.count({
+        where: { clientId, status: { in: ["pending", "overdue", "draft"] } },
+      }),
+    ]);
+
+    await prisma.client.update({
+      where: { id: clientId },
+      data: {
+        paidInvoicesCount: paidCount,
+        unpaidInvoicesCount: unpaidCount,
+      },
+    });
+  } catch (err) {
+    console.error("Failed to update client invoice counts", err);
+  }
+}

@@ -15,13 +15,22 @@ export async function GET(request: Request) {
 
     if (id) {
       try {
-        // updateMany avoids the need for Replica Set Transactions in many MongoDB environments
-        await prisma.invoice.updateMany({
-          where: { id },
-          data: {
-            isRead: true,
-            readAt: new Date(),
-          },
+        // Using runCommandRaw to bypass Prisma's transaction engine which requires Replica Sets on MongoDB
+        await (prisma as any).$runCommandRaw({
+          update: "Invoice",
+          updates: [
+            {
+              q: { _id: { $oid: id } },
+              u: {
+                $set: {
+                  isRead: true,
+                  readAt: { $date: new Date().toISOString() },
+                  updatedAt: { $date: new Date().toISOString() },
+                },
+              },
+              multi: false,
+            },
+          ],
         });
       } catch (dbError) {
         console.error("Tracking database error:", dbError);

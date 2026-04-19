@@ -153,8 +153,8 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setItemsArr(data.items || []);
       setStyle(data.style || "default");
       setClientId(data.clientId || null);
-      setClientPaidCount(data.clientPaidCount || 0);
-      setClientUnpaidCount(data.clientUnpaidCount || 0);
+      setClientPaidCount(data.clientPaidCount || (data as any).client?.paidInvoicesCount || 0);
+      setClientUnpaidCount(data.clientUnpaidCount || (data as any).client?.unpaidInvoicesCount || 0);
       setInvoiceType((data.invoiceType as "invoice" | "quote") || "invoice");
       setCompanyName(data.companyName || "");
       setCompanyAddress(data.companyAddress || "");
