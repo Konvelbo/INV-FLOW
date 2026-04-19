@@ -8,7 +8,7 @@
     "electron:dev": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "electron:build": "wait-on http://localhost:3000 && cross-env NODE_ENV=production electron-builder --dir",
     "electron:dist": "node scripts/electron-build.js && electron-builder",
-    "build": "node -e \"const fs = require('fs'); const isVercel = !!process.env.VERCEL; if (fs.existsSync('.next')) fs.rmSync('.next', { recursive: true, force: true }); let moved = false; if (!isVercel && fs.existsSync('app/api')) { fs.renameSync('app/api', 'app/_api'); moved = true; } try { require('child_process').execSync('npx prisma generate && next build', {stdio: 'inherit'}); } finally { if (moved && fs.existsSync('app/_api')) fs.renameSync('app/_api', 'app/api'); }\"",
+    "build": "node scripts/electron-build.js",
     "start": "next start",
     "lint": "eslint"
   },
@@ -40,10 +40,9 @@
       "perMachine": false
     },
     "files": [
-      ".next/**/*",
+      "out/**/*",
       "public/**/*",
       "electron/**/*",
-      "main.js",
       "package.json",
       "node_modules/**/*",
       "src/p_client/**/*"

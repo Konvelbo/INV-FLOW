@@ -326,7 +326,8 @@ async function sendInvoiceEmail(invoice, isReminder = false, stage = null) {
 }
 
 const { BrowserWindow } = require("electron");
-let lastCheckTime = new Date();
+// Initialize to 24h ago to catch reads that happened while the app was closed
+let lastCheckTime = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
 async function pollReadInvoices() {
   try {

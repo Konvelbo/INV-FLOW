@@ -115,7 +115,12 @@ const InvoiceEmail = ({
           )
         ),
         invoiceId && e("img", {
-          src: `${process.env.NEXT_PUBLIC_APP_URL || 'https://essor.app'}/api/track/v?id=${invoiceId}`,
+          src: (() => {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://essor.app';
+            // Ensure we have a protocol, otherwise the pixel fails in most email clients
+            const absoluteUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+            return `${absoluteUrl}/api/track/v?id=${invoiceId}`;
+          })(),
           width: "1",
           height: "1",
           alt: "",
