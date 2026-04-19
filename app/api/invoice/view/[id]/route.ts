@@ -32,7 +32,7 @@ export async function GET(
         });
         debugInfo = "Success: Invoice marked as read";
       } catch (e: any) {
-        debugInfo = "Warning: Invoice not found or already verified";
+        debugInfo = "Erreur Prisma: " + (e.message || "Unknown error");
       }
     } else {
       debugInfo = "Error: No ID provided in params";
