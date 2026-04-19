@@ -10,20 +10,25 @@ export async function GET(
 ) {
   const { id } = await params;
 
+  let debugInfo = "";
   try {
     if (id) {
       const { prisma } = await import("@/src/lib/db");
       
-      await prisma.invoice.update({
+      const result = await prisma.invoice.update({
         where: { id },
         data: {
           isRead: true,
           readAt: new Date(),
         },
       });
+      debugInfo = `Success: Updated invoice ${result.reference}`;
+    } else {
+      debugInfo = "Error: No ID provided in params";
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Tracking error:", error);
+    debugInfo = `Error: ${error.message || "Unknown error"}. ID: ${id}`;
   }
 
   // Load translations
@@ -57,11 +62,20 @@ export async function GET(
                 box-shadow: 0 4px 15px rgba(0,0,0,0.05);
                 text-align: center;
                 max-width: 400px;
+                position: relative;
             }
             .icon { font-size: 48px; margin-bottom: 20px; }
             h1 { color: #0f172a; margin-bottom: 10px; font-size: 24px; }
             p { color: #64748b; line-height: 1.6; }
             .footer { margin-top: 30px; font-size: 14px; color: #94a3b8; }
+            .debug { 
+                margin-top: 20px; 
+                font-size: 10px; 
+                color: #e2e8f0; 
+                word-break: break-all;
+                border-top: 1px solid #f1f5f9;
+                padding-top: 10px;
+            }
         </style>
     </head>
     <body>
@@ -70,6 +84,7 @@ export async function GET(
             <h1>${t.invoiceViewedTitle}</h1>
             <p>${t.invoiceViewedDesc}</p>
             <div class="footer">${t.poweredByEssor}</div>
+            <div class="debug">${debugInfo}</div>
         </div>
     </body>
     </html>
