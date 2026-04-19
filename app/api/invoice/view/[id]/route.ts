@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+// Use relative paths to ensure reliability on Vercel deployment environments
+import { prisma } from "../../../../../src/lib/db";
+import { translations } from "../../../../../src/lib/translations";
 
 /**
  * Handles clicks from the "View Online" link in emails. 
@@ -9,12 +12,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const langParam = searchParams.get("lang") || "fr";
+  const lang = (langParam === "en" || langParam === "fr") ? langParam : "fr";
+  const t = translations[lang];
 
   let debugInfo = "";
   try {
     if (id) {
-      const { prisma } = await import("@/src/lib/db");
-      
       const result = await prisma.invoice.update({
         where: { id },
         data: {
@@ -30,10 +35,6 @@ export async function GET(
     console.error("Tracking error:", error);
     debugInfo = `Error: ${error.message || "Unknown error"}. ID: ${id}`;
   }
-
-  // Load translations
-  const { translations } = await import("@/src/lib/translations");
-  const t = translations[lang];
 
   // Return a professional-looking "Thank You" page in HTML
   return new NextResponse(
