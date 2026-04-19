@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-// Use relative paths to ensure reliability on Vercel deployment environments
-import { prisma } from "../../../../../src/lib/db";
+// Use native mongodb driver for Vercel to bypass Prisma's transaction engine bug
+import { MongoClient, ObjectId } from "mongodb";
 import { translations } from "../../../../../src/lib/translations";
 
 /**
@@ -18,28 +18,33 @@ export async function GET(
   const t = translations[lang];
 
   let debugInfo = "";
+  let client;
   try {
     if (id) {
-      // Using standard atomic update which does not require transactions
-      // and properly handles connection pooling in serverless environments
       try {
-        await prisma.$runCommandRaw({
-          update: "Invoice",
-          updates: [
-            {
-              q: { _id: { $oid: id } },
-              u: {
-                $set: {
-                  isRead: true,
-                  readAt: { $date: new Date().toISOString() },
-                },
-              },
-            },
-          ],
-        });
-        debugInfo = "Success: Invoice marked as read";
+        if (!process.env.DATABASE_URL) {
+          throw new Error("DATABASE_URL est manquant");
+        }
+        client = new MongoClient(process.env.DATABASE_URL);
+        await client.connect();
+        const db = client.db();
+        
+        const result = await db.collection("Invoice").updateOne(
+          { _id: new ObjectId(id) },
+          { 
+            $set: { 
+              isRead: true, 
+              readAt: new Date() 
+            } 
+          }
+        );
+        debugInfo = "Success: Invoice marked as read. Matched: " + result.matchedCount;
       } catch (e: any) {
-        debugInfo = "Erreur Prisma: " + (e.message || "Unknown error");
+        debugInfo = "Erreur MongoDB Native: " + (e.message || "Unknown error");
+      } finally {
+        if (client) {
+          await client.close();
+        }
       }
     } else {
       debugInfo = "Error: No ID provided in params";
@@ -104,7 +109,12 @@ export async function GET(
     </html>
     `,
     {
-      headers: { "Content-Type": "text/html" },
+      headers: { 
+        "Content-Type": "text/html",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      },
     }
   );
 }

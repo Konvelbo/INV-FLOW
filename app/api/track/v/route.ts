@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-// Use relative paths for maximum reliability in Vercel serverless environments
-import { prisma } from "../../../../src/lib/db";
+import { MongoClient, ObjectId } from "mongodb";
 
 // 1x1 transparent base64 image (gif)
 const TRANSPARENT_GIF_BUFFER = Buffer.from(
@@ -9,31 +8,31 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
 );
 
 export async function GET(request: Request) {
+  let client;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (id) {
       try {
-        // Using standard atomic update which does not require transactions
-        // and properly handles connection pooling in serverless environments
-        await prisma.$runCommandRaw({
-          update: "Invoice",
-          updates: [
-            {
-              q: { _id: { $oid: invoiceId as string } },
-              u: {
-                $set: {
-                  isRead: true,
-                  readAt: { $date: new Date().toISOString() },
-                },
-              },
-            },
-          ],
-        });
+        if (!process.env.DATABASE_URL) {
+          throw new Error("DATABASE_URL est manquant");
+        }
+        client = new MongoClient(process.env.DATABASE_URL);
+        await client.connect();
+        const db = client.db();
+        
+        await db.collection("Invoice").updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { isRead: true, readAt: new Date() } }
+        );
       } catch (dbError) {
         // Ignore errors if invoice is not found
         console.error("Tracking database error:", dbError);
+      } finally {
+        if (client) {
+          await client.close();
+        }
       }
     }
 

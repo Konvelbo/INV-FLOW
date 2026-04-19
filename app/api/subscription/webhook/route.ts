@@ -2,12 +2,10 @@
 // LigdiCash payment webhook — receives payment confirmation and activates subscription
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/src/p_client";
+import { MongoClient, ObjectId } from "mongodb";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
-
-const prisma = new PrismaClient();
 
 async function verifySignature(
   rawBody: string,
@@ -64,56 +62,69 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing reference" }, { status: 400 });
   }
 
-  // Idempotency check: only process once
-  const existingTx = await prisma.paymentTransaction.findUnique({
-    where: { ligdicashRef: reference },
-  });
+  let client;
+  try {
+    if (!process.env.DATABASE_URL) throw new Error("DB URL missing");
+    client = new MongoClient(process.env.DATABASE_URL);
+    await client.connect();
+    const db = client.db();
 
-  if (!existingTx) {
-    return NextResponse.json({ ok: true }); // Acknowledge without error
-  }
-
-  if (existingTx.status === "success") {
-    return NextResponse.json({ ok: true }); // Already processed
-  }
-
-  const isSuccess =
-    status === "completed" ||
-    status === "success" ||
-    payload.response_code === "00";
-
-  if (!isSuccess) {
-    await prisma.paymentTransaction.update({
-      where: { ligdicashRef: reference },
-      data: { status: "failed", processedAt: new Date() },
+    // Idempotency check: only process once
+    const existingTx = await db.collection("PaymentTransaction").findOne({
+      ligdicashRef: reference,
     });
-    return NextResponse.json({ ok: true });
-  }
 
-  // Calculate expiry date
-  const now = new Date();
-  const expiresAt = new Date(now);
-  if (existingTx.plan === "monthly") {
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
-  } else {
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-  }
+    if (!existingTx) {
+      return NextResponse.json({ ok: true }); // Acknowledge without error
+    }
 
-  // Atomic update: activate subscription + mark transaction as success
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: existingTx.userId },
-      data: {
-        subscriptionStatus: "active",
-        subscriptionPlan: existingTx.plan,
-        subscriptionExpiresAt: expiresAt,
-      },
-    }),
-    prisma.paymentTransaction.update({
-      where: { ligdicashRef: reference },
-      data: { status: "success", processedAt: now },
-    }),
-  ]);
+    if (existingTx.status === "success") {
+      return NextResponse.json({ ok: true }); // Already processed
+    }
+
+    const isSuccess =
+      status === "completed" ||
+      status === "success" ||
+      payload.response_code === "00";
+
+    if (!isSuccess) {
+      await db.collection("PaymentTransaction").updateOne(
+        { ligdicashRef: reference },
+        { $set: { status: "failed", processedAt: new Date() } }
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    // Calculate expiry date
+    const now = new Date();
+    const expiresAt = new Date(now);
+    if (existingTx.plan === "monthly") {
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
+    } else {
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+    }
+
+    // Sequential atomic updates using the native driver
+    await db.collection("User").updateOne(
+      { _id: new ObjectId(existingTx.userId.toString()) },
+      {
+        $set: {
+          subscriptionStatus: "active",
+          subscriptionPlan: existingTx.plan,
+          subscriptionExpiresAt: expiresAt,
+        },
+      }
+    );
+
+    await db.collection("PaymentTransaction").updateOne(
+      { ligdicashRef: reference },
+      { $set: { status: "success", processedAt: now } }
+    );
+  } catch (err) {
+    console.error("Webhook DB error", err);
+  } finally {
+    if (client) await client.close();
+  }
 
   return NextResponse.json({ ok: true });
 }
