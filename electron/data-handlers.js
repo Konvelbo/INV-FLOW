@@ -2182,8 +2182,8 @@ const actionHandlers = {
       const currentInvoice = await prisma.invoice.findUnique({ where: { id } });
       const newStatus = currentInvoice?.status === "draft" ? "draft" : "pending";
 
-      // Use standard atomic update which does not require transactions
-      return await prisma.invoice.update({
+      // Use standard atomic updateMany which does not trigger implicit transactions
+      await prisma.invoice.updateMany({
         where: { id },
         data: {
           isRead: true,
@@ -2192,6 +2192,7 @@ const actionHandlers = {
           updatedAt: new Date(),
         },
       });
+      return await prisma.invoice.findUnique({ where: { id } });
     },
   },
   feedback: {

@@ -23,7 +23,7 @@ export async function GET(
       // Using standard atomic update which does not require transactions
       // and properly handles connection pooling in serverless environments
       try {
-        const updatedInvoice = await prisma.invoice.update({
+        await prisma.invoice.updateMany({
           where: { id: id },
           data: {
             isRead: true,
