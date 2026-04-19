@@ -20,14 +20,15 @@ export async function GET(
   let debugInfo = "";
   try {
     if (id) {
-      const result = await prisma.invoice.update({
+      // updateMany avoids the need for Replica Set Transactions in many MongoDB environments
+      const result = await prisma.invoice.updateMany({
         where: { id },
         data: {
           isRead: true,
           readAt: new Date(),
         },
       });
-      debugInfo = `Success: Updated invoice ${result.reference}`;
+      debugInfo = result.count > 0 ? "Success: Invoice marked as read" : "Error: Invoice id not found";
     } else {
       debugInfo = "Error: No ID provided in params";
     }

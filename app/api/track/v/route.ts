@@ -15,7 +15,8 @@ export async function GET(request: Request) {
 
     if (id) {
       try {
-        await prisma.invoice.update({
+        // updateMany avoids the need for Replica Set Transactions in many MongoDB environments
+        await prisma.invoice.updateMany({
           where: { id },
           data: {
             isRead: true,
