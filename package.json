@@ -8,7 +8,7 @@
     "electron:dev": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "electron:build": "wait-on http://localhost:3000 && cross-env NODE_ENV=production electron-builder --dir",
     "electron:dist": "node scripts/electron-build.js && electron-builder",
-    "build": "cross-env NODE_ENV=production node -e \"const { execSync } = require('child_process'); if (process.env.VERCEL) { execSync('npx prisma generate && next build', {stdio: 'inherit'}); } else { require('./scripts/electron-build.js'); }\"",
+    "build": "node scripts/build-switch.js",
     "start": "next start",
     "lint": "eslint"
   },
