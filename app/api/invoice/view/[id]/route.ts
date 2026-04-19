@@ -23,12 +23,19 @@ export async function GET(
       // Using standard atomic update which does not require transactions
       // and properly handles connection pooling in serverless environments
       try {
-        await prisma.invoice.updateMany({
-          where: { id: id },
-          data: {
-            isRead: true,
-            readAt: new Date(),
-          },
+        await prisma.$runCommandRaw({
+          update: "Invoice",
+          updates: [
+            {
+              q: { _id: { $oid: id } },
+              u: {
+                $set: {
+                  isRead: true,
+                  readAt: { $date: new Date().toISOString() },
+                },
+              },
+            },
+          ],
         });
         debugInfo = "Success: Invoice marked as read";
       } catch (e: any) {
