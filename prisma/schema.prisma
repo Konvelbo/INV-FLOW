@@ -44,7 +44,7 @@ model User {
   dailyAiCount          Int       @default(0)
   dailyAiResetAt        DateTime?
   ligdicashCustomerId   String?
-
+  trialUsed             Boolean   @default(false)
   paymentTransactions PaymentTransaction[]
 }
 

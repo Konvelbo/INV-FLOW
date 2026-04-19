@@ -134,7 +134,8 @@ exports.Prisma.UserScalarFieldEnum = {
   dailyInvoiceResetAt: 'dailyInvoiceResetAt',
   dailyAiCount: 'dailyAiCount',
   dailyAiResetAt: 'dailyAiResetAt',
-  ligdicashCustomerId: 'ligdicashCustomerId'
+  ligdicashCustomerId: 'ligdicashCustomerId',
+  trialUsed: 'trialUsed'
 };
 
 exports.Prisma.PaymentTransactionScalarFieldEnum = {

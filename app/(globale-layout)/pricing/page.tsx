@@ -108,6 +108,7 @@ export default function PricingPage() {
   const [pricing, setPricing] = useState<PricingData | null>(null);
   const [loadingPricing, setLoadingPricing] = useState(true);
   const [checkingOut, setCheckingOut] = useState<"monthly" | "yearly" | null>(null);
+  const [activatingTrial, setActivatingTrial] = useState(false);
   const [success, setSuccess] = useState(false);
   const { subscription, refresh } = useSubscription();
   const { performAction } = useIPCAction();
@@ -209,6 +210,24 @@ export default function PricingPage() {
       toast.error(err.message || "Une erreur est survenue.");
     } finally {
       setCheckingOut(null);
+    }
+  };
+
+  const handleActivateTrial = async () => {
+    setActivatingTrial(true);
+    try {
+      const res = await performAction("subscription", "activateFreeTrial");
+      if (res.success) {
+        setSuccess(true);
+        refresh();
+        toast.success(dict.trialActivated || "🎉 Essai gratuit activé ! Profitez de 30 jours de Premium.", { duration: 8000 });
+      } else {
+        toast.error(res.error || "Erreur lors de l'activation de l'essai.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Une erreur est survenue.");
+    } finally {
+      setActivatingTrial(false);
     }
   };
 
@@ -408,7 +427,14 @@ export default function PricingPage() {
                 <Zap className="size-7 text-primary" />
               </motion.div>
               <div>
-                <h2 className="text-2xl font-black">{dict.monthlyPlan || "Mensuel"}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-black">{dict.monthlyPlan || "Mensuel"}</h2>
+                  {subscription?.isTrialEligible && (
+                    <span className="px-2 py-0.5 rounded-md bg-primary text-white text-[10px] font-bold animate-pulse">
+                      {dict.offered || "OFFERT"}
+                    </span>
+                  )}
+                </div>
                 <p className="text-muted-foreground text-sm mt-1">{dict.pricing_cancel_anytime || "Accès complet, résiliable à tout moment"}</p>
               </div>
             </div>
@@ -432,8 +458,8 @@ export default function PricingPage() {
             </ul>
 
             <motion.button
-              onClick={() => handleSubscribe("monthly")}
-              disabled={checkingOut !== null || currentPlan === "monthly"}
+              onClick={subscription?.isTrialEligible ? handleActivateTrial : () => handleSubscribe("monthly")}
+              disabled={checkingOut !== null || activatingTrial || currentPlan === "monthly"}
               whileHover={
                 checkingOut === null && currentPlan !== "monthly"
                   ? { scale: 1.03, y: -2 }
@@ -457,10 +483,12 @@ export default function PricingPage() {
               {currentPlan !== "monthly" && (
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
               )}
-              {checkingOut === "monthly" ? (
+              {checkingOut === "monthly" || activatingTrial ? (
                 <><Loader2 className="size-4 animate-spin" /> {dict.processing || "Traitement..."}</>
               ) : currentPlan === "monthly" ? (
                 dict.pricing_current || "✓ Plan actuel"
+              ) : subscription?.isTrialEligible ? (
+                <><Sparkles className="size-4" /> {dict.start_free_trial || "Essai gratuit (30 jours)"}</>
               ) : (
                 <><Zap className="size-4" /> {dict.pricing_choose || "Choisir ce plan"}</>
               )}

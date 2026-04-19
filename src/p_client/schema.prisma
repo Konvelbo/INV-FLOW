@@ -36,16 +36,16 @@ model User {
   resetOtpExpiry DateTime?
 
   // Subscription
-  subscriptionStatus    String    @default("free") // "free" | "active" | "expired"
-  subscriptionPlan      String    @default("free") // "free" | "monthly" | "yearly"
+  subscriptionStatus    String               @default("free") // "free" | "active" | "expired"
+  subscriptionPlan      String               @default("free") // "free" | "monthly" | "yearly"
   subscriptionExpiresAt DateTime?
-  dailyInvoiceCount     Int       @default(0)
+  dailyInvoiceCount     Int                  @default(0)
   dailyInvoiceResetAt   DateTime?
-  dailyAiCount          Int       @default(0)
+  dailyAiCount          Int                  @default(0)
   dailyAiResetAt        DateTime?
   ligdicashCustomerId   String?
-
-  paymentTransactions PaymentTransaction[]
+  trialUsed             Boolean              @default(false)
+  paymentTransactions   PaymentTransaction[]
 }
 
 model PaymentTransaction {

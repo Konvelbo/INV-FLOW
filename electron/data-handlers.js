@@ -45,6 +45,7 @@ async function getUserPlan(userId) {
       subscriptionExpiresAt: true,
       dailyInvoiceCount: true,
       dailyInvoiceResetAt: true,
+      trialUsed: true,
     },
   });
   if (!user) {
@@ -69,7 +70,7 @@ async function getUserPlan(userId) {
     user.subscriptionExpiresAt < now &&
     status === "active"
   ) {
-    await prisma.user.update({
+    await prisma.user.updateMany({
       where: { id: userId },
       data: { subscriptionStatus: "expired" },
     });
@@ -84,6 +85,7 @@ async function getUserPlan(userId) {
     expiresAt: user.subscriptionExpiresAt,
     dailyInvoiceCount: user.dailyInvoiceCount,
     dailyInvoiceResetAt: user.dailyInvoiceResetAt,
+    trialUsed: user.trialUsed || false,
   };
 }
 
@@ -99,7 +101,7 @@ async function checkInvoiceQuota(userId) {
 
   // Reset counter if it's a new day
   if (!resetDate || resetDate < today) {
-    await prisma.user.update({
+    await prisma.user.updateMany({
       where: { id: userId },
       data: { dailyInvoiceCount: 0, dailyInvoiceResetAt: today },
     });
@@ -121,7 +123,7 @@ async function checkInvoiceQuota(userId) {
 async function incrementInvoiceCount(userId) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  await prisma.user.update({
+  await prisma.user.updateMany({
     where: { id: userId },
     data: { dailyInvoiceCount: { increment: 1 }, dailyInvoiceResetAt: today },
   });
@@ -1228,7 +1230,7 @@ const actionHandlers = {
     },
     update: async (userId, id, data) => {
       const validData = sanitizeData(data, true);
-      return await prisma.company.update({
+      await prisma.company.updateMany({
         where: { id, userId },
         data: {
           ...validData,
@@ -1243,6 +1245,7 @@ const actionHandlers = {
             : null,
         },
       });
+      return await prisma.company.findUnique({ where: { id, userId } });
     },
     delete: async (userId, id) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
@@ -1265,10 +1268,11 @@ const actionHandlers = {
         const logoUrl = result.secure_url;
 
         if (companyId) {
-          const company = await prisma.company.update({
+          await prisma.company.updateMany({
             where: { id: companyId, userId },
             data: { logoUrl },
           });
+          const company = await prisma.company.findUnique({ where: { id: companyId, userId } });
           return { success: true, logoUrl: company.logoUrl };
         }
         return { success: true, logoUrl };
@@ -1278,10 +1282,11 @@ const actionHandlers = {
     },
     setActive: async (userId, companyId) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
-      return await prisma.user.update({
+      await prisma.user.updateMany({
         where: { id: userId },
         data: { activeCompanyId: companyId },
       });
+      return await prisma.user.findUnique({ where: { id: userId } });
     },
     getActive: async (userId) => {
       const activeId = await getActiveCompanyId(userId);
@@ -1733,10 +1738,11 @@ const actionHandlers = {
       });
     },
     update: async (userId, id, data) => {
-      return await prisma.client.update({
+      await prisma.client.updateMany({
         where: { id, userId },
         data: sanitizeData(data, false),
       });
+      return await prisma.client.findUnique({ where: { id, userId } });
     },
     delete: async (userId, id) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
@@ -1757,10 +1763,11 @@ const actionHandlers = {
       });
     },
     update: async (userId, id, data) => {
-      return await prisma.product.update({
+      await prisma.product.updateMany({
         where: { id, userId },
         data: sanitizeData(data, false),
       });
+      return await prisma.product.findUnique({ where: { id, userId } });
     },
     delete: async (userId, id) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
@@ -1785,13 +1792,14 @@ const actionHandlers = {
     },
     update: async (userId, id, data) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
-      return await prisma.expense.update({
+      await prisma.expense.updateMany({
         where: { id, userId },
         data: {
           ...sanitizeData(data, true),
           date: data.date ? new Date(data.date) : undefined,
         },
       });
+      return await prisma.expense.findUnique({ where: { id, userId } });
     },
     delete: async (userId, id) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
@@ -2037,9 +2045,13 @@ const actionHandlers = {
         };
       }
 
-      return await prisma.invoice.update({
+      await prisma.invoice.updateMany({
         where: { id, userId },
         data: updatePayload,
+      });
+      return await prisma.invoice.findUnique({
+        where: { id, userId },
+        include: { items: true, client: true, company: true },
       });
     },
     patch: async (userId, id, data) => {
@@ -2068,10 +2080,11 @@ const actionHandlers = {
         updateData.isScaled = false;
       }
 
-      return await prisma.invoice.update({
+      await prisma.invoice.updateMany({
         where: { id, userId },
         data: updateData,
       });
+      return await prisma.invoice.findUnique({ where: { id, userId } });
     },
     delete: async (userId, id) => {
       if (!userId) throw new Error("ERR_AUTH_REQUIRED");
@@ -2080,20 +2093,18 @@ const actionHandlers = {
       });
     },
     markAsViewed: async (userId, id) => {
-      return await prisma.invoice.update({
+      const currentInvoice = await prisma.invoice.findUnique({ where: { id } });
+      await prisma.invoice.updateMany({
         where: { id: id },
         data: {
           isRead: true,
           readAt: new Date(),
           status: {
-            set:
-              (await prisma.invoice.findUnique({ where: { id } }))?.status ===
-                "draft"
-                ? "draft"
-                : "pending",
+            set: currentInvoice?.status === "draft" ? "draft" : "pending",
           },
         },
       });
+      return await prisma.invoice.findUnique({ where: { id } });
     },
   },
   feedback: {
@@ -2228,12 +2239,13 @@ const actionHandlers = {
         const result = await cloudinary.uploader.upload(image, options);
 
         // result.secure_url = URL finale de l'image
-        const user = await prisma.user.update({
+        await prisma.user.updateMany({
           where: { id: userId || "" },
           data: {
             avatar: result.secure_url,
           },
         });
+        const user = await prisma.user.findUnique({ where: { id: userId || "" } });
 
         return {
           success: true,
@@ -2255,7 +2267,7 @@ const actionHandlers = {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-      await prisma.user.update({
+      await prisma.user.updateMany({
         where: { email },
         data: {
           resetOtp: otp,
@@ -2302,7 +2314,7 @@ const actionHandlers = {
 
       // Update password and clear OTP
       const hashedPassword = bcrypt.hashSync(newPassword, 12);
-      await prisma.user.update({
+      await prisma.user.updateMany({
         where: { email },
         data: {
           password: hashedPassword,
@@ -2326,7 +2338,7 @@ const actionHandlers = {
       });
     },
     update: async (userId, id, data) => {
-      return await prisma.todo.update({
+      await prisma.todo.updateMany({
         where: { id, userId },
         data: {
           ...sanitizeData(data, true),
@@ -2334,6 +2346,7 @@ const actionHandlers = {
           endTime: data.endTime ? new Date(data.endTime) : undefined,
         },
       });
+      return await prisma.todo.findUnique({ where: { id, userId } });
     },
     delete: async (userId, id) => {
       return await prisma.todo.delete({
@@ -2489,20 +2502,20 @@ const actionHandlers = {
         if (tx.plan === "monthly") expiresAt.setMonth(expiresAt.getMonth() + 1);
         else expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-        await prisma.$transaction([
-          prisma.paymentTransaction.update({
-            where: { id: tx.id },
-            data: { status: "success", processedAt: new Date() },
-          }),
-          prisma.user.update({
-            where: { id: userId },
-            data: {
-              subscriptionPlan: tx.plan,
-              subscriptionStatus: "active",
-              subscriptionExpiresAt: expiresAt,
-            },
-          }),
-        ]);
+        // Explicitly breaking the transaction into separate updates for non-replica set MongoDB compatibility
+        await prisma.paymentTransaction.updateMany({
+          where: { id: tx.id },
+          data: { status: "success", processedAt: new Date() },
+        });
+        
+        await prisma.user.updateMany({
+          where: { id: userId },
+          data: {
+            subscriptionPlan: tx.plan,
+            subscriptionStatus: "active",
+            subscriptionExpiresAt: expiresAt,
+          },
+        });
         tx.status = "success";
       }
 
@@ -2546,6 +2559,35 @@ const actionHandlers = {
       } catch (err) {
         return await actionHandlers.subscription.getPricing("USD");
       }
+    },
+    activateFreeTrial: async (userId) => {
+      if (!userId) throw new Error("ERR_AUTH_REQUIRED");
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { trialUsed: true, subscriptionPlan: true },
+      });
+
+      if (!user) throw new Error("Utilisateur introuvable.");
+      if (user.trialUsed) throw new Error("L'essai gratuit a déjà été utilisé.");
+      if (user.subscriptionPlan !== "free")
+        throw new Error("Vous avez déjà un abonnement actif.");
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days trial
+
+      // Transaction-less update
+      await prisma.user.updateMany({
+        where: { id: userId },
+        data: {
+          subscriptionPlan: "monthly",
+          subscriptionStatus: "active",
+          subscriptionExpiresAt: expiresAt,
+          trialUsed: true,
+        },
+      });
+
+      return { success: true, expiresAt: expiresAt.toISOString() };
     },
   },
   ai: {
@@ -2685,7 +2727,7 @@ ${dataSummary}`;
         }
 
         // 5. Increment Quota
-        await prisma.user.update({
+        await prisma.user.updateMany({
           where: { id: userId },
           data: {
             dailyAiCount: currentCount + 1,
@@ -2726,6 +2768,7 @@ handlers.subscription = async (userId) => {
     hasAIAccess: info.plan !== "free" && info.isActive,
     hasUnlimitedCompanies: info.plan !== "free" && info.isActive,
     hasUnlimitedInvoices: info.plan !== "free" && info.isActive,
+    isTrialEligible: !info.trialUsed && info.plan === "free",
   };
 };
 

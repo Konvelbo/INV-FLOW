@@ -2286,6 +2286,7 @@ export namespace Prisma {
     dailyAiCount: number | null
     dailyAiResetAt: Date | null
     ligdicashCustomerId: string | null
+    trialUsed: boolean | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -2309,6 +2310,7 @@ export namespace Prisma {
     dailyAiCount: number | null
     dailyAiResetAt: Date | null
     ligdicashCustomerId: string | null
+    trialUsed: boolean | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -2332,6 +2334,7 @@ export namespace Prisma {
     dailyAiCount: number
     dailyAiResetAt: number
     ligdicashCustomerId: number
+    trialUsed: number
     _all: number
   }
 
@@ -2367,6 +2370,7 @@ export namespace Prisma {
     dailyAiCount?: true
     dailyAiResetAt?: true
     ligdicashCustomerId?: true
+    trialUsed?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -2390,6 +2394,7 @@ export namespace Prisma {
     dailyAiCount?: true
     dailyAiResetAt?: true
     ligdicashCustomerId?: true
+    trialUsed?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -2413,6 +2418,7 @@ export namespace Prisma {
     dailyAiCount?: true
     dailyAiResetAt?: true
     ligdicashCustomerId?: true
+    trialUsed?: true
     _all?: true
   }
 
@@ -2523,6 +2529,7 @@ export namespace Prisma {
     dailyAiCount: number
     dailyAiResetAt: Date | null
     ligdicashCustomerId: string | null
+    trialUsed: boolean
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -2565,6 +2572,7 @@ export namespace Prisma {
     dailyAiCount?: boolean
     dailyAiResetAt?: boolean
     ligdicashCustomerId?: boolean
+    trialUsed?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     invoices?: boolean | User$invoicesArgs<ExtArgs>
@@ -2602,9 +2610,10 @@ export namespace Prisma {
     dailyAiCount?: boolean
     dailyAiResetAt?: boolean
     ligdicashCustomerId?: boolean
+    trialUsed?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "avatar" | "emailVerified" | "image" | "activeCompanyId" | "createdAt" | "updatedAt" | "resetOtp" | "resetOtpExpiry" | "subscriptionStatus" | "subscriptionPlan" | "subscriptionExpiresAt" | "dailyInvoiceCount" | "dailyInvoiceResetAt" | "dailyAiCount" | "dailyAiResetAt" | "ligdicashCustomerId", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "avatar" | "emailVerified" | "image" | "activeCompanyId" | "createdAt" | "updatedAt" | "resetOtp" | "resetOtpExpiry" | "subscriptionStatus" | "subscriptionPlan" | "subscriptionExpiresAt" | "dailyInvoiceCount" | "dailyInvoiceResetAt" | "dailyAiCount" | "dailyAiResetAt" | "ligdicashCustomerId" | "trialUsed", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -2656,6 +2665,7 @@ export namespace Prisma {
       dailyAiCount: number
       dailyAiResetAt: Date | null
       ligdicashCustomerId: string | null
+      trialUsed: boolean
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -3079,6 +3089,7 @@ export namespace Prisma {
     readonly dailyAiCount: FieldRef<"User", 'Int'>
     readonly dailyAiResetAt: FieldRef<"User", 'DateTime'>
     readonly ligdicashCustomerId: FieldRef<"User", 'String'>
+    readonly trialUsed: FieldRef<"User", 'Boolean'>
   }
     
 
@@ -18399,7 +18410,8 @@ export namespace Prisma {
     dailyInvoiceResetAt: 'dailyInvoiceResetAt',
     dailyAiCount: 'dailyAiCount',
     dailyAiResetAt: 'dailyAiResetAt',
-    ligdicashCustomerId: 'ligdicashCustomerId'
+    ligdicashCustomerId: 'ligdicashCustomerId',
+    trialUsed: 'trialUsed'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -18725,6 +18737,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -18735,13 +18754,6 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
   /**
    * Deep Input Types
@@ -18772,6 +18784,7 @@ export namespace Prisma {
     dailyAiCount?: IntFilter<"User"> | number
     dailyAiResetAt?: DateTimeNullableFilter<"User"> | Date | string | null
     ligdicashCustomerId?: StringNullableFilter<"User"> | string | null
+    trialUsed?: BoolFilter<"User"> | boolean
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
     invoices?: InvoiceListRelationFilter
@@ -18806,6 +18819,7 @@ export namespace Prisma {
     dailyAiCount?: SortOrder
     dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
+    trialUsed?: SortOrder
     accounts?: AccountOrderByRelationAggregateInput
     sessions?: SessionOrderByRelationAggregateInput
     invoices?: InvoiceOrderByRelationAggregateInput
@@ -18843,6 +18857,7 @@ export namespace Prisma {
     dailyAiCount?: IntFilter<"User"> | number
     dailyAiResetAt?: DateTimeNullableFilter<"User"> | Date | string | null
     ligdicashCustomerId?: StringNullableFilter<"User"> | string | null
+    trialUsed?: BoolFilter<"User"> | boolean
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
     invoices?: InvoiceListRelationFilter
@@ -18877,6 +18892,7 @@ export namespace Prisma {
     dailyAiCount?: SortOrder
     dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
+    trialUsed?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -18908,6 +18924,7 @@ export namespace Prisma {
     dailyAiCount?: IntWithAggregatesFilter<"User"> | number
     dailyAiResetAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     ligdicashCustomerId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    trialUsed?: BoolWithAggregatesFilter<"User"> | boolean
   }
 
   export type PaymentTransactionWhereInput = {
@@ -20267,6 +20284,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -20301,6 +20319,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -20334,6 +20353,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -20367,6 +20387,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -20401,6 +20422,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
   }
 
   export type UserUpdateManyMutationInput = {
@@ -20423,6 +20445,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -20445,6 +20468,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type PaymentTransactionCreateInput = {
@@ -21978,6 +22002,11 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type AccountListRelationFilter = {
     every?: AccountWhereInput
     some?: AccountWhereInput
@@ -22109,6 +22138,7 @@ export namespace Prisma {
     dailyAiCount?: SortOrder
     dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
+    trialUsed?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -22137,6 +22167,7 @@ export namespace Prisma {
     dailyAiCount?: SortOrder
     dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
+    trialUsed?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -22160,6 +22191,7 @@ export namespace Prisma {
     dailyAiCount?: SortOrder
     dailyAiResetAt?: SortOrder
     ligdicashCustomerId?: SortOrder
+    trialUsed?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
@@ -22233,6 +22265,14 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -22648,11 +22688,6 @@ export namespace Prisma {
     taxRate?: SortOrder
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type ExpenseCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
@@ -22704,14 +22739,6 @@ export namespace Prisma {
 
   export type ExpenseSumOrderByAggregateInput = {
     amount?: SortOrder
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type TodoCountOrderByAggregateInput = {
@@ -23328,6 +23355,10 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type AccountUpdateManyWithoutUserNestedInput = {
@@ -24020,10 +24051,6 @@ export namespace Prisma {
     connect?: CompanyWhereUniqueInput
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
   export type UserUpdateOneRequiredWithoutExpensesNestedInput = {
     create?: XOR<UserCreateWithoutExpensesInput, UserUncheckedCreateWithoutExpensesInput>
     connectOrCreate?: UserCreateOrConnectWithoutExpensesInput
@@ -24284,6 +24311,11 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -24373,6 +24405,14 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -24458,19 +24498,6 @@ export namespace Prisma {
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
     isSet?: boolean
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -25391,6 +25418,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -25424,6 +25452,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -25472,6 +25501,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -25504,6 +25534,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -25537,6 +25568,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -25570,6 +25602,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -25899,6 +25932,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -25931,6 +25965,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -26044,6 +26079,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -26077,6 +26113,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -26289,6 +26326,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -26321,6 +26359,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -26504,6 +26543,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -26537,6 +26577,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -26654,6 +26695,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -26686,6 +26728,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -26719,6 +26762,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -26752,6 +26796,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -26865,6 +26910,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -26897,6 +26943,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -26999,6 +27046,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -27032,6 +27080,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -27145,6 +27194,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -27177,6 +27227,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -27409,6 +27460,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
@@ -27442,6 +27494,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
@@ -27657,6 +27710,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
@@ -27689,6 +27743,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
@@ -27946,6 +28001,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -27979,6 +28035,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -28027,6 +28084,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -28059,6 +28117,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -28092,6 +28151,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
@@ -28125,6 +28185,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
@@ -28173,6 +28234,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
@@ -28205,6 +28267,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
@@ -28238,6 +28301,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     sessions?: SessionCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
     todos?: TodoCreateNestedManyWithoutUserInput
@@ -28271,6 +28335,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
@@ -28319,6 +28384,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     sessions?: SessionUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
@@ -28351,6 +28417,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
@@ -28384,6 +28451,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
     invoices?: InvoiceCreateNestedManyWithoutAuthorInput
     todos?: TodoCreateNestedManyWithoutUserInput
@@ -28417,6 +28485,7 @@ export namespace Prisma {
     dailyAiCount?: number
     dailyAiResetAt?: Date | string | null
     ligdicashCustomerId?: string | null
+    trialUsed?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutAuthorInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
@@ -28465,6 +28534,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUpdateManyWithoutAuthorNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
@@ -28497,6 +28567,7 @@ export namespace Prisma {
     dailyAiCount?: IntFieldUpdateOperationsInput | number
     dailyAiResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ligdicashCustomerId?: NullableStringFieldUpdateOperationsInput | string | null
+    trialUsed?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutAuthorNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
