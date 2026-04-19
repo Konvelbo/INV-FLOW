@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         const { PrismaClient } = await import("@/src/p_client");
         const prisma = new PrismaClient();
 
-        await prisma.invoice.updateMany({
+        await prisma.invoice.update({
           where: { id },
           data: {
             isRead: true,

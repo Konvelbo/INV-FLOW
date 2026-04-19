@@ -104,6 +104,17 @@ const InvoiceEmail = ({
               : "Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :",
             e("br", null),
             e("a", { href: downloadLink, style: link }, downloadLink)
+          ),
+          // Add "View Online" secondary link for guaranteed tracking
+          invoiceId && e(Section, { style: { textAlign: "center", marginTop: "10px" } },
+            e("a", { 
+              href: (() => {
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://essor.app';
+                const absoluteUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+                return `${absoluteUrl}/api/invoice/view/${invoiceId}?lang=${isEn ? 'en' : 'fr'}`;
+              })(),
+              style: { ...text, fontSize: "14px", color: "#64748b", textDecoration: "underline" }
+            }, isEn ? "View confirmation online" : "Confirmer la réception en ligne")
           )
         ),
         e(Hr, { style: hr }),

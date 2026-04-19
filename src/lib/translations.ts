@@ -649,6 +649,10 @@ export const translations = {
     structureDeleted: "Entreprise supprimée",
     structureActivated: "Entreprise activée",
     exportError: "Erreur lors de l'export",
+    viewConfirmationOnline: "Confirmer la réception en ligne",
+    invoiceViewedTitle: "Facture Consultée",
+    invoiceViewedDesc: "Le destinataire a été notifié que vous avez consulté ce document. Merci de votre confiance.",
+    poweredByEssor: "Propulsé par ESSOR",
 
     //error gestionning
     invoiceEmailSend:
@@ -1606,6 +1610,10 @@ export const translations = {
     exportStats: "Export Stats",
     send: "Send",
     toClientSecurely: "to client securely",
+    viewConfirmationOnline: "View confirmation online",
+    invoiceViewedTitle: "Invoice Viewed",
+    invoiceViewedDesc: "The sender has been notified that you viewed this document. Thank you for your trust.",
+    poweredByEssor: "Powered by ESSOR",
 
     //error gestionning
     invoiceEmailSend:
