@@ -20,24 +20,20 @@ export async function GET(
   let debugInfo = "";
   try {
     if (id) {
-      // Using runCommandRaw to bypass Prisma's transaction engine which requires Replica Sets on MongoDB
-      const result = await (prisma as any).$runCommandRaw({
-        update: "Invoice",
-        updates: [
-          {
-            q: { _id: { $oid: id } },
-            u: {
-              $set: {
-                isRead: true,
-                readAt: { $date: new Date().toISOString() },
-                updatedAt: { $date: new Date().toISOString() },
-              },
-            },
-            multi: false,
+      // Using standard atomic update which does not require transactions
+      // and properly handles connection pooling in serverless environments
+      try {
+        const updatedInvoice = await prisma.invoice.update({
+          where: { id: id },
+          data: {
+            isRead: true,
+            readAt: new Date(),
           },
-        ],
-      });
-      debugInfo = result.nModified > 0 ? "Success: Invoice marked as read (raw)" : "Warning: Invoice not modified (might not exist or already marked)";
+        });
+        debugInfo = "Success: Invoice marked as read";
+      } catch (e: any) {
+        debugInfo = "Warning: Invoice not found or already verified";
+      }
     } else {
       debugInfo = "Error: No ID provided in params";
     }

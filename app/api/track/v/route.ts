@@ -15,24 +15,17 @@ export async function GET(request: Request) {
 
     if (id) {
       try {
-        // Using runCommandRaw to bypass Prisma's transaction engine which requires Replica Sets on MongoDB
-        await (prisma as any).$runCommandRaw({
-          update: "Invoice",
-          updates: [
-            {
-              q: { _id: { $oid: id } },
-              u: {
-                $set: {
-                  isRead: true,
-                  readAt: { $date: new Date().toISOString() },
-                  updatedAt: { $date: new Date().toISOString() },
-                },
-              },
-              multi: false,
-            },
-          ],
+        // Using standard atomic update which does not require transactions
+        // and properly handles connection pooling in serverless environments
+        await prisma.invoice.update({
+          where: { id: id },
+          data: {
+            isRead: true,
+            readAt: new Date(),
+          },
         });
       } catch (dbError) {
+        // Ignore errors if invoice is not found
         console.error("Tracking database error:", dbError);
       }
     }

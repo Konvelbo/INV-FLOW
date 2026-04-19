@@ -2182,26 +2182,16 @@ const actionHandlers = {
       const currentInvoice = await prisma.invoice.findUnique({ where: { id } });
       const newStatus = currentInvoice?.status === "draft" ? "draft" : "pending";
 
-      // Use runCommandRaw to bypass transaction engine
-      await prisma.$runCommandRaw({
-        update: "Invoice",
-        updates: [
-          {
-            q: { _id: { $oid: id } },
-            u: {
-              $set: {
-                isRead: true,
-                readAt: { $date: new Date().toISOString() },
-                status: newStatus,
-                updatedAt: { $date: new Date().toISOString() },
-              },
-            },
-            multi: false,
-          },
-        ],
+      // Use standard atomic update which does not require transactions
+      return await prisma.invoice.update({
+        where: { id },
+        data: {
+          isRead: true,
+          readAt: new Date(),
+          status: newStatus,
+          updatedAt: new Date(),
+        },
       });
-
-      return await prisma.invoice.findUnique({ where: { id } });
     },
   },
   feedback: {
