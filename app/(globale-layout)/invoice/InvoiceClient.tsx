@@ -347,7 +347,7 @@ export default function InvoiceClient({
         invoiceId,
         targetEmail,
         currency,
-        Array.from(new Uint8Array(pdfBuffer as any)),
+        pdfBuffer,
       );
 
       if (res.success) {

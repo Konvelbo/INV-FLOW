@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
-// force-static is required for Electron's static export build compatibility
-// On Vercel, the route will still execute at runtime normally
-export const dynamic = "force-static";
+
 
 // 1x1 transparent base64 image (gif)
 const TRANSPARENT_GIF_BUFFER = Buffer.from(

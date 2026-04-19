@@ -433,6 +433,10 @@ export const translations = {
 
     // Landing Page
     login: "Connexion",
+    navFeatures: "Écosystème",
+    navDetails: "Expertise",
+    navAI: "Pulse™ IA",
+    navStats: "v1.5",
     startBtn: "Démarrer",
     getStarted: "Lancez-vous",
     appName: "ESSOR",
@@ -1393,6 +1397,10 @@ export const translations = {
 
     // Landing Page
     login: "Login",
+    navFeatures: "Ecosystem",
+    navDetails: "Expertise",
+    navAI: "Pulse™ AI",
+    navStats: "v1.5",
     startBtn: "Start",
     getStarted: "Get Started",
     appName: "ESSOR",

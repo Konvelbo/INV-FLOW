@@ -34,6 +34,7 @@ import { useIPCAction } from "@/hooks/useIPCAction";
 import { useSubscription } from "@/src/context/SubscriptionContext";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
+import { invoiceTemplate } from "@/lib/invoice-pdf";
 
 interface HistoryClientProps {
   initialInvoices: any[];
@@ -184,13 +185,36 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
           );
         }
       } else {
-        // Immediate send
+        // Immediate send - We generate the PDF in the renderer to avoid backend crashes
+        // First, we need the full invoice data (including items)
+        const fullInvRes = await performAction("invoices", "get", invoiceId);
+        
+        if (!fullInvRes.success || !fullInvRes.data) {
+          toast.error(t("unexpectedError") || "Erreur lors de la récupération des données.");
+          return;
+        }
+
+        const fullInvoice = fullInvRes.data;
+        
+        // Prepare data for template
+        const templateData = {
+          ...fullInvoice,
+          items: fullInvoice.items || [],
+          currencyCode: currency,
+          language: language,
+        };
+
+        const html = invoiceTemplate(templateData);
+        // @ts-ignore
+        const pdfBuffer = await window.electronAPI.generatePDF(html);
+
         const res = await performAction(
           "invoices",
           "send",
           invoiceId,
           targetEmail,
           currency,
+          pdfBuffer,
         );
 
         if (res.success) {

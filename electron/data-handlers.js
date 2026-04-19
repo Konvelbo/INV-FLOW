@@ -3,7 +3,7 @@ const { PrismaClient } = require("../src/p_client");
 const prisma = new PrismaClient();
 const crypto = require("crypto");
 // Start connection immediately in background to reduce first-query latency
-prisma.$connect().catch((err) => {});
+prisma.$connect().catch((err) => { });
 
 const { Resend } = require("resend");
 const bcrypt = require("bcryptjs");
@@ -1052,7 +1052,7 @@ const handlers = {
             content: pdf,
             folder: "Factures_PDF",
           });
-        } catch (err) {}
+        } catch (err) { }
       }
     }
     return await generateZip(zipFiles);
@@ -1470,7 +1470,7 @@ const actionHandlers = {
                 content: pdf,
                 folder: `${compDir}/Historique_Factures`,
               });
-            } catch (e) {}
+            } catch (e) { }
           }
         }
       }
@@ -1916,6 +1916,9 @@ const actionHandlers = {
           },
           include: {
             author: true,
+            client: true,
+            items: true,
+            company: true,
           },
         });
 
@@ -1954,10 +1957,22 @@ const actionHandlers = {
         );
 
         const attachments = [];
+        let pdfBuffer = null;
         if (pdfArrayBuffer && pdfArrayBuffer.length > 0) {
+          pdfBuffer = Buffer.from(pdfArrayBuffer);
+        } else {
+          try {
+            const html = renderInvoiceHtml(invoice, invoice.language || "fr");
+            pdfBuffer = await generatePdfFromHtml(html);
+          } catch (e) {
+            console.error("Failed to generate PDF automatically", e);
+          }
+        }
+
+        if (pdfBuffer) {
           attachments.push({
             filename: `Facture_${invoice.reference}.pdf`,
-            content: Buffer.from(pdfArrayBuffer),
+            content: pdfBuffer,
           });
         }
 
@@ -1970,9 +1985,8 @@ const actionHandlers = {
         });
 
         return { success: true, data };
-        return { success: true, data };
       } catch (error) {
-        // console.error("Email send error");
+        console.error("Email send error:", error);
         throw error;
       }
     },
@@ -2074,7 +2088,7 @@ const actionHandlers = {
           status: {
             set:
               (await prisma.invoice.findUnique({ where: { id } }))?.status ===
-              "draft"
+                "draft"
                 ? "draft"
                 : "pending",
           },
@@ -2625,13 +2639,13 @@ DONNÉES FINANCIÈRES DES 30 DERNIERS JOURS :
 - Nombre de factures créées : ${invoices.length}
 - Nombre de dépenses enregistrées : ${expenses.length}
 - Liste récente (Factures) : ${invoices
-          .slice(0, 5)
-          .map((i) => `${i.reference} (${i.totalHT} CFA, ${i.status})`)
-          .join(", ")}
+            .slice(0, 5)
+            .map((i) => `${i.reference} (${i.totalHT} CFA, ${i.status})`)
+            .join(", ")}
 - Liste récente (Dépenses) : ${expenses
-          .slice(0, 5)
-          .map((e) => `${e.title} (${e.amount} CFA, ${e.category})`)
-          .join(", ")}
+            .slice(0, 5)
+            .map((e) => `${e.title} (${e.amount} CFA, ${e.category})`)
+            .join(", ")}
         `;
 
         const { OpenAI } = require("openai");

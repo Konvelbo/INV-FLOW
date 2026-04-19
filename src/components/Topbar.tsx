@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from "react";
 import Logo from "./navbar-components/logo";
 import NotificationMenu from "./navbar-components/notification-menu";
-import { Building2Icon as Building2 } from "./animate-ui/icons/building-2";
-import { ZapIcon as Zap } from "./animate-ui/icons/zap";
-import { CrownIcon as Crown } from "./animate-ui/icons/crown";
-import { MessageSquareIcon as MessageSquare } from "./animate-ui/icons/message-square";
-import { SendIcon as Send } from "./animate-ui/icons/send";
-import { StarIcon as Star } from "./animate-ui/icons/star";
+import {
+  Building2,
+  Zap,
+  Crown,
+  MessageSquare,
+  Send,
+  Star
+} from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { useSubscription, usePlanBadge } from "@/src/context/SubscriptionContext";
@@ -130,7 +132,7 @@ export default function Topbar() {
                     whileTap={{ scale: 0.96 }}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 hover:border-primary/40 transition-colors cursor-pointer"
                   >
-                    <Building2 className="w-3.5 h-3.5 text-primary flex-shrink-0" animateOnHover />
+                    <Building2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-primary truncate max-w-[130px]">
                       {activeCompany}
                     </span>
@@ -174,7 +176,7 @@ export default function Topbar() {
                       <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
                       <span className="relative inline-flex size-2 rounded-full bg-primary" />
                     </span>
-                    <Zap className="size-3 text-primary flex-shrink-0" animateOnHover />
+                    <Zap className="size-3 text-primary flex-shrink-0" />
                     <span className="text-[10px] font-black text-primary uppercase tracking-wider whitespace-nowrap">
                       {t("upgradeToPremium")}
                     </span>
@@ -201,7 +203,7 @@ export default function Topbar() {
                       border: "1px solid rgba(234,179,8,0.3)",
                     }}
                   >
-                    <Crown className="size-3 text-yellow-400 flex-shrink-0" animateOnHover />
+                    <Crown className="size-3 text-yellow-400 flex-shrink-0" />
                     <span className="text-[10px] font-black text-yellow-400 uppercase tracking-wider whitespace-nowrap">
                       {planLabel}
                     </span>
@@ -232,14 +234,14 @@ export default function Topbar() {
                   animate={{ opacity: [0, 0.5, 0], scale: [1, 1.3, 1] }}
                   transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", repeatDelay: 2 }}
                 />
-                <MessageSquare className="size-3.5" animateOnHover />
+                <MessageSquare className="size-3.5" />
               </motion.button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[420px] bg-card border-border/50 backdrop-blur-xl rounded-2xl">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-lg font-black">
-                  <MessageSquare className="size-5 text-primary" animateOnHover />
+                  <MessageSquare className="size-5 text-primary" />
                   {t("sendFeedback")}
                 </DialogTitle>
                 <DialogDescription>
@@ -268,7 +270,6 @@ export default function Topbar() {
                             "size-8 transition-colors duration-200",
                             star <= rating ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30"
                           )}
-                          animateOnHover
                         />
                       </motion.button>
                     ))}

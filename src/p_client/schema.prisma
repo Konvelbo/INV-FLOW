@@ -172,6 +172,7 @@ model Expense {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   amount      Float
+  currency    String?  @default("XOF")
   date        DateTime @default(now())
   category    String
   description String?

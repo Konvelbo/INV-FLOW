@@ -40,7 +40,12 @@
       "perMachine": false
     },
     "files": [
-      "**/*",
+      ".next/**/*",
+      "public/**/*",
+      "electron/**/*",
+      "main.js",
+      "package.json",
+      "node_modules/**/*",
       "src/p_client/**/*"
     ],
     "asarUnpack": [

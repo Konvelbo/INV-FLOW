@@ -11,6 +11,9 @@
    CSS variable tokens so both light and dark themes work.
    ============================================================ */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   /* Backgrounds: Slate, Zinc, Black */
   .bg-slate-900\/30, .bg-slate-900\/40, .bg-slate-900\/50, .bg-slate-900\/60,
   .bg-zinc-900\/30, .bg-zinc-900\/40, .bg-zinc-900\/50, .bg-zinc-900\/60,

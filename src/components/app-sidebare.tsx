@@ -1,24 +1,27 @@
 "use client";
 
-import { HouseIcon as LayoutDashboard } from "./animate-ui/icons/house";
-import { FileTextIcon as FileText } from "./animate-ui/icons/file-text";
-import { HistoryIcon as History } from "./animate-ui/icons/history";
-import { ClipboardListIcon as ClipboardList } from "./animate-ui/icons/clipboard-list";
-import { UsersIcon as Users } from "./animate-ui/icons/users";
-import { PackageIcon as Package } from "./animate-ui/icons/package";
-import { WalletIcon as Wallet } from "./animate-ui/icons/wallet";
-import { BrainIcon as Brain } from "./animate-ui/icons/brain";
-import { LockIcon as Lock } from "./animate-ui/icons/lock";
-import { LogOutIcon as LogOut } from "./animate-ui/icons/log-out";
-import { SunIcon as Sun } from "./animate-ui/icons/sun";
-import { MoonIcon as Moon } from "./animate-ui/icons/moon";
-import { CameraIcon as Camera } from "./animate-ui/icons/camera";
-import { SettingsIcon as Settings } from "./animate-ui/icons/settings";
-import { UserIcon as User } from "./animate-ui/icons/user";
-import { Building2Icon as Building2 } from "./animate-ui/icons/building-2";
-import { LanguagesIcon as Languages } from "./animate-ui/icons/languages";
-import { CrownIcon as Crown } from "./animate-ui/icons/crown";
-import { ChevronRight as ChevronRightIcon, ChevronLeft } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  History,
+  ClipboardList,
+  Users,
+  Package,
+  Wallet,
+  Brain,
+  Lock,
+  LogOut,
+  Sun,
+  Moon,
+  Camera,
+  Settings,
+  User,
+  Building2,
+  Languages,
+  Crown,
+  ChevronRight as ChevronRightIcon,
+  ChevronLeft
+} from "lucide-react";
 import Link from "next/link";
 import { useInvoiceActions, useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
@@ -283,7 +286,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                     onClick={() => router.push("/pricing")}
                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer"
                   >
-                    <Crown size={16} className="text-yellow-500" animateOnHover />
+                    <Crown size={16} className="text-yellow-500" />
                     <span className="text-sm font-medium">{dict.manageSubscription || "Gérer l'abonnement"}</span>
                   </DropdownMenuItem>
                 )}
@@ -292,7 +295,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                   onClick={() => router.push("/clients")}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer"
                 >
-                  <User size={16} className="text-muted-foreground" animateOnHover />
+                  <User size={16} className="text-muted-foreground" />
                   <span className="text-sm font-medium">{dict.clients || "Clients"}</span>
                 </DropdownMenuItem>
 
@@ -300,7 +303,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                   onClick={() => router.push("/companies")}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer"
                 >
-                  <Building2 size={16} className="text-muted-foreground" animateOnHover />
+                  <Building2 size={16} className="text-muted-foreground" />
                   <span className="text-sm font-medium">{dict.companies || "Entreprises"}</span>
                 </DropdownMenuItem>
 
@@ -328,7 +331,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer w-full">
                     <div className="flex items-center gap-3 flex-1">
-                      <Languages size={16} className="text-muted-foreground" animateOnHover />
+                      <Languages size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium text-foreground">{dict.language}</span>
                     </div>
                     <ChevronRightIcon size={14} className="text-muted-foreground" />
@@ -356,57 +359,67 @@ export const AppSidebar = React.memo(function AppSidebar() {
           {localizedMenuItems.map((item) => {
             const isActive = pathname === item.url;
             return (
-              <Link
+              <motion.div
                 key={item.id}
-                href={item.url}
-                prefetch={false}
-                onClick={(e) => {
-                  if (item.id === "Assistant IA" && !subscription?.hasAIAccess) {
-                    e.preventDefault();
-                    redirectToPricing({ message: dict?.aiAccessDenied || "L'Assistant IA est réservé aux abonnés Premium." });
-                    return;
-                  }
-                  if (item.id === "Invoice") clearInvoiceData();
-                }}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
-                  isActive ? "bg-primary/10" : "hover:bg-muted/40",
-                  isCollapsed ? "justify-center" : ""
-                )}
-                title={isCollapsed ? item.title : undefined}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="w-full"
               >
-                <div className={cn("relative shrink-0 transition-transform duration-200 group-hover:scale-110", isActive ? item.color : "text-muted-foreground")}>
-                  <item.icon className="size-[18px]" animateOnHover />
-                  {isActive && (
-                    <motion.div layoutId="active-glow" className="absolute -inset-2 bg-current opacity-20 blur-lg rounded-full" />
+                <Link
+                  href={item.url}
+                  prefetch={false}
+                  onClick={(e) => {
+                    if (item.id === "Assistant IA" && !subscription?.hasAIAccess) {
+                      e.preventDefault();
+                      redirectToPricing({ message: dict?.aiAccessDenied || "L'Assistant IA est réservé aux abonnés Premium." });
+                      return;
+                    }
+                    if (item.id === "Invoice") clearInvoiceData();
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
+                    isActive ? "bg-primary/10" : "hover:bg-muted/40",
+                    isCollapsed ? "justify-center" : ""
                   )}
-                </div>
+                  title={isCollapsed ? item.title : undefined}
+                >
+                  <motion.div 
+                    whileHover={{ x: 4, scale: 1.1 }}
+                    transition={{ duration: 0.3 }}
+                    className={cn("relative shrink-0", isActive ? item.color : "text-muted-foreground")}
+                  >
+                    <item.icon className="size-[18px]" />
+                    {isActive && (
+                      <motion.div layoutId="active-glow" className="absolute -inset-2 bg-current opacity-20 blur-lg rounded-full" />
+                    )}
+                  </motion.div>
 
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, x: -6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -6 }}
-                      transition={{ duration: 0.18 }}
-                      className={cn(
-                        "flex-1 text-sm font-semibold tracking-tight truncate",
-                        isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                      )}
-                    >
-                      {item.title}
-                    </motion.span>
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -6 }}
+                        transition={{ duration: 0.18 }}
+                        className={cn(
+                          "flex-1 text-sm font-semibold tracking-tight truncate",
+                          isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                        )}
+                      >
+                        {item.title}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {!isCollapsed && item.id === "Assistant IA" && !subscription?.hasAIAccess && (
+                    <Lock className="size-3 text-muted-foreground/50 shrink-0 ml-auto" />
                   )}
-                </AnimatePresence>
 
-                {!isCollapsed && item.id === "Assistant IA" && !subscription?.hasAIAccess && (
-                  <Lock className="size-3 text-muted-foreground/50 shrink-0 ml-auto" />
-                )}
-
-                {!isCollapsed && isActive && (
-                  <motion.div layoutId="active-pill" className="absolute right-0 w-1 h-full bg-primary rounded-full" />
-                )}
-              </Link>
+                  {!isCollapsed && isActive && (
+                    <motion.div layoutId="active-pill" className="absolute right-0 w-1 h-full bg-primary rounded-full" />
+                  )}
+                </Link>
+              </motion.div>
             );
           })}
         </nav>
@@ -450,12 +463,16 @@ export const AppSidebar = React.memo(function AppSidebar() {
           {/* Theme toggle */}
           <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-between gap-3 px-1")}>
             {!isCollapsed && (
-              <div className="flex items-center gap-2">
-                {isDark ? <Moon className="size-3.5 text-muted-foreground" animateOnHover /> : <Sun className="size-3.5 text-muted-foreground" animateOnHover />}
+              <motion.div 
+                whileHover={{ x: 4, scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-2"
+              >
+                {isDark ? <Moon className="size-3.5 text-muted-foreground" /> : <Sun className="size-3.5 text-muted-foreground" />}
                 <span className="text-xs font-semibold text-muted-foreground">
                   {isDark ? (t("darkMode") || "Mode sombre") : (t("lightMode") || "Mode clair")}
                 </span>
-              </div>
+              </motion.div>
             )}
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -472,8 +489,8 @@ export const AppSidebar = React.memo(function AppSidebar() {
                 className="absolute size-4 rounded-full bg-white shadow-sm flex items-center justify-center"
               >
                 {isDark
-                  ? <Moon className="size-2.5 text-primary" animateOnHover />
-                  : <Sun className="size-2.5 text-amber-500" animateOnHover />
+                  ? <Moon className="size-2.5 text-primary" />
+                  : <Sun className="size-2.5 text-amber-500" />
                 }
               </motion.div>
             </button>
@@ -489,7 +506,12 @@ export const AppSidebar = React.memo(function AppSidebar() {
             )}
             title={isCollapsed ? (dict.logout || "Logout") : undefined}
           >
-            <LogOut className="size-4 text-destructive/70 group-hover:text-destructive transition-colors shrink-0" animateOnHover />
+            <motion.div 
+              whileHover={{ x: 4, scale: 1.1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <LogOut className="size-4 text-destructive/70 group-hover:text-destructive transition-colors shrink-0" />
+            </motion.div>
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span

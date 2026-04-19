@@ -16,13 +16,13 @@ import {
   RefreshCw,
   FileCheck,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Logo from "@/src/components/navbar-components/logo";
 import { SparklesText } from "@/src/components/ui/sparkles-text";
 import { TypingText } from "@/src/components/ui/typing-text";
 import SignUp from "@/src/components/signup";
 import { Button } from "@/src/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { useLanguage } from "@/src/context/LanguageContext";
@@ -42,6 +42,142 @@ export default function Home() {
     name: string;
     token: string;
   } | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("features");
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleScroll = () => {
+      const sections = ["features", "details", "ai-intelligence"];
+      const scrollPos = window.scrollY + 300;
+      let current = "features";
+
+      sections.forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) {
+          if (scrollPos >= element.offsetTop) {
+            current = id;
+          }
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [mounted]);
+
+  function FeatureCard({ i, index, scrollYProgress, t }: { i: number; index: number; scrollYProgress: any; t: any }) {
+    const milestone = index * 0.25;
+    const start = milestone - 0.25;
+    const end = milestone + 0.25;
+
+    let input: number[];
+    let scaleOutput: number[];
+    let opacityOutput: number[];
+    let shadowOutput: string[];
+
+    if (index === 0) {
+      input = [0, 0.25];
+      scaleOutput = [1.05, 0.85];
+      opacityOutput = [1, 0.3];
+      shadowOutput = [
+        "0px 40px 80px -20px rgba(16,185,129,0.3)",
+        "0px 0px 0px 0px rgba(16,185,129,0)"
+      ];
+    } else if (index === 4) {
+      input = [0.75, 1];
+      scaleOutput = [0.85, 1.05];
+      opacityOutput = [0.3, 1];
+      shadowOutput = [
+        "0px 0px 0px 0px rgba(16,185,129,0)",
+        "0px 40px 80px -20px rgba(16,185,129,0.3)"
+      ];
+    } else {
+      input = [start, milestone, end];
+      scaleOutput = [0.85, 1.05, 0.85];
+      opacityOutput = [0.3, 1, 0.3];
+      shadowOutput = [
+        "0px 0px 0px 0px rgba(16,185,129,0)",
+        "0px 40px 80px -20px rgba(16,185,129,0.3)",
+        "0px 0px 0px 0px rgba(16,185,129,0)"
+      ];
+    }
+
+    const scale = useTransform(scrollYProgress, input, scaleOutput);
+    const opacity = useTransform(scrollYProgress, input, opacityOutput);
+    const boxShadow = useTransform(scrollYProgress, input, shadowOutput);
+
+    return (
+      <div className="w-[85vw] md:w-[60vw] lg:w-[45vw] shrink-0">
+        <motion.div
+          style={{ scale, opacity, boxShadow }}
+          className="flex flex-col gap-8 p-10 md:p-14 min-h-[450px] rounded-[3rem] bg-background/95 backdrop-blur-2xl border border-border hover:border-primary/50 transition-colors duration-500 relative overflow-hidden group cursor-default"
+        >
+          <div className="absolute top-0 right-0 w-64 h-78 bg-primary/10 blur-[80px] rounded-full -mr-32 -mt-32 group-hover:bg-primary/20 transition-all" />
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 shadow-inner shadow-xl flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform">
+            <span className="text-primary font-black text-3xl">{i}</span>
+          </div>
+          <div className="space-y-6 relative z-10 w-full bg-transparent flex-1 mt-4">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight font-sans">
+              {/* @ts-ignore */}
+              {t(`detailList${i}Title`)}
+            </h3>
+            <p className="text-muted-foreground leading-relaxed font-sans text-lg md:text-xl">
+              {/* @ts-ignore */}
+              {t(`detailList${i}Desc`)}
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  function HorizontalFeatures({ t }: { t: any }) {
+    const horizontalScrollRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+      target: horizontalScrollRef,
+      offset: ["start start", "end end"]
+    });
+
+    // Translation stops exactly when the right-most part of the scroll track hits the right edge of the screen
+    // Format must match perfectly (two numbers each) for Framer Motion to interpolate the string!
+    const xTransform = useTransform(scrollYProgress, [0, 1], ["calc(0% + 0vw)", "calc(-100% + 100vw)"]);
+
+    return (
+      <>
+        {/* Detailed Features Title */}
+        <section className="relative z-10 pt-32 pb-4 bg-background">
+          <div className="container px-6 mx-auto max-w-5xl">
+            <div className="text-center max-w-4xl mx-auto space-y-6">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
+                {t("detailFeaturesSubtitle")}
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black bg-linear-to-b from-white to-slate-500 bg-clip-text text-transparent tracking-tighter leading-tight">
+                {t("detailFeaturesTitle")}
+              </h2>
+            </div>
+          </div>
+        </section>
+
+        {/* Detailed Features Horizontal Scroll */}
+        <section ref={horizontalScrollRef} className="relative h-[400vh] bg-background">
+          <div className="sticky top-0 h-screen flex items-center overflow-hidden">
+            <motion.div
+              style={{ x: xTransform }}
+              className="flex w-max items-center gap-[5vw] px-[7.5vw] md:px-[20vw] lg:px-[27.5vw]"
+            >
+              {[1, 2, 3, 4, 5].map((i, index) => (
+                <FeatureCard key={i} i={i} index={index} scrollYProgress={scrollYProgress} t={t} />
+              ))}
+            </motion.div>
+          </div>
+        </section>
+      </>
+    );
+  }
 
   useEffect(() => {
     setMounted(true);
@@ -90,7 +226,7 @@ export default function Home() {
   const cardHover = {
     scale: 1.03,
     y: -8,
-    transition: { duration: 0.3, ease: "easeOut" },
+    transition: { duration: 0.2, ease: "easeOut" },
   };
 
   return (
@@ -115,11 +251,13 @@ export default function Home() {
 
       {/* Header */}
       <header className="fixed top-0 w-full z-50 transition-all duration-300 bg-background/80 shadow-lg backdrop-blur-xl border-b border-white/5">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-6 h-20 flex items-center justify-between relative">
+          {/* Logo Section */}
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer relative z-10"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
             <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/20">
               <Logo logoUrl={"/black-caractere-non-black.png"} w={45} h={45} />
@@ -129,49 +267,90 @@ export default function Home() {
             </span>
           </motion.div>
 
-          {!storage ? (
-            <div className="flex items-center gap-6">
-              <motion.span
-                id="landing_page_conBtn"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => {
-                  setSignUpChoise(t("loginAction"));
-                  setVisibility(true);
-                }}
-                className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer uppercase tracking-widest"
-              >
-                {t("login")}
-              </motion.span>
+          {/* Navigation Menu - Centered */}
+          <nav className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/5 backdrop-blur-md px-1.5 py-1.5 rounded-2xl border border-white/10">
+            {[
+              { id: "features", label: t("navFeatures") },
+              { id: "details", label: t("navDetails") },
+              { id: "ai-intelligence", label: t("navAI") },
+            ].map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <Link
+                  key={link.id}
+                  href={`#${link.id}`}
+                  onClick={() => setActiveSection(link.id)}
+                  className={cn(
+                    "relative px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300",
+                    isActive ? "text-primary" : "text-muted-foreground/60 hover:text-white"
+                  )}
+                >
+                  <span className="relative z-10">{link.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-pill"
+                      className="absolute inset-0 bg-primary/10 rounded-xl"
+                      transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                    />
+                  )}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-glow"
+                      className="absolute -bottom-1 left-4 right-4 h-[2px] bg-primary shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Action Buttons Section */}
+          <div className="flex items-center gap-6 relative z-10">
+            {!storage ? (
+              <>
+                <motion.span
+                  id="landing_page_conBtn"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={() => {
+                    setSignUpChoise(t("loginAction"));
+                    setVisibility(true);
+                  }}
+                  className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {t("login")}
+                </motion.span>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Button
+                    onClick={() => {
+                      setSignUpChoise(t("createAccount"));
+                      setVisibility(true);
+                    }}
+                    className="px-6 py-2.5 text-[10px] font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
+                  >
+                    {t("startNow")}
+                  </Button>
+                </motion.div>
+              </>
+            ) : (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
-                <Button
-                  onClick={() => {
-                    setSignUpChoise(t("createAccount"));
-                    setVisibility(true);
-                  }}
-                  className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
+                <Link
+                  href="/invoice"
+                  onClick={() => clearInvoiceData()}
+                  className="px-6 py-2.5 text-[10px] font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
                 >
-                  {t("startNow")}
-                </Button>
+                  {t("getStarted")}
+                </Link>
               </motion.div>
-            </div>
-          ) : (
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Link
-                href="/invoice"
-                onClick={() => clearInvoiceData()}
-                className="px-6 py-2.5 text-xs font-black text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em]"
-              >
-                {t("getStarted")}
-              </Link>
-            </motion.div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
@@ -250,7 +429,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 py-32 bg-background/50">
+      <section id="features" className="relative z-10 py-32 bg-background/50">
         <div className="container px-6 mx-auto">
           <div className="text-center mb-24 max-w-4xl mx-auto space-y-6">
             <div className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
@@ -382,49 +561,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Detailed Features Section */}
-      <section className="relative z-10 py-32 bg-background">
-        <div className="container px-6 mx-auto max-w-5xl">
-          <div className="text-center mb-24 max-w-4xl mx-auto space-y-6">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-              {t("detailFeaturesSubtitle")}
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black bg-linear-to-b from-white to-slate-500 bg-clip-text text-transparent tracking-tighter leading-tight">
-              {t("detailFeaturesTitle")}
-            </h2>
-          </div>
-          <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid gap-8"
-          >
-            {[1, 2, 3, 4, 5].map((i) => (
-              <motion.div
-                key={i}
-                variants={fadeInUp}
-                className="flex flex-col md:flex-row gap-8 items-start p-8 md:p-10 rounded-[2.5rem] bg-card/50 border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:bg-card relative overflow-hidden group cursor-default"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all" />
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 shadow-inner shadow-white/5 flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform">
-                  <span className="text-primary font-black text-2xl">{i}</span>
-                </div>
-                <div className="space-y-4 relative z-10">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight font-sans">
-                    {/* @ts-ignore */}
-                    {t(`detailList${i}Title`)}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed font-sans text-base md:text-lg">
-                    {/* @ts-ignore */}
-                    {t(`detailList${i}Desc`)}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      {/* Detailed Features Title */}
+      <div id="details">
+        <HorizontalFeatures t={t} />
+      </div>
+
 
       {/* AI Economic Intelligence Section */}
       <section
@@ -485,7 +626,7 @@ export default function Home() {
                       key={idx}
                       variants={fadeInUp}
                       whileHover={{
-                        x: 10,
+                        x: 5,
                         backgroundColor: "rgba(255,255,255,0.08)",
                       }}
                       className="flex gap-5 p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group cursor-default"
@@ -561,7 +702,7 @@ export default function Home() {
       </section>
 
       {/* What's New v1.5 Section */}
-      <section className="relative z-10 py-32 bg-background/30 backdrop-blur-sm">
+      <section id="whats-new" className="relative z-10 py-32 bg-background/30 backdrop-blur-sm">
         <div className="container px-6 mx-auto">
           <div className="text-center mb-24 max-w-4xl mx-auto space-y-6">
             <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
@@ -583,12 +724,12 @@ export default function Home() {
             className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
           >
             {[
-              { id: 1, icon: Zap },
-              { id: 2, icon: Bell },
-              { id: 3, icon: ShieldCheck },
-              { id: 4, icon: Globe },
-              { id: 5, icon: FileCheck },
-              { id: 6, icon: RefreshCw },
+              // { id: 1, icon: Zap },
+              { id: 1, icon: Bell },
+              { id: 2, icon: ShieldCheck },
+              // { id: 4, icon: Globe },
+              // { id: 5, icon: FileCheck },
+              { id: 3, icon: RefreshCw },
             ].map((item) => (
               <motion.div
                 key={item.id}
@@ -764,14 +905,9 @@ export default function Home() {
 
           <div className="flex flex-col items-center md:items-end gap-4">
             <div className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-              <Link href="#" className="hover:text-primary transition-colors">
-                {t("terms")}
-              </Link>
-              <Link href="#" className="hover:text-primary transition-colors">
+
+              <Link href="/privacy" className="hover:text-primary transition-colors">
                 {t("privacy")}
-              </Link>
-              <Link href="#" className="hover:text-primary transition-colors">
-                {t("api")}
               </Link>
             </div>
             <p className="font-bold tracking-tight text-[11px] opacity-40">
