@@ -14,10 +14,9 @@ export async function GET(request: Request) {
     const id = searchParams.get("id");
 
     // Only attempt database operations on Vercel (has database access)
-    if (id && process.env.VERCEL) {
+    if (id) {
       try {
-        const { PrismaClient } = await import("@/src/p_client");
-        const prisma = new PrismaClient();
+        const { prisma } = await import("@/src/lib/db");
 
         await prisma.invoice.update({
           where: { id },
@@ -26,8 +25,6 @@ export async function GET(request: Request) {
             readAt: new Date(),
           },
         });
-
-        await prisma.$disconnect();
       } catch (dbError) {
         // Continue - still return the image
       }

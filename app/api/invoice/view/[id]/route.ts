@@ -10,15 +10,10 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const { searchParams } = new URL(request.url);
-  const langParam = searchParams.get("lang") || "fr";
-  const lang = (langParam === "en" || langParam === "fr") ? langParam : "fr";
-
   try {
-    if (id && process.env.VERCEL) {
-      const { PrismaClient } = await import("@/src/p_client");
-      const prisma = new PrismaClient();
-
+    if (id) {
+      const { prisma } = await import("@/src/lib/db");
+      
       await prisma.invoice.update({
         where: { id },
         data: {
@@ -26,8 +21,6 @@ export async function GET(
           readAt: new Date(),
         },
       });
-
-      await prisma.$disconnect();
     }
   } catch (error) {
     console.error("Tracking error:", error);
