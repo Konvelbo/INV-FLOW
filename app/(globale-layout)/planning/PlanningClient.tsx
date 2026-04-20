@@ -13,6 +13,7 @@ import { InvoiceAutomationDialog } from "@/src/components/planning/InvoiceAutoma
 import { useNotifications } from "@/src/context/NotificationContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { Card, CardContent } from "@/src/components/ui/card";
+import { Badge } from "@/src/components/ui/badge";
 import { Progress } from "@/src/components/ui/progress";
 import { Label } from "@/src/components/ui/label";
 import { Todo } from "@/src/components/dashboard/types";
@@ -34,6 +35,7 @@ import {
   X,
   Check,
   Repeat,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -43,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import toast from "react-hot-toast";
+import { useInvoice } from "@/src/context/InvoiceContext";
 import {
   format,
   addMonths,
@@ -111,6 +114,16 @@ export default function PlanningClient({ initialData }: PlanningClientProps) {
   const { addNotification } = useNotifications();
   const { t, language } = useLanguage();
   const { performAction, loading: actionLoading } = useIPCAction();
+  const { currency } = useInvoice();
+
+  const formatCurrency = useCallback(
+    (value: number) =>
+      new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
+        style: "currency",
+        currency: currency || "XOF",
+      }).format(value),
+    [currency, language],
+  );
 
   const user = useMemo(() => {
     const userStr =
@@ -840,52 +853,108 @@ export default function PlanningClient({ initialData }: PlanningClientProps) {
             </div>
             
             <div className="flex-1 overflow-y-auto scrollbar-thin px-2 -mx-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-6">
                 {(activeList === "recurring" ? recurringInvoices : scheduledInvoices).length === 0 ? (
-                   <div className="col-span-full py-16 text-center text-muted-foreground opacity-70 border-2 border-dashed rounded-3xl m-4">
-                      Aucune facture trouvée.
+                   <div className="col-span-full py-20 text-center text-muted-foreground/50 border-2 border-dashed rounded-[2.5rem] m-4 bg-muted/5">
+                      <div className="flex flex-col items-center gap-4">
+                        <Search className="size-10 opacity-20" />
+                        <p className="font-medium">{t("noRecord") || "Aucune facture trouvée."}</p>
+                      </div>
                    </div>
                 ) : (
                   (activeList === "recurring" ? recurringInvoices : scheduledInvoices).map((auto) => (
-                    <Card key={auto.id} className={cn("cursor-pointer hover:shadow-xl transition-all border group overflow-hidden", activeList === "recurring" ? "hover:border-indigo-500/50" : "hover:border-amber-500/50")} onClick={() => {
-                       setActiveList(null);
-                       setAutomationType(activeList);
-                       setSelectedAutomationInvoice(auto);
-                       setIsAutomationModalOpen(true);
-                       if (auto.nextIssueDate) setCurrentMonth(new Date(auto.nextIssueDate));
+                    <div 
+                      key={auto.id} 
+                      className={cn(
+                        "group relative cursor-pointer transition-all duration-300 rounded-3xl border bg-card/40 backdrop-blur-sm hover:shadow-2xl hover:-translate-y-1 overflow-hidden",
+                        activeList === "recurring" 
+                          ? "hover:border-indigo-500/50 border-indigo-500/10 shadow-indigo-500/5" 
+                          : "hover:border-amber-500/50 border-amber-500/10 shadow-amber-500/5"
+                      )}
+                      onClick={() => {
+                        setActiveList(null);
+                        setAutomationType(activeList);
+                        setSelectedAutomationInvoice(auto);
+                        setIsAutomationModalOpen(true);
+                        if (auto.nextIssueDate) setCurrentMonth(new Date(auto.nextIssueDate));
                     }}>
-                      <div className={cn("h-1 w-full opacity-50 group-hover:opacity-100 transition-opacity", activeList === "recurring" ? "bg-indigo-500" : "bg-amber-500")} />
-                      <CardContent className="p-5 flex items-start gap-4">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">{auto.reference}</p>
-                          <p className="text-base font-bold truncate text-foreground mb-3">{auto.clientName}</p>
-                          
-                          <div className="space-y-2">
-                            {auto.nextIssueDate ? (
-                               <div className="flex items-center gap-2">
-                                 <Clock className="size-3 text-muted-foreground" />
-                                 <p className="text-xs font-medium text-foreground tracking-wide">
-                                    {format(new Date(auto.nextIssueDate), "dd MMM yyyy 'à' HH:mm", { locale })}
-                                 </p>
-                               </div>
-                            ) : (
-                               <p className="text-[11px] text-rose-500 font-bold bg-rose-50/50 py-1 px-2 rounded-md inline-block">
-                                  {activeList === "recurring" && auto.isRecurring === false ? "En pause" : "Non définie"}
-                               </p>
-                            )}
-                            
-                            {activeList === "recurring" && auto.recurrenceFreq && (
-                               <div className="flex items-center gap-2">
-                                 <Repeat className="size-3 text-indigo-500" />
-                                 <p className="text-[10px] uppercase font-bold text-indigo-600">
-                                   {t(auto.recurrenceFreq)}
-                                 </p>
-                               </div>
-                            )}
+                      {/* Premium Accent Line */}
+                      <div className={cn(
+                        "h-1.5 w-full",
+                        activeList === "recurring" ? "bg-linear-to-r from-indigo-500 to-blue-400" : "bg-linear-to-r from-amber-500 to-orange-400"
+                      )} />
+                      
+                      <div className="p-5 flex flex-col h-full">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className={cn(
+                            "p-2.5 rounded-xl",
+                            activeList === "recurring" ? "bg-indigo-500/10 text-indigo-600" : "bg-amber-500/10 text-amber-600"
+                          )}>
+                            {activeList === "recurring" ? <Repeat className="size-4" /> : <Clock className="size-4" />}
                           </div>
+                          <Badge variant="outline" className={cn(
+                             "text-[9px] font-black uppercase tracking-widest px-2 py-0.5",
+                             activeList === "recurring" ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          )}>
+                             {auto.reference}
+                          </Badge>
                         </div>
-                      </CardContent>
-                    </Card>
+
+                        <div className="space-y-1 mb-4 flex-1">
+                          <p className="text-sm font-black text-foreground group-hover:text-primary transition-colors leading-tight">
+                            {auto.clientName}
+                          </p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            {formatCurrency(auto.totalHT || 0)}
+                          </p>
+                        </div>
+
+                        <div className="pt-4 border-t border-border/40 space-y-3">
+                          {auto.nextIssueDate ? (
+                             <div className="flex items-center gap-2.5">
+                               <div className="size-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                 <CalendarClock className="size-3.5" />
+                               </div>
+                               <div className="space-y-0.5">
+                                 <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest leading-none">
+                                   {t("nextStep") || "PROCHAINE ÉTAPE"}
+                                 </p>
+                                 <p className="text-xs font-bold text-foreground">
+                                    {format(new Date(auto.nextIssueDate), "dd MMM yyyy", { locale })}
+                                    <span className="text-muted-foreground/60 ml-1.5 font-medium">
+                                       à {format(new Date(auto.nextIssueDate), "HH:mm", { locale })}
+                                    </span>
+                                 </p>
+                               </div>
+                             </div>
+                          ) : (
+                             <div className="flex items-center gap-2 text-rose-500 bg-rose-500/5 p-2 rounded-xl border border-rose-500/10">
+                                <AlertTriangle className="size-3" />
+                                <p className="text-[10px] font-black uppercase">
+                                   {activeList === "recurring" && auto.isRecurring === false ? t("paused") || "EN PAUSE" : t("notDefined") || "NON DÉFINIE"}
+                                </p>
+                             </div>
+                          )}
+                          
+                          {activeList === "recurring" && auto.recurrenceFreq && (
+                             <div className={cn(
+                               "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
+                               "bg-indigo-500/10 text-indigo-600 border border-indigo-500/10"
+                             )}>
+                               <Repeat className="size-3" />
+                               {t(auto.recurrenceFreq)}
+                             </div>
+                          )}
+                        </div>
+                        
+                        {/* Hover Overlay Icon */}
+                        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                           <div className="size-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg">
+                              <ArrowRight className="size-4" />
+                           </div>
+                        </div>
+                      </div>
+                    </div>
                   ))
                 )}
               </div>
@@ -927,13 +996,6 @@ export default function PlanningClient({ initialData }: PlanningClientProps) {
                     Envoi automatique {!isPaid && "PRO"}
                   </p>
                 </div>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setIsChoiceModalOpen(false)}
-                className="mt-2 font-bold text-xs uppercase tracking-widest"
-              >
-                {t("cancel")}
               </Button>
             </div>
           </div>
@@ -1015,13 +1077,6 @@ export default function PlanningClient({ initialData }: PlanningClientProps) {
                     />
                   </div>
                   <div className="flex gap-4 pt-6">
-                    <Button
-                      variant="outline"
-                      className="flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[10px]"
-                      onClick={() => setIsInvoiceModalOpen(false)}
-                    >
-                      {t("cancel")}
-                    </Button>
                     <Button
                       className="flex-1 h-14 rounded-2xl gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20"
                       onClick={handleScheduleInvoice}

@@ -107,28 +107,27 @@ export default function ExpensesClient({
     try {
       e.preventDefault();
       const method = editingId ? "update" : "create";
-  
+
       const payload = {
         ...formData,
         amount: parseFloat(formData.amount),
         date: new Date(formData.date).toISOString(),
         companyId: formData.companyId === "none" ? null : formData.companyId,
       };
-  
-      console.log(payload)
-  
+
+      console.log(payload);
+
       const params = editingId ? [editingId, payload] : [payload];
       const res = await performAction("expenses", method, ...params);
-  
+
       if (res.success) {
         toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
         setIsDialogOpen(false);
         resetForm();
         fetchExpenses();
       }
-
-    } catch(e) {
-      throw new Error ("voici l erreur", e)
+    } catch (e) {
+      throw new Error("voici l erreur", e);
     }
   };
 
@@ -179,24 +178,35 @@ export default function ExpensesClient({
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
-      const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
+      const activeCompanyId = userStr
+        ? JSON.parse(userStr).activeCompanyId
+        : undefined;
       // @ts-ignore
-      const res = await window.electronAPI.getData("export", userId, "expenses", activeCompanyId, format);
+      const res = await window.electronAPI.getData(
+        "export",
+        userId,
+        "expenses",
+        activeCompanyId,
+        format,
+      );
       if (res.success && res.data) {
-        const mime = format === "excel"
-          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          : "application/zip";
+        const mime =
+          format === "excel"
+            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            : "application/zip";
         const ext = format === "excel" ? "xlsx" : "zip";
 
         const blob = new Blob([res.data], { type: mime });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `Expenses_Export_${new Date().toISOString().split('T')[0]}.${ext}`;
+        link.download = `Expenses_Export_${new Date().toISOString().split("T")[0]}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(t("exportSuccess") || "Export réussi !", { id: "expense-export" });
+        toast.success(t("exportSuccess") || "Export réussi !", {
+          id: "expense-export",
+        });
       }
     } catch (error) {
       console.error("Export error", error);
@@ -368,15 +378,11 @@ export default function ExpensesClient({
                         <option value="cat_financial">
                           {t("cat_financial")}
                         </option>
-                        <option value="cat_tax">
-                          {t("cat_tax")}
-                        </option>
+                        <option value="cat_tax">{t("cat_tax")}</option>
                         <option value="cat_investment">
                           {t("cat_investment")}
                         </option>
-                        <option value="cat_admin">
-                          {t("cat_admin")}
-                        </option>
+                        <option value="cat_admin">{t("cat_admin")}</option>
                         <option value="cat_commercial">
                           {t("cat_commercial")}
                         </option>
@@ -387,6 +393,7 @@ export default function ExpensesClient({
                       </select>
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="companyId">{t("linkedToCompany")}</Label>
                     <select
@@ -472,7 +479,7 @@ export default function ExpensesClient({
                   value: formatPrice(
                     expenses.reduce((acc, e) => acc + e.amount, 0),
                     currency,
-                    "fr-FR"
+                    "fr-FR",
                   ),
                   icon: TrendingDown,
                   color: "text-rose-500",

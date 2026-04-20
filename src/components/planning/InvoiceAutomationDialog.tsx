@@ -274,15 +274,6 @@ export function InvoiceAutomationDialog({
             </Button>
             
             <div className="flex gap-2">
-                <Button
-                    variant="outline"
-                    onClick={() => onOpenChange(false)}
-                    disabled={isLoading}
-                    className="rounded-xl h-11"
-                >
-                    {t("close")}
-                </Button>
-                
                 {isPaused ? (
                     <Button
                         onClick={() => handleAction(() => onPauseResume(invoice.id, false))}

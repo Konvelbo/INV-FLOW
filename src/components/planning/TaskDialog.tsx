@@ -271,18 +271,9 @@ export const TaskDialog = memo(function TaskDialog({
             ) : (
               <div />
             )}
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                {dict.cancel}
-              </Button>
               <Button type="submit" disabled={!form.title.trim()}>
                 {dict.save}
               </Button>
-            </div>
           </DialogFooter>
         </form>
       </DialogContent>

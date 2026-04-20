@@ -234,7 +234,7 @@ export const AppSidebar = React.memo(function AppSidebar() {
                   </Avatar>
                   <button
                     onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    className="absolute -bottom-1 -right-1 p-1 rounded-md bg-primary text-primary-foreground shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -bottom-1 -right-1 p-1 rounded-md bg-primary text-primary-foreground shadow-sm transition-opacity"
                   >
                     <Camera size={9} />
                   </button>
@@ -281,6 +281,14 @@ export const AppSidebar = React.memo(function AppSidebar() {
               <DropdownMenuSeparator className="bg-border/50" />
 
               <DropdownMenuGroup className="space-y-1">
+                <DropdownMenuItem
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer"
+                >
+                  <Camera size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="text-sm font-medium">{language === "fr" ? "Changer ma photo de profil" : "Change profile picture"}</span>
+                </DropdownMenuItem>
+
                 {isPro && (
                   <DropdownMenuItem
                     onClick={() => router.push("/pricing")}

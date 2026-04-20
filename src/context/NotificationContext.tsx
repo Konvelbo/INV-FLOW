@@ -36,7 +36,9 @@ export interface Notification {
 interface NotificationContextType {
   notifications: Notification[];
   addNotification: (
-    notification: Omit<Notification, "id" | "timestamp" | "unread"> & { silent?: boolean },
+    notification: Omit<Notification, "id" | "timestamp" | "unread"> & {
+      silent?: boolean;
+    },
   ) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -77,7 +79,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         try {
           const registration = await navigator.serviceWorker.register("/sw.js");
 
-
           // Once registered, check for subscription
           const subscription = await registration.pushManager.getSubscription();
           if (!subscription && Notification.permission === "granted") {
@@ -116,12 +117,31 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   // Save to localStorage
   useEffect(() => {
     if (isInitialized) {
-      localStorage.setItem("app_notifications", JSON.stringify(notifications));
+      const saved = localStorage.getItem("app_notifications");
+
+      try {
+        const parsed = JSON.parse(saved as string);
+        const findNotifTarget = parsed.find((n: Notification) => n.target);
+        const findNotifTime = parsed.find((n: Notification) => n.timestamp);
+        if (findNotifTarget && findNotifTime) {
+          return;
+        }
+        localStorage.setItem(
+          "app_notifications",
+          JSON.stringify(notifications),
+        );
+      } catch (e) {
+        // Silenced
+      }
     }
   }, [notifications, isInitialized]);
 
   const addNotification = useCallback(
-    (notif: Omit<Notification, "id" | "timestamp" | "unread"> & { silent?: boolean }) => {
+    (
+      notif: Omit<Notification, "id" | "timestamp" | "unread"> & {
+        silent?: boolean;
+      },
+    ) => {
       let finalUser = notif.user;
 
       // Si le nom est "Système", on essaie de récupérer le vrai nom de l'utilisateur
@@ -149,6 +169,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         }),
         unread: true,
       };
+
       setNotifications((prev) => [newNotif, ...prev]);
 
       // Play notification sound

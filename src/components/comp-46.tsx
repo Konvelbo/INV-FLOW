@@ -22,6 +22,7 @@ export default function PhoneInputComponent({
   ...props
 }: PhoneInputProps) {
   const id = useId();
+  const sanitizedValue = value?.replace(/\s/g, "");
 
   return (
     <div className={cn("w-full", className)} dir="ltr">
@@ -33,7 +34,7 @@ export default function PhoneInputComponent({
         inputComponent={PhoneInput}
         international
         onChange={(newValue) => onChange?.(newValue ?? "")}
-        value={value}
+        value={sanitizedValue}
         {...props}
       />
     </div>

@@ -133,27 +133,37 @@ async function incrementInvoiceCount(userId) {
  * Updates a client's invoice counts in the database.
  * This ensures the suggestion logic for recurring invoices works correctly.
  */
-async function updateClientInvoiceCounts(clientId) {
+async function updateClientFinancials(clientId) {
   if (!clientId) return;
   try {
-    const [paidCount, unpaidCount] = await Promise.all([
-      prisma.invoice.count({
-        where: { clientId, status: "paid" },
-      }),
-      prisma.invoice.count({
-        where: { clientId, status: { in: ["pending", "overdue", "draft"] } },
-      }),
-    ]);
+    // Fetch all invoices for this client to calculate real-time stats
+    const invoices = await prisma.invoice.findMany({
+      where: { clientId },
+      select: {
+        status: true,
+        totalTTC: true,
+        totalHT: true,
+        isScaled: true,
+      },
+    });
+
+    const paidInvoices = invoices.filter((i) => i.status === "paid" || i.isScaled);
+    const unpaidInvoices = invoices.filter((i) => !["paid"].includes(i.status) && !i.isScaled);
+
+    const totalSpent = paidInvoices.reduce((sum, i) => sum + (i.totalTTC || i.totalHT || 0), 0);
+    const paidCount = paidInvoices.length;
+    const unpaidCount = unpaidInvoices.length;
 
     await prisma.client.update({
       where: { id: clientId },
       data: {
         paidInvoicesCount: paidCount,
         unpaidInvoicesCount: unpaidCount,
+        totalSpent: totalSpent,
       },
     });
   } catch (err) {
-    console.error("Failed to update client invoice counts", err);
+    console.error("Failed to update client financials", err);
   }
 }
 
@@ -644,7 +654,7 @@ const handlers = {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    return clients.map((client) => {
+    const result = clients.map((client) => {
       const totalSpent = client.invoices
         .filter((inv) => inv.status === "paid" || inv.isScaled)
         .reduce((acc, inv) => acc + (inv.totalTTC || inv.totalHT || 0), 0);
@@ -667,6 +677,26 @@ const handlers = {
         ["pending", "overdue", "draft"].includes(inv.status),
       ).length;
 
+      // Lazy Sync: Update DB if stored stats are incorrect
+      if (
+        client.totalSpent !== totalSpent ||
+        client.paidInvoicesCount !== paidInvoicesCount ||
+        client.unpaidInvoicesCount !== unpaidInvoicesCount
+      ) {
+        prisma.client
+          .update({
+            where: { id: client.id },
+            data: {
+              totalSpent,
+              paidInvoicesCount,
+              unpaidInvoicesCount,
+            },
+          })
+          .catch((err) =>
+            console.error(`Failed to lazy-sync client ${client.id}`, err),
+          );
+      }
+
       const { invoices, ...rest } = client;
       return {
         ...rest,
@@ -677,6 +707,8 @@ const handlers = {
         createdAt: client.createdAt ? client.createdAt.toISOString() : null,
       };
     });
+
+    return result;
   },
 
   products: async (userId, companyId) => {
@@ -913,37 +945,52 @@ const handlers = {
       case "clients":
         title = "Clients";
         columns = [
-          { header: "Nom", key: "name" },
-          { header: "Type", key: "type" },
-          { header: "Statut", key: "status" },
-          { header: "Email", key: "email" },
-          { header: "Téléphone", key: "phone" },
-          { header: "Ville", key: "city" },
-          { header: "Pays", key: "country" },
-          { header: "Total Payé", key: "spent" },
-          { header: "Docs", key: "count" },
+          { header: "Nom", key: "name", width: 25 },
+          { header: "Type", key: "type", width: 15 },
+          { header: "Statut", key: "status", width: 12 },
+          { header: "Email", key: "email", width: 25 },
+          { header: "Téléphone", key: "phone", width: 20 },
+          { header: "Adresse", key: "address", width: 30 },
+          { header: "Ville / Région", key: "city", width: 20 },
+          { header: "Pays", key: "country", width: 15 },
+          { header: "Code Postal", key: "zipCode", width: 12 },
+          { header: "IFU / NIF", key: "taxId", width: 20 },
+          { header: "Total Payé", key: "spent", width: 15 },
+          { header: "Docs Payés", key: "paidCount", width: 15 },
+          { header: "Total Doc", key: "totalDoc", width: 10 },
         ];
-        const clients = await prisma.client.findMany({ where: whereClause });
+        const clients = await prisma.client.findMany({ 
+          where: whereClause,
+          include: {
+            _count: {
+              select: { invoices: true }
+            }
+          }
+        });
         rows = clients.map((c) => ({
           name: c.name,
           type: c.type === "company" ? "Entreprise" : "Particulier",
           status: c.status || "Actif",
           email: c.email || "",
           phone: c.phone || "",
+          address: c.address || "",
           city: c.city || "",
           country: c.country || "",
+          zipCode: c.zipCode || "",
+          taxId: c.taxId || "",
           spent: c.totalSpent || 0,
-          count: c.paidInvoicesCount || 0,
+          paidCount: c.paidInvoicesCount || 0,
+          totalDoc: c._count?.invoices || 0,
         }));
         break;
       case "expenses":
         title = "Dépenses";
         columns = [
-          { header: "Titre", key: "title" },
-          { header: "Montant", key: "amount" },
-          { header: "Catégorie", key: "cat" },
-          { header: "Date", key: "date" },
-          { header: "Description", key: "desc" },
+          { header: "Titre", key: "title", width: 25 },
+          { header: "Montant", key: "amount", width: 15 },
+          { header: "Catégorie", key: "cat", width: 20 },
+          { header: "Date", key: "date", width: 12 },
+          { header: "Description", key: "desc", width: 40 },
         ];
         const expenses = await prisma.expense.findMany({ where: whereClause });
         rows = expenses.map((e) => ({
@@ -951,17 +998,17 @@ const handlers = {
           amount: e.amount,
           cat: e.category,
           date: e.date.toISOString().split("T")[0],
-          desc: e.description || "",
+          desc: e.description ? (e.description.length > 150 ? e.description.slice(0, 150) + "..." : e.description) : "",
         }));
         break;
       case "products":
         title = "Catalogue";
         columns = [
-          { header: "Nom", key: "name" },
-          { header: "Prix HT", key: "price" },
-          { header: "TVA (%)", key: "tax" },
-          { header: "Unité", key: "unit" },
-          { header: "Description", key: "desc" },
+          { header: "Nom", key: "name", width: 30 },
+          { header: "Prix HT", key: "price", width: 15 },
+          { header: "TVA (%)", key: "tax", width: 12 },
+          { header: "Unité", key: "unit", width: 10 },
+          { header: "Description", key: "desc", width: 50 },
         ];
         const products = await prisma.product.findMany({ where: { userId } });
         rows = products.map((p) => ({
@@ -969,7 +1016,7 @@ const handlers = {
           price: p.price,
           tax: p.taxRate,
           unit: p.unit || "U",
-          desc: p.description || "",
+          desc: p.description ? (p.description.length > 150 ? p.description.slice(0, 150) + "..." : p.description) : "",
         }));
         break;
       case "overview":
@@ -1391,16 +1438,18 @@ const actionHandlers = {
         // 2. Products & Services
         if (products.length > 0) {
           const prodCols = [
-            { header: "Nom", key: "name" },
-            { header: "Description", key: "desc" },
-            { header: "Prix", key: "price" },
-            { header: "Type", key: "type" },
+            { header: "Nom", key: "name", width: 25 },
+            { header: "Prix HT", key: "price", width: 15 },
+            { header: "TVA (%)", key: "tax", width: 12 },
+            { header: "Type", key: "type", width: 15 },
+            { header: "Description", key: "desc", width: 40 },
           ];
           const prodRows = products.map((p) => ({
             name: p.name,
-            desc: p.description,
             price: p.price,
+            tax: p.taxRate || 0,
             type: p.type,
+            desc: p.description ? (p.description.length > 150 ? p.description.slice(0, 150) + "..." : p.description) : "",
           }));
           const prodExcel = await generateExcel(
             `Produits_${company.name}`,
@@ -1417,16 +1466,34 @@ const actionHandlers = {
         // 3. Clients
         if (clients.length > 0) {
           const clientCols = [
-            { header: "Nom", key: "name" },
-            { header: "Email", key: "email" },
-            { header: "Téléphone", key: "phone" },
-            { header: "Adresse", key: "addr" },
+            { header: "Nom", key: "name", width: 25 },
+            { header: "Type", key: "type", width: 15 },
+            { header: "Statut", key: "status", width: 12 },
+            { header: "Email", key: "email", width: 25 },
+            { header: "Téléphone", key: "phone", width: 20 },
+            { header: "Adresse", key: "address", width: 30 },
+            { header: "Ville / Région", key: "city", width: 20 },
+            { header: "Pays", key: "country", width: 15 },
+            { header: "Code Postal", key: "zipCode", width: 12 },
+            { header: "IFU / NIF", key: "taxId", width: 20 },
+            { header: "Total Payé", key: "spent", width: 15 },
+            { header: "Docs Payés", key: "paidCount", width: 15 },
+            { header: "Total Doc", key: "totalDoc", width: 10 },
           ];
           const clientRows = clients.map((c) => ({
             name: c.name,
-            email: c.email,
-            phone: c.phone,
-            addr: c.address,
+            type: c.type === "company" ? "Entreprise" : "Particulier",
+            status: c.status || "Actif",
+            email: c.email || "",
+            phone: c.phone || "",
+            address: c.address || "",
+            city: c.city || "",
+            country: c.country || "",
+            zipCode: c.zipCode || "",
+            taxId: c.taxId || "",
+            spent: c.totalSpent || 0,
+            paidCount: c.paidInvoicesCount || 0,
+            totalDoc: invoices.filter(inv => inv.clientId === c.id).length,
           }));
           const clientExcel = await generateExcel(
             `Clients_${company.name}`,
@@ -1443,16 +1510,18 @@ const actionHandlers = {
         // 4. Expenses
         if (expenses.length > 0) {
           const expCols = [
-            { header: "Titre", key: "title" },
-            { header: "Montant", key: "amt" },
-            { header: "Date", key: "date" },
-            { header: "Catégorie", key: "cat" },
+            { header: "Titre", key: "title", width: 30 },
+            { header: "Montant", key: "amt", width: 20 },
+            { header: "Date", key: "date", width: 15 },
+            { header: "Catégorie", key: "cat", width: 25 },
+            { header: "Description", key: "desc", width: 50 },
           ];
           const expRows = expenses.map((e) => ({
             title: e.title,
             amt: e.amount,
             date: e.date.toLocaleDateString(),
             cat: e.category,
+            desc: e.description ? (e.description.length > 150 ? e.description.slice(0, 150) + "..." : e.description) : "",
           }));
           const expExcel = await generateExcel(
             `Depenses_${company.name}`,
@@ -1474,13 +1543,15 @@ const actionHandlers = {
             { header: "Client", key: "client" },
             { header: "Montant", key: "amt" },
             { header: "Statut", key: "stat" },
+            { header: "Description", key: "desc" },
           ];
           const invRows = invoices.map((i) => ({
             ref: i.reference,
             date: i.createdAt.toLocaleDateString(),
             client: i.clientName,
-            amt: i.totalTTC || i.totalHT,
+            amt: i.totalTTC || i.totalHT || 0,
             stat: i.status,
+            desc: i.description ? (i.description.length > 150 ? i.description.slice(0, 150) + "..." : i.description) : "",
           }));
           const invExcel = await generateExcel(
             `Factures_${company.name}`,
@@ -1907,7 +1978,7 @@ const actionHandlers = {
         
         // Update client counts
         if (created.clientId) {
-          await updateClientInvoiceCounts(created.clientId);
+          await updateClientFinancials(created.clientId);
         }
 
         return created;
@@ -1950,7 +2021,7 @@ const actionHandlers = {
           }
           
           if (createdFallback.clientId) {
-            await updateClientInvoiceCounts(createdFallback.clientId);
+            await updateClientFinancials(createdFallback.clientId);
           }
           
           return createdFallback;
@@ -2119,7 +2190,7 @@ const actionHandlers = {
 
       // Update client counts
       if (updated?.clientId) {
-        await updateClientInvoiceCounts(updated.clientId);
+        await updateClientFinancials(updated.clientId);
       }
 
       return updated;
@@ -2158,7 +2229,7 @@ const actionHandlers = {
       const updated = await prisma.invoice.findUnique({ where: { id, userId } });
       
       if (updated?.clientId) {
-        await updateClientInvoiceCounts(updated.clientId);
+        await updateClientFinancials(updated.clientId);
       }
 
       return updated;
@@ -2173,7 +2244,7 @@ const actionHandlers = {
       });
 
       if (invoice.clientId) {
-        await updateClientInvoiceCounts(invoice.clientId);
+        await updateClientFinancials(invoice.clientId);
       }
       return { success: true };
     },
@@ -2433,13 +2504,20 @@ const actionHandlers = {
       });
     },
     update: async (userId, id, data) => {
+      const updateData = {
+        ...sanitizeData(data, true),
+      };
+
+      if (data.startTime !== undefined) {
+        updateData.startTime = data.startTime ? new Date(data.startTime) : null;
+      }
+      if (data.endTime !== undefined) {
+        updateData.endTime = data.endTime ? new Date(data.endTime) : null;
+      }
+
       await prisma.todo.updateMany({
         where: { id, userId },
-        data: {
-          ...sanitizeData(data, true),
-          startTime: data.startTime ? new Date(data.startTime) : undefined,
-          endTime: data.endTime ? new Date(data.endTime) : undefined,
-        },
+        data: updateData,
       });
       return await prisma.todo.findUnique({ where: { id, userId } });
     },

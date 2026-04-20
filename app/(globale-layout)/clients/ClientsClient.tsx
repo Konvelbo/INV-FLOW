@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useDeferredValue, useMemo } from "react";
 import { useLanguage } from "@/src/context/LanguageContext";
 import {
   Card,
@@ -40,6 +40,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useIPCAction } from "@/hooks/useIPCAction";
 import PhoneInput from "@/src/components/comp-46";
+import CountrySelect from "@/src/components/country&regionSelect/country-select";
+import RegionSelect from "@/src/components/country&regionSelect/region-select";
 
 interface Client {
   id: string;
@@ -111,6 +113,14 @@ export default function ClientsClient({
     taxId: "",
   });
 
+  const handleCountryChange = useCallback((val: string) => {
+    setFormData((prev) => ({ ...prev, country: val, city: "" }));
+  }, []);
+
+  const handleRegionChange = useCallback((val: string) => {
+    setFormData((prev) => ({ ...prev, city: val }));
+  }, []);
+
   const fetchClients = useCallback(async () => {
     try {
       const result = await (window as any).electronAPI.getData("clients", userId);
@@ -122,7 +132,7 @@ export default function ClientsClient({
     }
   }, [userId]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     const method = editingId ? "update" : "create";
     const params = editingId ? [editingId, formData] : [formData];
@@ -134,9 +144,9 @@ export default function ClientsClient({
       resetForm();
       fetchClients();
     }
-  };
+  }, [editingId, formData, performAction, fetchClients]);
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = useCallback(async (id: string, name: string) => {
     if (!confirm(t("clientDeleteWarning").replace("{name}", name))) return;
 
     const res = await performAction("clients", "delete", id);
@@ -144,9 +154,9 @@ export default function ClientsClient({
     if (res.success) {
       fetchClients();
     }
-  };
+  }, [t, performAction, fetchClients]);
 
-  const openEdit = (client: Client) => {
+  const openEdit = useCallback((client: Client) => {
     setEditingId(client.id);
     setFormData({
       name: client.name,
@@ -170,9 +180,9 @@ export default function ClientsClient({
       taxId: client.taxId || "",
     });
     setIsDialogOpen(true);
-  };
+  }, []);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setEditingId(null);
     setFormData({
       name: "",
@@ -195,9 +205,9 @@ export default function ClientsClient({
       zipCode: "",
       taxId: "",
     });
-  };
+  }, []);
 
-  const handleExport = async (format = "excel") => {
+  const handleExport = useCallback(async (format = "excel") => {
     setIsExporting(true);
     const toastId = toast.loading(t("processing"), { id: "client-export" });
     try {
@@ -228,19 +238,172 @@ export default function ClientsClient({
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [t]);
 
-  const filteredClients = clients.filter((c) => {
-    const searchString = search.toLowerCase();
-    const fullName = `${c.firstName || ""} ${c.name || ""}`.toLowerCase();
+  const deferredSearch = useDeferredValue(search);
+
+  const filteredClients = useMemo(() => {
+    return clients.filter((c) => {
+      const searchString = deferredSearch.toLowerCase();
+      const fullName = `${c.firstName || ""} ${c.name || ""}`.toLowerCase();
+      return (
+        fullName.includes(searchString) ||
+        (c.companyName && c.companyName.toLowerCase().includes(searchString)) ||
+        (c.email && c.email.toLowerCase().includes(searchString)) ||
+        (c.phone && c.phone.toLowerCase().includes(searchString)) ||
+        (c.contact && c.contact.toLowerCase().includes(searchString))
+      );
+    });
+  }, [clients, deferredSearch]);
+
+  const renderedClientsGrid = useMemo(() => {
     return (
-      fullName.includes(searchString) ||
-      (c.companyName && c.companyName.toLowerCase().includes(searchString)) ||
-      (c.email && c.email.toLowerCase().includes(searchString)) ||
-      (c.phone && c.phone.toLowerCase().includes(searchString)) ||
-      (c.contact && c.contact.toLowerCase().includes(searchString))
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-200">
+        {filteredClients.length > 0 ? (
+          filteredClients.map((client) => (
+            <Card
+              key={client.id}
+              className="group bg-card border border-border/40 shadow-lg hover:shadow-md hover:border-primary/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
+            >
+              <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                      {client.firstName?.[0] || ""}
+                      {client.name?.[0] || "C"}
+                    </div>
+                    <div className="space-y-0.5">
+                      <CardTitle className="text-lg font-bold tracking-tight text-foreground line-clamp-1">
+                        {client.firstName
+                          ? `${client.firstName} ${client.name}`
+                          : client.name}
+                      </CardTitle>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                            client.type === "company"
+                              ? "bg-primary/5 text-primary border-primary/10"
+                              : "bg-orange-500/5 text-orange-500 border-orange-500/10",
+                          )}
+                        >
+                          {client.type === "company"
+                            ? t("company")
+                            : t("individual")}
+                        </div>
+                        <div className="px-3 py-1 rounded-full bg-emerald-500/5 text-emerald-500 border border-emerald-500/10 text-[10px] font-black uppercase tracking-widest">
+                          {t("active")}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      onClick={() => openEdit(client)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      onClick={() => handleDelete(client.id, client.name)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 pt-5 space-y-5 flex-1 flex flex-col justify-between">
+                <div className="space-y-3">
+                  {client.email && (
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground group/item">
+                      <div className="p-1.5 rounded-md bg-muted/50 group-hover/item:text-primary transition-colors">
+                        <Mail className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="truncate">{client.email}</span>
+                    </div>
+                  )}
+                  {client.phone && (
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground group/item">
+                      <div className="p-1.5 rounded-md bg-muted/50 group-hover/item:text-primary transition-colors">
+                        <Phone className="w-3.5 h-3.5" />
+                      </div>
+                      <span>{client.phone}</span>
+                    </div>
+                  )}
+                  {client.address && (
+                    <div className="flex items-start gap-3 text-xs text-muted-foreground group/item">
+                      <div className="p-1.5 rounded-md bg-muted/50 group-hover/item:text-primary transition-colors shrink-0">
+                        <MapPin className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="line-clamp-2">{client.address}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-5 border-t border-border/10">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {t("totalPaid")}
+                      </span>
+                      <p className="text-lg font-black text-primary tracking-tight">
+                        {(client.totalSpent || 0).toLocaleString()}{" "}
+                        <span className="text-[10px] opacity-70">CFA</span>
+                      </p>
+                    </div>
+                    <div className="space-y-1 text-right">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {t("totalInvoices")}
+                      </span>
+                      <p className="text-lg font-black text-foreground tracking-tight">
+                        {client._count?.invoices || 0}{" "}
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Docs
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/5 border border-emerald-500/10 mb-2">
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest italic">
+                      {t("paid")}
+                    </span>
+                    <span className="text-xs font-black text-emerald-600">
+                      {client.paidInvoicesCount || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-orange-500/5 border border-orange-500/10">
+                    <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest">
+                      {t("pendingOverdue")}
+                    </span>
+                    <span className="text-xs font-black text-orange-600">
+                      {client.unpaidInvoicesCount || 0}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl">
+            <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p className="text-lg">{t("noClientFound")}</p>
+            <Button
+              variant="link"
+              onClick={() => setIsDialogOpen(true)}
+              className="mt-2 text-primary gap-1"
+            >
+              <Plus className="w-4 h-4" /> {t("addFirstClient")}
+            </Button>
+          </div>
+        )}
+      </div>
     );
-  });
+  }, [filteredClients, t, openEdit, handleDelete]);
 
   return (
     <div
@@ -420,19 +583,28 @@ export default function ClientsClient({
                         placeholder="123 rue de la Paix"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="city">{t("city")}</Label>
-                        <Input
-                          id="city"
-                          value={formData.city}
-                          onChange={(e) =>
-                            setFormData({ ...formData, city: e.target.value })
-                          }
+                        <Label htmlFor="country">{t("country")}</Label>
+                        <CountrySelect
+                          placeholder={t("selectCountry")}
+                          onChange={handleCountryChange}
                           className="bg-background/50 border-border/50"
-                          placeholder="Paris"
+                          defaultValue={formData.country || ""}
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">{t("region")}</Label>
+                        <RegionSelect
+                          countryCode={formData.country}
+                          placeholder={t("selectRegion")}
+                          onChange={handleRegionChange}
+                          className="bg-background/50 border-border/50"
+                          defaultValue={formData.city || ""}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="zipCode">{t("zipCode")}</Label>
                         <Input
@@ -641,150 +813,7 @@ export default function ClientsClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-200">
-          {filteredClients.length > 0 ? (
-            filteredClients.map((client) => (
-              <Card
-                key={client.id}
-                className="group bg-card border border-border/40 shadow-lg hover:shadow-md hover:border-primary/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
-              >
-                <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                      <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                        {client.firstName?.[0] || ""}
-                        {client.name?.[0] || "C"}
-                      </div>
-                      <div className="space-y-0.5">
-                        <CardTitle className="text-lg font-bold tracking-tight text-foreground line-clamp-1">
-                          {client.firstName
-                            ? `${client.firstName} ${client.name}`
-                            : client.name}
-                        </CardTitle>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                              client.type === "company"
-                                ? "bg-primary/5 text-primary border-primary/10"
-                                : "bg-orange-500/5 text-orange-500 border-orange-500/10",
-                            )}
-                          >
-                            {client.type === "company"
-                              ? t("company")
-                              : t("individual")}
-                          </div>
-                          <div className="px-3 py-1 rounded-full bg-emerald-500/5 text-emerald-500 border border-emerald-500/10 text-[10px] font-black uppercase tracking-widest">
-                            {t("active")}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        onClick={() => openEdit(client)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        onClick={() => handleDelete(client.id, client.name)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 pt-5 space-y-5 flex-1 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    {client.email && (
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground group/item">
-                        <div className="p-1.5 rounded-md bg-muted/50 group-hover/item:text-primary transition-colors">
-                          <Mail className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="truncate">{client.email}</span>
-                      </div>
-                    )}
-                    {client.phone && (
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground group/item">
-                        <div className="p-1.5 rounded-md bg-muted/50 group-hover/item:text-primary transition-colors">
-                          <Phone className="w-3.5 h-3.5" />
-                        </div>
-                        <span>{client.phone}</span>
-                      </div>
-                    )}
-                    {client.address && (
-                      <div className="flex items-start gap-3 text-xs text-muted-foreground group/item">
-                        <div className="p-1.5 rounded-md bg-muted/50 group-hover/item:text-primary transition-colors shrink-0">
-                          <MapPin className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="line-clamp-2">{client.address}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-5 border-t border-border/10">
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                          {t("totalPaid")}
-                        </span>
-                        <p className="text-lg font-black text-primary tracking-tight">
-                          {(client.totalSpent || 0).toLocaleString()}{" "}
-                          <span className="text-[10px] opacity-70">CFA</span>
-                        </p>
-                      </div>
-                      <div className="space-y-1 text-right">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                          {t("totalInvoices")}
-                        </span>
-                        <p className="text-lg font-black text-foreground tracking-tight">
-                          {client._count?.invoices || 0}{" "}
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                            Docs
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/5 border border-emerald-500/10 mb-2">
-                      <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest italic">
-                        {t("paid")}
-                      </span>
-                      <span className="text-xs font-black text-emerald-600">
-                        {client.paidInvoicesCount || 0}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-orange-500/5 border border-orange-500/10">
-                      <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest">
-                        {t("pendingOverdue")}
-                      </span>
-                      <span className="text-xs font-black text-orange-600">
-                        {client.unpaidInvoicesCount || 0}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="text-lg">{t("noClientFound")}</p>
-              <Button
-                variant="link"
-                onClick={() => setIsDialogOpen(true)}
-                className="mt-2 text-primary gap-1"
-              >
-                <Plus className="w-4 h-4" /> {t("addFirstClient")}
-              </Button>
-            </div>
-          )}
-        </div>
+        {renderedClientsGrid}
       </div>
     </div>
   );

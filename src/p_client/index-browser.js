@@ -171,6 +171,8 @@ exports.Prisma.CompanyScalarFieldEnum = {
   annualRevenue: 'annualRevenue',
   monthlyRevenue: 'monthlyRevenue',
   employeeCount: 'employeeCount',
+  country: 'country',
+  region: 'region',
   departments: 'departments',
   userId: 'userId',
   createdAt: 'createdAt',

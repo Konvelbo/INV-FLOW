@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { Card, CardContent } from "@/src/components/ui/card";
@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import PhoneInput from "@/src/components/comp-46";
 import { cn } from "@/lib/utils";
+import CountrySelect from "@/src/components/country&regionSelect/country-select";
+import RegionSelect from "@/src/components/country&regionSelect/region-select";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +80,8 @@ interface Company {
   monthlyRevenue: number | null;
   employeeCount: number | null;
   departments: string | null;
+  country: string | null;
+  region: string | null;
 }
 
 const ALL_DEPARTMENTS = [
@@ -147,9 +151,19 @@ export default function CompaniesClient({
     monthlyRevenue: "",
     employeeCount: "",
     departments: "",
+    country: "",
+    region: "",
   });
 
   const [deptSearch, setDeptSearch] = useState("");
+
+  const handleCountryChange = useCallback((val: string) => {
+    setFormData((prev) => ({ ...prev, country: val, region: "" }));
+  }, []);
+
+  const handleRegionChange = useCallback((val: string) => {
+    setFormData((prev) => ({ ...prev, region: val }));
+  }, []);
 
   const fetchCompanies = useCallback(async () => {
     const userStr = localStorage.getItem("user");
@@ -182,7 +196,7 @@ export default function CompaniesClient({
     fetchCompanies();
   }, [fetchCompanies]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setEditingCompany(null);
     setFormData({
       name: "",
@@ -203,10 +217,12 @@ export default function CompaniesClient({
       monthlyRevenue: "",
       employeeCount: "",
       departments: "",
+      country: "",
+      region: "",
     });
-  };
+  }, []);
 
-  const openEdit = (c: Company) => {
+  const openEdit = useCallback((c: Company) => {
     setEditingCompany(c);
     setFormData({
       name: c.name,
@@ -227,9 +243,11 @@ export default function CompaniesClient({
       monthlyRevenue: c.monthlyRevenue?.toString() || "",
       employeeCount: c.employeeCount?.toString() || "",
       departments: c.departments || "",
+      country: c.country || "",
+      region: c.region || "",
     });
     setIsDialogOpen(true);
-  };
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,7 +271,7 @@ export default function CompaniesClient({
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = useCallback(async (id: string, name: string) => {
     if (!confirm(t("deleteStructureWarning"))) return;
 
     const res = await performAction("companies", "delete", id);
@@ -262,9 +280,9 @@ export default function CompaniesClient({
       toast.success(t("companyDeleted") || "Entreprise supprimée");
       fetchCompanies();
     }
-  };
+  }, [t, performAction, fetchCompanies]);
 
-  const handleSetActive = async (companyId: string) => {
+  const handleSetActive = useCallback(async (companyId: string) => {
     const res = await performAction("companies", "setActive", companyId);
     if (res.success) {
       setActiveCompanyId(companyId);
@@ -280,7 +298,7 @@ export default function CompaniesClient({
       toast.success(t("companyActivated") || "Entreprise activée");
       window.dispatchEvent(new CustomEvent("session-update"));
     }
-  };
+  }, [performAction, companies, t]);
 
   const handleGlobalExport = async () => {
     setIsExporting(true);
@@ -310,7 +328,7 @@ export default function CompaniesClient({
     }
   };
 
-  const handleExportCompany = async (companyId: string, companyName: string) => {
+  const handleExportCompany = useCallback(async (companyId: string, companyName: string) => {
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
@@ -340,7 +358,7 @@ export default function CompaniesClient({
       console.error(error);
       toast.error(t("exportError"));
     }
-  };
+  }, [t]);
 
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -363,6 +381,232 @@ export default function CompaniesClient({
     };
     reader.readAsDataURL(file);
   };
+
+  const renderedStatsCards = useMemo(() => {
+    if (!stats) return null;
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-200">
+        {[
+          {
+            label: t("totalRevenue"),
+            value: formatPrice(stats.totalRevenue, currency, locale),
+            icon: TrendingUp,
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+          },
+          {
+            label: t("totalLoss"),
+            value: formatPrice(stats.totalLoss, currency, locale),
+            icon: TrendingDown,
+            color: "text-rose-500",
+            bg: "bg-rose-500/10",
+          },
+          {
+            label: t("totalExpenses"),
+            value: formatPrice(stats.totalExpenses, currency, locale),
+            icon: Receipt,
+            color: "text-amber-500",
+            bg: "bg-amber-500/10",
+          },
+          {
+            label: t("totalClients"),
+            value: stats.totalClients,
+            icon: Users2,
+            color: "text-blue-500",
+            bg: "bg-blue-500/10",
+          },
+        ].map((stat, i) => (
+          <div
+            key={i}
+            className="p-6 rounded-[2rem] bg-card/40 border border-white/5 backdrop-blur-2xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-500 shadow-xl overflow-hidden relative"
+          >
+            <div
+              className={cn(
+                "size-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 relative z-10",
+                stat.bg,
+                stat.color,
+              )}
+            >
+              <stat.icon className="size-6" />
+            </div>
+            <div className="space-y-1 relative z-10">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                {stat.label}
+              </p>
+              <p className="text-2xl font-black tracking-tighter">
+                {stat.value}
+              </p>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-primary/10 transition-colors" />
+          </div>
+        ))}
+      </div>
+    );
+  }, [stats, currency, locale, t]);
+
+  const renderedCompaniesGrid = useMemo(() => {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up delay-100">
+        {companies.length > 0 ? (
+          companies.map((company) => (
+            <Card
+              key={company.id}
+              className="group bg-card border border-border/40 shadow-lg hover:shadow-lg hover:border-primary/20 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col h-full"
+            >
+              <CardContent className="p-8 pb-6 flex-1 flex flex-col">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="size-20 rounded-2xl bg-primary/5 border border-primary/10 p-4 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-105 transition-transform duration-300 relative">
+                    {company.logoUrl ? (
+                      <Image
+                        src={company.logoUrl}
+                        alt={company.name}
+                        fill
+                        className="object-contain"
+                      />
+                    ) : (
+                      <Building2 className="size-10 text-primary/40" />
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-xl text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
+                      onClick={() => handleExportCompany(company.id, company.name)}
+                      title={"Exporter les stats de cette entreprise"}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={cn(
+                        "h-10 w-10 rounded-xl transition-all",
+                        activeCompanyId === company.id
+                          ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
+                          : "text-slate-400 border-white/10 hover:bg-white/5",
+                      )}
+                      onClick={() => handleSetActive(company.id)}
+                      title={
+                        activeCompanyId === company.id
+                          ? t("activeCompany") || "Entreprise active"
+                          : t("setActiveCompany") || "Définir comme active"
+                      }
+                    >
+                      <CheckCircle2
+                        className={cn(
+                          "w-5 h-5",
+                          activeCompanyId === company.id
+                            ? "scale-110"
+                            : "opacity-50",
+                        )}
+                      />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      onClick={() => openEdit(company)}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      onClick={() => handleDelete(company.id, company.name)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1 mb-8">
+                  <h3 className="text-2xl font-black text-foreground tracking-tight leading-none group-hover:text-primary transition-colors">
+                    {company.name}
+                  </h3>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                    {company.legalForm || t("defaultCompanyType") || "Entreprise"} •{" "}
+                    {company.sector || t("unspecifiedSector") || "Secteur non spécifié"}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 pt-8 border-t border-border/10">
+                  <div className="space-y-5">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                        {t("taxIdLabel") || "Identifiant Fiscal"}
+                      </span>
+                      <p className="text-sm font-semibold text-foreground">
+                        {company.taxId || "—"}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                        {t("contactEmail") || "Contact E-mail"}
+                      </span>
+                      <p className="text-sm font-semibold text-foreground break-all">
+                        {company.email || "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-5">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                        {t("regNumberLabel") || "Numéro Registre"}
+                      </span>
+                      <p className="text-sm font-semibold text-foreground">
+                        {company.registrationNumber || "—"}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                        {t("phone_label") || "Téléphone"}
+                      </span>
+                      <p className="text-sm font-semibold text-foreground">
+                        {company.phone || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 pt-6 mt-6 border-t border-border/10">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">
+                      {t("annualRevenue") || "CA Annuel"}
+                    </span>
+                    <p className="text-sm font-black text-foreground">
+                      {company.annualRevenue ? formatPrice(company.annualRevenue, currency, locale) : "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-primary/80 uppercase tracking-widest block">
+                      {t("monthly_revenue") || "CA Mensuel"}
+                    </span>
+                    <p className="text-sm font-black text-foreground">
+                      {company.monthlyRevenue ? formatPrice(company.monthlyRevenue, currency, locale) : "—"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl animate-fade-in-up">
+            <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p className="text-lg">{t("noCompanyFound") || "Aucune entreprise trouvée"}</p>
+            <Button
+              variant="link"
+              onClick={() => setIsDialogOpen(true)}
+              className="mt-2 text-primary gap-1"
+            >
+              <Plus className="w-4 h-4" /> {t("addFirstCompany") || "Ajouter votre première entreprise"}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }, [companies, activeCompanyId, currency, locale, t, handleExportCompany, handleSetActive, openEdit, handleDelete]);
 
   return (
     <div className="min-h-full min-w-full bg-background text-foreground p-5 md:p-10 lg:p-16 pt-28 md:pt-28 lg:pt-28 relative pb-20">
@@ -586,6 +830,25 @@ export default function CompaniesClient({
                           setFormData({ ...formData, email: e.target.value })
                         }
                         className="bg-background/50 border-border/50"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="country">{t("country")}</Label>
+                      <CountrySelect
+                        placeholder={t("selectCountry")}
+                        onChange={handleCountryChange}
+                        className="bg-background/50 border-border/50"
+                        defaultValue={formData.country}
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="region">{t("region")}</Label>
+                      <RegionSelect
+                        countryCode={formData.country}
+                        placeholder={t("selectRegion")}
+                        onChange={handleRegionChange}
+                        className="bg-background/50 border-border/50"
+                        defaultValue={formData.region}
                       />
                     </div>
                     <div className="space-y-3">
@@ -928,222 +1191,9 @@ export default function CompaniesClient({
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-200">
-          {[
-            {
-              label: t("totalRevenue"),
-              value: formatPrice(stats.totalRevenue, currency, locale),
-              icon: TrendingUp,
-              color: "text-emerald-500",
-              bg: "bg-emerald-500/10",
-            },
-            {
-              label: t("totalLoss"),
-              value: formatPrice(stats.totalLoss, currency, locale),
-              icon: TrendingDown,
-              color: "text-rose-500",
-              bg: "bg-rose-500/10",
-            },
-            {
-              label: t("totalExpenses"),
-              value: formatPrice(stats.totalExpenses, currency, locale),
-              icon: Receipt,
-              color: "text-amber-500",
-              bg: "bg-amber-500/10",
-            },
-            {
-              label: t("totalClients"),
-              value: stats.totalClients,
-              icon: Users2,
-              color: "text-blue-500",
-              bg: "bg-blue-500/10",
-            },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              className="p-6 rounded-[2rem] bg-card/40 border border-white/5 backdrop-blur-2xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-500 shadow-xl overflow-hidden relative"
-            >
-              <div
-                className={cn(
-                  "size-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 relative z-10",
-                  stat.bg,
-                  stat.color,
-                )}
-              >
-                <stat.icon className="size-6" />
-              </div>
-              <div className="space-y-1 relative z-10">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-black tracking-tighter">
-                  {stat.value}
-                </p>
-              </div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-primary/10 transition-colors" />
-            </div>
-          ))}
-        </div>
+        {renderedStatsCards}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up delay-100">
-          {companies.length > 0 ? (
-            companies.map((company) => (
-              <Card
-                key={company.id}
-                className="group bg-card border border-border/40 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 rounded-3xl overflow-hidden flex flex-col h-full"
-              >
-                <CardContent className="p-8 pb-6 flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="size-20 rounded-2xl bg-primary/5 border border-primary/10 p-4 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-105 transition-transform duration-300 relative">
-                      {company.logoUrl ? (
-                        <Image
-                          src={company.logoUrl}
-                          alt={company.name}
-                          fill
-                          className="object-contain"
-                        />
-                      ) : (
-                        <Building2 className="size-10 text-primary/40" />
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
-                        onClick={() => handleExportCompany(company.id, company.name)}
-                        title={"Exporter les stats de cette entreprise"}
-                      >
-                        <Download className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className={cn(
-                          "h-10 w-10 rounded-xl transition-all",
-                          activeCompanyId === company.id
-                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
-                            : "text-slate-400 border-white/10 hover:bg-white/5",
-                        )}
-                        onClick={() => handleSetActive(company.id)}
-                        title={
-                          activeCompanyId === company.id
-                            ? t("activeCompany") || "Entreprise active"
-                            : t("setActiveCompany") || "Définir comme active"
-                        }
-                      >
-                        <CheckCircle2
-                          className={cn(
-                            "w-5 h-5",
-                            activeCompanyId === company.id
-                              ? "scale-110"
-                              : "opacity-50",
-                          )}
-                        />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        onClick={() => openEdit(company)}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        onClick={() => handleDelete(company.id, company.name)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 mb-8">
-                    <h3 className="text-2xl font-black text-foreground tracking-tight leading-none group-hover:text-primary transition-colors">
-                      {company.name}
-                    </h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      {company.legalForm || t("defaultCompanyType") || "Entreprise"} •{" "}
-                      {company.sector || t("unspecifiedSector") || "Secteur non spécifié"}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-8 pt-8 border-t border-border/10">
-                    <div className="space-y-5">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          {t("taxIdLabel") || "Identifiant Fiscal"}
-                        </span>
-                        <p className="text-sm font-semibold text-foreground">
-                          {company.taxId || "—"}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          {t("contactEmail") || "Contact E-mail"}
-                        </span>
-                        <p className="text-sm font-semibold text-foreground break-all">
-                          {company.email || "—"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-5">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          {t("regNumberLabel") || "Numéro Registre"}
-                        </span>
-                        <p className="text-sm font-semibold text-foreground">
-                          {company.registrationNumber || "—"}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                          {t("phone_label") || "Téléphone"}
-                        </span>
-                        <p className="text-sm font-semibold text-foreground">
-                          {company.phone || "—"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-8 pt-6 mt-6 border-t border-border/10">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">
-                        {t("annualRevenue") || "CA Annuel"}
-                      </span>
-                      <p className="text-sm font-black text-foreground">
-                        {company.annualRevenue ? formatPrice(company.annualRevenue, currency, locale) : "—"}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-bold text-primary/80 uppercase tracking-widest block">
-                        {t("monthly_revenue") || "CA Mensuel"}
-                      </span>
-                      <p className="text-sm font-black text-foreground">
-                        {company.monthlyRevenue ? formatPrice(company.monthlyRevenue, currency, locale) : "—"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl animate-fade-in-up">
-              <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="text-lg">{t("noCompanyFound") || "Aucune entreprise trouvée"}</p>
-              <Button
-                variant="link"
-                onClick={() => setIsDialogOpen(true)}
-                className="mt-2 text-primary gap-1"
-              >
-                <Plus className="w-4 h-4" /> {t("addFirstCompany") || "Ajouter votre première entreprise"}
-              </Button>
-            </div>
-          )}
-        </div>
+        {renderedCompaniesGrid}
       </div>
     </div>
   );

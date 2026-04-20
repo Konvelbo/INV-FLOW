@@ -201,6 +201,19 @@ export default function UserMenu() {
           <DropdownMenuSeparator className="bg-border/50" />
 
           <DropdownMenuGroup className="space-y-1">
+            <DropdownMenuItem
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group cursor-pointer"
+            >
+              <Camera
+                size={18}
+                className="text-muted-foreground group-hover:text-primary transition-colors"
+              />
+              <span className="font-sans font-medium text-sm text-foreground">
+                {language === "fr" ? "Changer la photo de profil" : "Change profile picture"}
+              </span>
+            </DropdownMenuItem>
+
             {isPro && (
               <DropdownMenuItem
                 onClick={() => router.push("/pricing")}

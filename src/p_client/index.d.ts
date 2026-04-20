@@ -4858,6 +4858,8 @@ export namespace Prisma {
     annualRevenue: number | null
     monthlyRevenue: number | null
     employeeCount: number | null
+    country: string | null
+    region: string | null
     departments: string | null
     userId: string | null
     createdAt: Date | null
@@ -4884,6 +4886,8 @@ export namespace Prisma {
     annualRevenue: number | null
     monthlyRevenue: number | null
     employeeCount: number | null
+    country: string | null
+    region: string | null
     departments: string | null
     userId: string | null
     createdAt: Date | null
@@ -4910,6 +4914,8 @@ export namespace Prisma {
     annualRevenue: number
     monthlyRevenue: number
     employeeCount: number
+    country: number
+    region: number
     departments: number
     userId: number
     createdAt: number
@@ -4950,6 +4956,8 @@ export namespace Prisma {
     annualRevenue?: true
     monthlyRevenue?: true
     employeeCount?: true
+    country?: true
+    region?: true
     departments?: true
     userId?: true
     createdAt?: true
@@ -4976,6 +4984,8 @@ export namespace Prisma {
     annualRevenue?: true
     monthlyRevenue?: true
     employeeCount?: true
+    country?: true
+    region?: true
     departments?: true
     userId?: true
     createdAt?: true
@@ -5002,6 +5012,8 @@ export namespace Prisma {
     annualRevenue?: true
     monthlyRevenue?: true
     employeeCount?: true
+    country?: true
+    region?: true
     departments?: true
     userId?: true
     createdAt?: true
@@ -5115,6 +5127,8 @@ export namespace Prisma {
     annualRevenue: number | null
     monthlyRevenue: number | null
     employeeCount: number | null
+    country: string | null
+    region: string | null
     departments: string | null
     userId: string
     createdAt: Date | null
@@ -5160,6 +5174,8 @@ export namespace Prisma {
     annualRevenue?: boolean
     monthlyRevenue?: boolean
     employeeCount?: boolean
+    country?: boolean
+    region?: boolean
     departments?: boolean
     userId?: boolean
     createdAt?: boolean
@@ -5195,13 +5211,15 @@ export namespace Prisma {
     annualRevenue?: boolean
     monthlyRevenue?: boolean
     employeeCount?: boolean
+    country?: boolean
+    region?: boolean
     departments?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CompanyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "legalName" | "taxId" | "address" | "email" | "phone" | "logoUrl" | "website" | "leaderName" | "legalForm" | "registrationNumber" | "sector" | "description" | "productsServices" | "targetMarket" | "annualRevenue" | "monthlyRevenue" | "employeeCount" | "departments" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["company"]>
+  export type CompanyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "legalName" | "taxId" | "address" | "email" | "phone" | "logoUrl" | "website" | "leaderName" | "legalForm" | "registrationNumber" | "sector" | "description" | "productsServices" | "targetMarket" | "annualRevenue" | "monthlyRevenue" | "employeeCount" | "country" | "region" | "departments" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["company"]>
   export type CompanyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     invoices?: boolean | Company$invoicesArgs<ExtArgs>
@@ -5242,6 +5260,8 @@ export namespace Prisma {
       annualRevenue: number | null
       monthlyRevenue: number | null
       employeeCount: number | null
+      country: string | null
+      region: string | null
       departments: string | null
       userId: string
       createdAt: Date | null
@@ -5663,6 +5683,8 @@ export namespace Prisma {
     readonly annualRevenue: FieldRef<"Company", 'Float'>
     readonly monthlyRevenue: FieldRef<"Company", 'Float'>
     readonly employeeCount: FieldRef<"Company", 'Int'>
+    readonly country: FieldRef<"Company", 'String'>
+    readonly region: FieldRef<"Company", 'String'>
     readonly departments: FieldRef<"Company", 'String'>
     readonly userId: FieldRef<"Company", 'String'>
     readonly createdAt: FieldRef<"Company", 'DateTime'>
@@ -18453,6 +18475,8 @@ export namespace Prisma {
     annualRevenue: 'annualRevenue',
     monthlyRevenue: 'monthlyRevenue',
     employeeCount: 'employeeCount',
+    country: 'country',
+    region: 'region',
     departments: 'departments',
     userId: 'userId',
     createdAt: 'createdAt',
@@ -19032,6 +19056,8 @@ export namespace Prisma {
     annualRevenue?: FloatNullableFilter<"Company"> | number | null
     monthlyRevenue?: FloatNullableFilter<"Company"> | number | null
     employeeCount?: IntNullableFilter<"Company"> | number | null
+    country?: StringNullableFilter<"Company"> | string | null
+    region?: StringNullableFilter<"Company"> | string | null
     departments?: StringNullableFilter<"Company"> | string | null
     userId?: StringFilter<"Company"> | string
     createdAt?: DateTimeNullableFilter<"Company"> | Date | string | null
@@ -19064,6 +19090,8 @@ export namespace Prisma {
     annualRevenue?: SortOrder
     monthlyRevenue?: SortOrder
     employeeCount?: SortOrder
+    country?: SortOrder
+    region?: SortOrder
     departments?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -19099,6 +19127,8 @@ export namespace Prisma {
     annualRevenue?: FloatNullableFilter<"Company"> | number | null
     monthlyRevenue?: FloatNullableFilter<"Company"> | number | null
     employeeCount?: IntNullableFilter<"Company"> | number | null
+    country?: StringNullableFilter<"Company"> | string | null
+    region?: StringNullableFilter<"Company"> | string | null
     departments?: StringNullableFilter<"Company"> | string | null
     userId?: StringFilter<"Company"> | string
     createdAt?: DateTimeNullableFilter<"Company"> | Date | string | null
@@ -19131,6 +19161,8 @@ export namespace Prisma {
     annualRevenue?: SortOrder
     monthlyRevenue?: SortOrder
     employeeCount?: SortOrder
+    country?: SortOrder
+    region?: SortOrder
     departments?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -19165,6 +19197,8 @@ export namespace Prisma {
     annualRevenue?: FloatNullableWithAggregatesFilter<"Company"> | number | null
     monthlyRevenue?: FloatNullableWithAggregatesFilter<"Company"> | number | null
     employeeCount?: IntNullableWithAggregatesFilter<"Company"> | number | null
+    country?: StringNullableWithAggregatesFilter<"Company"> | string | null
+    region?: StringNullableWithAggregatesFilter<"Company"> | string | null
     departments?: StringNullableWithAggregatesFilter<"Company"> | string | null
     userId?: StringWithAggregatesFilter<"Company"> | string
     createdAt?: DateTimeNullableWithAggregatesFilter<"Company"> | Date | string | null
@@ -20577,6 +20611,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -20608,6 +20644,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -20638,6 +20676,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20668,6 +20708,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20699,6 +20741,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -20724,6 +20768,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20748,6 +20794,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -22425,6 +22473,8 @@ export namespace Prisma {
     annualRevenue?: SortOrder
     monthlyRevenue?: SortOrder
     employeeCount?: SortOrder
+    country?: SortOrder
+    region?: SortOrder
     departments?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -22457,6 +22507,8 @@ export namespace Prisma {
     annualRevenue?: SortOrder
     monthlyRevenue?: SortOrder
     employeeCount?: SortOrder
+    country?: SortOrder
+    region?: SortOrder
     departments?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -22483,6 +22535,8 @@ export namespace Prisma {
     annualRevenue?: SortOrder
     monthlyRevenue?: SortOrder
     employeeCount?: SortOrder
+    country?: SortOrder
+    region?: SortOrder
     departments?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -24743,6 +24797,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -24773,6 +24829,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -25216,6 +25274,8 @@ export namespace Prisma {
     annualRevenue?: FloatNullableFilter<"Company"> | number | null
     monthlyRevenue?: FloatNullableFilter<"Company"> | number | null
     employeeCount?: IntNullableFilter<"Company"> | number | null
+    country?: StringNullableFilter<"Company"> | string | null
+    region?: StringNullableFilter<"Company"> | string | null
     departments?: StringNullableFilter<"Company"> | string | null
     userId?: StringFilter<"Company"> | string
     createdAt?: DateTimeNullableFilter<"Company"> | Date | string | null
@@ -26151,6 +26211,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -26181,6 +26243,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -26402,6 +26466,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26431,6 +26497,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26477,6 +26545,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -26507,6 +26577,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -26625,6 +26697,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26654,6 +26728,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -26834,6 +26910,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -26864,6 +26942,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -26986,6 +27066,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27015,6 +27097,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27118,6 +27202,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -27148,6 +27234,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -27270,6 +27358,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27299,6 +27389,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27394,6 +27486,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -27424,6 +27518,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     userId: string
     createdAt?: Date | string | null
@@ -27640,6 +27736,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27669,6 +27767,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28688,6 +28788,8 @@ export namespace Prisma {
     annualRevenue?: number | null
     monthlyRevenue?: number | null
     employeeCount?: number | null
+    country?: string | null
+    region?: string | null
     departments?: string | null
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
@@ -29038,6 +29140,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -29067,6 +29171,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -29096,6 +29202,8 @@ export namespace Prisma {
     annualRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
     employeeCount?: NullableIntFieldUpdateOperationsInput | number | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
     departments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

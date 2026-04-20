@@ -24,46 +24,52 @@ interface StatsCardProps {
 
 const variants = {
   blue: {
-    bg: "bg-blue-500/5",
+    bg: "bg-blue-500/10 dark:bg-blue-500/20",
     border: "border-blue-500/10",
     hover: "hover:border-blue-500/30",
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-500",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    waveFrom: "#3b82f6",
+    waveTo: "#a5f3fc",
   },
   indigo: {
-    bg: "bg-indigo-500/5",
+    bg: "bg-indigo-500/10 dark:bg-indigo-500/20",
     border: "border-indigo-500/10",
     hover: "hover:border-indigo-500/30",
-    iconBg: "bg-indigo-500/10",
-    iconColor: "text-indigo-500",
+    iconColor: "text-indigo-600 dark:text-indigo-400",
+    waveFrom: "#6366f1",
+    waveTo: "#c4b5fd",
   },
   emerald: {
-    bg: "bg-emerald-500/5",
+    bg: "bg-emerald-500/10 dark:bg-emerald-500/20",
     border: "border-emerald-500/10",
     hover: "hover:border-emerald-500/30",
-    iconBg: "bg-emerald-500/10",
-    iconColor: "text-emerald-500",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    waveFrom: "#10b981",
+    waveTo: "#6ee7b7",
   },
   amber: {
-    bg: "bg-amber-500/5",
+    bg: "bg-amber-500/10 dark:bg-amber-500/20",
     border: "border-amber-500/10",
     hover: "hover:border-amber-500/30",
-    iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-500",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    waveFrom: "#f59e0b",
+    waveTo: "#fde68a",
   },
   slate: {
-    bg: "bg-slate-500/5",
+    bg: "bg-slate-500/10 dark:bg-slate-500/20",
     border: "border-slate-500/10",
     hover: "hover:border-slate-500/30",
-    iconBg: "bg-slate-500/10",
-    iconColor: "text-slate-500",
+    iconColor: "text-slate-600 dark:text-slate-400",
+    waveFrom: "#64748b",
+    waveTo: "#cbd5e1",
   },
   rose: {
-    bg: "bg-rose-500/5",
+    bg: "bg-rose-500/10 dark:bg-rose-500/20",
     border: "border-rose-500/10",
     hover: "hover:border-rose-500/30",
-    iconBg: "bg-rose-500/10",
-    iconColor: "text-rose-500",
+    iconColor: "text-rose-600 dark:text-rose-400",
+    waveFrom: "#f43f5e",
+    waveTo: "#fda4af",
   },
 };
 
@@ -98,16 +104,29 @@ export function StatsCard({
       )}
     >
       {/* Sparkline Background Decoration */}
-      <div className="absolute -bottom-4 left-0 right-0 h-28 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 overflow-hidden rounded-b-3xl">
+      <div className="absolute -bottom-4 left-0 right-0 h-28 pointer-events-none opacity-60 dark:opacity-20 group-hover:opacity-80 dark:group-hover:opacity-40 transition-opacity duration-500 overflow-hidden rounded-b-3xl">
         <svg
           viewBox="0 0 90 35"
           className="w-full h-full preserve-3d"
           preserveAspectRatio="none"
         >
+          <defs>
+            <linearGradient id={`wave-grad-${variant}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={v.waveFrom} stopOpacity="1" />
+              <stop offset="100%" stopColor={v.waveTo} stopOpacity="0.7" />
+            </linearGradient>
+          </defs>
+          {/* Light mode: vivid gradient */}
+          <path
+            d="M0,25 Q15,5 30,20 T60,10 T90,22 L100,25 L100,30 L0,30 Z"
+            fill={`url(#wave-grad-${variant})`}
+            className="dark:hidden"
+          />
+          {/* Dark mode: flat currentColor */}
           <path
             d="M0,25 Q15,5 30,20 T60,10 T90,22 L100,25 L100,30 L0,30 Z"
             fill="currentColor"
-            className={v.iconColor}
+            className={cn("hidden dark:block", v.iconColor)}
           />
         </svg>
       </div>
@@ -132,8 +151,8 @@ export function StatsCard({
                   t.color
                     ? t.color
                     : t.up
-                      ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
-                      : "bg-red-500/5 text-red-500 border-red-500/10",
+                      ? "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-500/25 dark:text-emerald-400 dark:border-emerald-500/40"
+                      : "bg-red-100 text-red-700 border-red-300 dark:bg-red-500/25 dark:text-red-400 dark:border-red-500/40",
                 )}
               >
                 {t.label}{" "}
@@ -146,8 +165,8 @@ export function StatsCard({
               className={cn(
                 "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border",
                 trendUp
-                  ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10"
-                  : "bg-red-500/5 text-red-500 border-red-500/10",
+                  ? "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-500/25 dark:text-emerald-400 dark:border-emerald-500/40"
+                  : "bg-red-100 text-red-700 border-red-300 dark:bg-red-500/25 dark:text-red-400 dark:border-red-500/40",
               )}
             >
               {trend}

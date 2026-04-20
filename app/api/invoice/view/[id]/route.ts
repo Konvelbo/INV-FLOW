@@ -17,7 +17,6 @@ export async function GET(
   const lang = (langParam === "en" || langParam === "fr") ? langParam : "fr";
   const t = translations[lang];
 
-  let debugInfo = "";
   let client;
   try {
     if (id) {
@@ -29,7 +28,7 @@ export async function GET(
         await client.connect();
         const db = client.db();
         
-        const result = await db.collection("Invoice").updateOne(
+        await db.collection("Invoice").updateOne(
           { _id: new ObjectId(id) },
           { 
             $set: { 
@@ -38,16 +37,14 @@ export async function GET(
             } 
           }
         );
-        debugInfo = "Success: Invoice marked as read. Matched: " + result.matchedCount;
       } catch (e: any) {
-        debugInfo = "Erreur MongoDB Native: " + (e.message || "Unknown error");
+        console.error("Invoice view error:", e.message);
       } finally {
         if (client) {
           await client.close();
         }
       }
     } else {
-      debugInfo = "Error: No ID provided in params";
     }
   } catch (error: any) {
     console.error("Tracking error:", error);
@@ -87,14 +84,7 @@ export async function GET(
             h1 { color: #0f172a; margin-bottom: 10px; font-size: 24px; }
             p { color: #64748b; line-height: 1.6; }
             .footer { margin-top: 30px; font-size: 14px; color: #94a3b8; }
-            .debug { 
-                margin-top: 20px; 
-                font-size: 10px; 
-                color: #e2e8f0; 
-                word-break: break-all;
-                border-top: 1px solid #f1f5f9;
-                padding-top: 10px;
-            }
+
         </style>
     </head>
     <body>
@@ -103,7 +93,6 @@ export async function GET(
             <h1>${t.invoiceViewedTitle}</h1>
             <p>${t.invoiceViewedDesc}</p>
             <div class="footer">${t.poweredByEssor}</div>
-            <div class="debug">${debugInfo}</div>
         </div>
     </body>
     </html>
