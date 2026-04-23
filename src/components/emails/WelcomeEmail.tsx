@@ -31,7 +31,7 @@ export const WelcomeEmail = ({ userName, lang = 'fr' }: WelcomeEmailProps) => {
                                 : "Vous pouvez désormais gérer vos factures, analyser votre croissance et piloter votre activité avec notre intelligence Pulse™."}
                         </Text>
                         <Section style={buttonContainer}>
-                            <Button style={button} href={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`}>
+                            <Button style={button} href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://inv-flow-f4hf.vercel.app'}/dashboard`}>
                                 {isEn ? "Access my dashboard" : "Accéder à mon tableau de bord"}
                             </Button>
                         </Section>

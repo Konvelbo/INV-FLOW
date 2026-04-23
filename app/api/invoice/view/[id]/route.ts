@@ -25,8 +25,11 @@ export async function GET(
       }
       client = new MongoClient(process.env.DATABASE_URL);
       await client.connect();
-      const db = client.db();
-      console.log(`Connected to database: ${db.databaseName}`);
+      
+      // Explicitly get database name from URI or fallback to 'User'
+      const dbName = new URL(process.env.DATABASE_URL).pathname.replace('/', '') || 'User';
+      const db = client.db(dbName);
+      console.log(`Targeting database: ${dbName} | Collection: Invoice`);
       
       if (!ObjectId.isValid(id)) {
         throw new Error(`Invalid ObjectId format: ${id}`);

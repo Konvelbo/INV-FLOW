@@ -107,9 +107,9 @@ const InvoiceEmail = ({
           ),
           // Add "View Online" secondary link for guaranteed tracking
           invoiceId && e(Section, { style: { textAlign: "center", marginTop: "10px" } },
-            e("a", { 
+            e("a", {
               href: (() => {
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://essor.app';
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://inv-flow-f4hf.vercel.app';
                 const absoluteUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 return `${absoluteUrl}/api/invoice/view/${invoiceId}?lang=${isEn ? 'en' : 'fr'}`;
               })(),
@@ -127,10 +127,9 @@ const InvoiceEmail = ({
         ),
         invoiceId && e("img", {
           src: (() => {
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://essor.app';
-            // Ensure we have a protocol, otherwise the pixel fails in most email clients
+            const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://inv-flow-f4hf.vercel.app').replace(/\/$/, '');
             const absoluteUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
-            return `${absoluteUrl}/api/track/v?id=${invoiceId}`;
+            return `${absoluteUrl}/api/track/v/${invoiceId}`;
           })(),
           width: "1",
           height: "1",

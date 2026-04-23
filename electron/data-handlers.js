@@ -2600,7 +2600,7 @@ const actionHandlers = {
       // Build LigdiCash payment request
       const apiKey = process.env.LIGDICASH_API_KEY;
       const apiToken = process.env.LIGDICASH_API_TOKEN;
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://inv-flow-f4hf.vercel.app";
 
       const descriptions = {
         monthly: "Abonnement Mensuel ESSOR Premium",

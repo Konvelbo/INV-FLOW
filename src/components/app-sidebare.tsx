@@ -125,6 +125,11 @@ export const AppSidebar = React.memo(function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [appVersion, setAppVersion] = useState("v1.0.4");
   const [user, setUser] = useState<{ name: string; email: string; avatar?: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (window.electronAPI?.getVersion) {
@@ -476,10 +481,14 @@ export const AppSidebar = React.memo(function AppSidebar() {
                 transition={{ duration: 0.3 }}
                 className="flex items-center gap-2"
               >
-                {isDark ? <Moon className="size-3.5 text-muted-foreground" /> : <Sun className="size-3.5 text-muted-foreground" />}
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {isDark ? (t("darkMode") || "Mode sombre") : (t("lightMode") || "Mode clair")}
-                </span>
+                {mounted && (
+                  <>
+                    {isDark ? <Moon className="size-3.5 text-muted-foreground" /> : <Sun className="size-3.5 text-muted-foreground" />}
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {isDark ? (t("darkMode") || "Mode sombre") : (t("lightMode") || "Mode clair")}
+                    </span>
+                  </>
+                )}
               </motion.div>
             )}
             <button
@@ -496,10 +505,13 @@ export const AppSidebar = React.memo(function AppSidebar() {
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 className="absolute size-4 rounded-full bg-white shadow-sm flex items-center justify-center"
               >
-                {isDark
-                  ? <Moon className="size-2.5 text-primary" />
-                  : <Sun className="size-2.5 text-amber-500" />
-                }
+                {mounted ? (
+                  isDark
+                    ? <Moon className="size-2.5 text-primary" />
+                    : <Sun className="size-2.5 text-amber-500" />
+                ) : (
+                  <Sun className="size-2.5 text-amber-500" />
+                )}
               </motion.div>
             </button>
           </div>
