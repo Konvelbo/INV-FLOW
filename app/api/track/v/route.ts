@@ -23,16 +23,15 @@ export async function GET(request: Request) {
         const db = client.db();
         console.log(`Tracking connected to database: ${db.databaseName}`);
 
-        if (!id || !ObjectId.isValid(id)) {
+        if (id && ObjectId.isValid(id)) {
+          const result = await db.collection("Invoice").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { isRead: true, readAt: new Date() } }
+          );
+          console.log(`Tracking pixel for ${id} result:`, result.matchedCount > 0 ? "Success" : "Not Found");
+        } else {
           console.warn(`Invalid or missing ID for tracking: ${id}`);
-          return;
         }
-
-        const result = await db.collection("Invoice").updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { isRead: true, readAt: new Date() } }
-        );
-        console.log(`Tracking pixel for ${id} result:`, result.matchedCount > 0 ? "Success" : "Not Found");
       } catch (dbError: any) {
         // Ignore errors if invoice is not found
         console.error("Tracking database error:", dbError.message);

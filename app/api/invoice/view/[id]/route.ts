@@ -19,37 +19,36 @@ export async function GET(
 
   let client;
   try {
-        client = new MongoClient(process.env.DATABASE_URL);
-        await client.connect();
-        const db = client.db();
-        console.log(`Connected to database: ${db.databaseName}`);
-        
-        if (!ObjectId.isValid(id)) {
-          throw new Error(`Invalid ObjectId format: ${id}`);
-        }
-        
-        const result = await db.collection("Invoice").updateOne(
-          { _id: new ObjectId(id) },
-          { 
-            $set: { 
-              isRead: true, 
-              readAt: new Date() 
-            } 
-          }
-        );
-        console.log(`Invoice ${id} update result:`, result.matchedCount > 0 ? "Success" : "Not Found");
-      } catch (e: any) {
-        console.error("Invoice view database error:", e.message);
-      } finally {
-        if (client) {
-          await client.close();
-        }
+    if (id) {
+      if (!process.env.DATABASE_URL) {
+        throw new Error("DATABASE_URL est manquant");
       }
-    } else {
+      client = new MongoClient(process.env.DATABASE_URL);
+      await client.connect();
+      const db = client.db();
+      console.log(`Connected to database: ${db.databaseName}`);
+      
+      if (!ObjectId.isValid(id)) {
+        throw new Error(`Invalid ObjectId format: ${id}`);
+      }
+      
+      const result = await db.collection("Invoice").updateOne(
+        { _id: new ObjectId(id) },
+        { 
+          $set: { 
+            isRead: true, 
+            readAt: new Date() 
+          } 
+        }
+      );
+      console.log(`Invoice ${id} update result:`, result.matchedCount > 0 ? "Success" : "Not Found");
     }
   } catch (error: any) {
     console.error("Tracking error:", error);
-    // Removed undefined debugInfo reference
+  } finally {
+    if (client) {
+      await client.close();
+    }
   }
 
   // Return a professional-looking "Thank You" page in HTML
