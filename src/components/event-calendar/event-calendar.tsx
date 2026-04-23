@@ -20,7 +20,7 @@ import {
   PlusIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { type TranslationKey } from "@/src/lib/translations";
 
@@ -178,20 +178,14 @@ export function EventCalendar({
     if (event.id) {
       onEventUpdate?.(event);
       // Show toast notification when an event is updated
-      toast(t("eventUpdated").replace("{title}", event.title), {
-        description: format(new Date(event.start), "MMM d, yyyy", { locale }),
-        position: "bottom-left",
-      });
+      toast.success(t("eventUpdated").replace("{title}", event.title));
     } else {
       onEventAdd?.({
         ...event,
         id: Math.random().toString(36).substring(2, 11),
       });
       // Show toast notification when an event is added
-      toast(t("eventAdded").replace("{title}", event.title), {
-        description: format(new Date(event.start), "MMM d, yyyy", { locale }),
-        position: "bottom-left",
-      });
+      toast.success(t("eventAdded").replace("{title}", event.title));
     }
     setIsEventDialogOpen(false);
     setSelectedEvent(null);
@@ -205,12 +199,7 @@ export function EventCalendar({
 
     // Show toast notification when an event is deleted
     if (deletedEvent) {
-      toast(t("eventDeleted").replace("{title}", deletedEvent.title), {
-        description: format(new Date(deletedEvent.start), "MMM d, yyyy", {
-          locale,
-        }),
-        position: "bottom-left",
-      });
+      toast.success(t("eventDeleted").replace("{title}", deletedEvent.title));
     }
   };
 
@@ -218,12 +207,7 @@ export function EventCalendar({
     onEventUpdate?.(updatedEvent);
 
     // Show toast notification when an event is updated via drag and drop
-    toast(t("eventMoved").replace("{title}", updatedEvent.title), {
-      description: format(new Date(updatedEvent.start), "MMM d, yyyy", {
-        locale,
-      }),
-      position: "bottom-left",
-    });
+    toast.success(t("eventMoved").replace("{title}", updatedEvent.title));
   };
 
   const viewTitle = useMemo(() => {

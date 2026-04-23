@@ -2,12 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { useLanguage } from "@/src/context/LanguageContext";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -23,6 +17,7 @@ import {
   Trash2,
   DollarSign,
   Percent,
+  MoreHorizontal,
 } from "lucide-react";
 import {
   Dialog,
@@ -33,6 +28,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/src/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
 import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ import { useIPCAction } from "@/hooks/useIPCAction";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { Product } from "@/src/p_client";
 import { formatPrice } from "@/lib/currency";
+import { DataTable, DataTableColumn } from "@/src/components/ui/data-table";
 
 interface ProductsClientProps {
   initialProducts: Product[];
@@ -58,7 +60,7 @@ export default function ProductsClient({
   const { currency } = useInvoice();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { performAction, loading: actionLoading } = useIPCAction();
+  const { performAction } = useIPCAction();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -70,13 +72,8 @@ export default function ProductsClient({
 
   const fetchProducts = useCallback(async () => {
     try {
-      const result = await (window as any).electronAPI.getData(
-        "products",
-        userId,
-      );
-      if (result.success) {
-        setProducts(result.data);
-      }
+      const result = await (window as any).electronAPI.getData("products", userId);
+      if (result.success) setProducts(result.data);
     } catch (error) {
       console.error("Error fetching products", error);
     }
@@ -85,16 +82,13 @@ export default function ProductsClient({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = editingId ? "update" : "create";
-
     const payload = {
       ...formData,
       price: parseFloat(formData.price),
       taxRate: parseFloat(formData.taxRate),
     };
-
     const params = editingId ? [editingId, payload] : [payload];
     const res = await performAction("products", method, ...params);
-
     if (res.success) {
       toast.success(editingId ? t("itemUpdated") : t("itemAdded"));
       setIsDialogOpen(false);
@@ -105,9 +99,7 @@ export default function ProductsClient({
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t("itemDeleteWarning").replace("{name}", name))) return;
-
     const res = await performAction("products", "delete", id);
-
     if (res.success) {
       toast.success(t("itemDeleted"));
       fetchProducts();
@@ -128,55 +120,106 @@ export default function ProductsClient({
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      taxRate: "0",
-      type: "service",
-    });
+    setFormData({ name: "", description: "", price: "", taxRate: "0", type: "service" });
   };
 
   const [isExporting, setIsExporting] = useState(false);
   const handleExport = async (format = "excel") => {
     setIsExporting(true);
-    const toastId = toast.loading(t("processing"), { id: "product-export" });
+    toast.loading(t("processing"), { id: "product-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
       const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
-      // @ts-ignore
-      const res = await window.electronAPI.getData("export", userId, "products", activeCompanyId, format);
+      const res = await (window as any).electronAPI.getData("export", userId, "products", activeCompanyId, format);
       if (res.success && res.data) {
         const mime = format === "excel"
           ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           : "application/zip";
         const ext = format === "excel" ? "xlsx" : "zip";
-
         const blob = new Blob([res.data], { type: mime });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `Products_Export_${new Date().toISOString().split('T')[0]}.${ext}`;
+        link.download = `Products_Export_${new Date().toISOString().split("T")[0]}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         toast.success(t("exportSuccess") || "Export réussi !", { id: "product-export" });
       }
     } catch (error) {
-      console.error("Export error", error);
       toast.error(t("authError"), { id: "product-export" });
     } finally {
       setIsExporting(false);
     }
   };
 
+  const handleBulkDelete = async (ids: string[]) => {
+    if (!confirm(t("itemDeleteWarning").replace("{name}", `${ids.length} articles`))) return;
+    const res = await performAction("products", "bulkDelete", ids);
+    if (res.success) {
+      toast.success(t("itemDeleted"));
+      fetchProducts();
+    }
+  };
+
   const filteredProducts = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.description &&
-        p.description.toLowerCase().includes(search.toLowerCase())),
+      (p.description && p.description.toLowerCase().includes(search.toLowerCase())),
   );
+
+  const columns: DataTableColumn<Product>[] = [
+    {
+      key: "name",
+      header: t("itemNameLabel"),
+      render: (row) => (
+        <span className="font-semibold text-foreground">{row.name}</span>
+      ),
+    },
+    {
+      key: "type",
+      header: t("type"),
+      render: (row) => (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider",
+            row.type === "service"
+              ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+              : "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+          )}
+        >
+          {row.type === "service" ? <Zap className="w-3 h-3" /> : <Package className="w-3 h-3" />}
+          {row.type === "service" ? t("service") : t("catalog")}
+        </span>
+      ),
+    },
+    {
+      key: "description",
+      header: t("optionalDescription"),
+      render: (row) => (
+        <span className="text-muted-foreground text-xs line-clamp-1 max-w-[200px]">
+          {row.description || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "price",
+      header: t("unitPriceHt"),
+      render: (row) => (
+        <span className="font-bold font-mono text-foreground">
+          {formatPrice(row.price, currency, "fr-FR")}
+        </span>
+      ),
+    },
+    {
+      key: "taxRate",
+      header: t("taxRateLabel"),
+      render: (row) => (
+        <span className="font-medium text-muted-foreground">{row.taxRate}%</span>
+      ),
+    },
+  ];
 
   return (
     <div
@@ -243,9 +286,7 @@ export default function ProductsClient({
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px] bg-card border border-border/50 text-foreground backdrop-blur-xl">
                 <DialogHeader>
-                  <DialogTitle>
-                    {editingId ? t("editItem") : t("newItem")}
-                  </DialogTitle>
+                  <DialogTitle>{editingId ? t("editItem") : t("newItem")}</DialogTitle>
                   <DialogDescription>{t("catalogAddDesc")}</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-4 py-4">
@@ -257,15 +298,10 @@ export default function ProductsClient({
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={formData.type}
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            type: e.target.value as "service" | "product",
-                          })
+                          setFormData({ ...formData, type: e.target.value as "service" | "product" })
                         }
                       >
-                        <option value="service">
-                          {t("servicePrestation")}
-                        </option>
+                        <option value="service">{t("servicePrestation")}</option>
                         <option value="product">{t("productMaterial")}</option>
                       </select>
                     </div>
@@ -274,26 +310,17 @@ export default function ProductsClient({
                       <Input
                         id="name"
                         value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
                         className="bg-background"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">
-                        {t("optionalDescription")}
-                      </Label>
+                      <Label htmlFor="description">{t("optionalDescription")}</Label>
                       <Input
                         id="description"
                         value={formData.description}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            description: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className="bg-background"
                       />
                     </div>
@@ -308,12 +335,7 @@ export default function ProductsClient({
                             step="0.01"
                             min="0"
                             value={formData.price}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                price: e.target.value,
-                              })
-                            }
+                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             required
                             className="bg-background pl-9"
                           />
@@ -330,12 +352,7 @@ export default function ProductsClient({
                             min="0"
                             max="100"
                             value={formData.taxRate}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                taxRate: e.target.value,
-                              })
-                            }
+                            onChange={(e) => setFormData({ ...formData, taxRate: e.target.value })}
                             className="bg-background pl-9"
                           />
                         </div>
@@ -356,60 +373,18 @@ export default function ProductsClient({
         {!isComponent && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
             {[
-              {
-                label: "Total Articles",
-                value: products.length,
-                icon: ShoppingBag,
-                color: "text-indigo-500",
-                bg: "bg-indigo-500/10",
-              },
-              {
-                label: t("services"),
-                value: products.filter((p) => p.type === "service" || !p.type)
-                  .length,
-                icon: Zap,
-                color: "text-blue-500",
-                bg: "bg-blue-500/10",
-              },
-              {
-                label: t("products"),
-                value: products.filter((p) => p.type === "product").length,
-                icon: Layers,
-                color: "text-purple-500",
-                bg: "bg-purple-500/10",
-              },
-              {
-                label: t("totalValue"),
-                value: formatPrice(
-                  products.reduce((acc, p) => acc + p.price, 0),
-                  currency,
-                  "fr-FR"
-                ),
-                icon: LineChart,
-                color: "text-emerald-500",
-                bg: "bg-emerald-500/10",
-              },
+              { label: "Total Articles", value: products.length, icon: ShoppingBag, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+              { label: t("services"), value: products.filter((p) => p.type === "service" || !p.type).length, icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { label: t("products"), value: products.filter((p) => p.type === "product").length, icon: Layers, color: "text-purple-500", bg: "bg-purple-500/10" },
+              { label: t("totalValue"), value: formatPrice(products.reduce((acc, p) => acc + p.price, 0), currency, "fr-FR"), icon: LineChart, color: "text-emerald-500", bg: "bg-emerald-500/10" },
             ].map((stat, i) => (
-              <div
-                key={i}
-                className="p-6 rounded-3xl bg-card/40 shadow-2xl border border-border/50 backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
-              >
-                <div
-                  className={cn(
-                    "size-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
-                    stat.bg,
-                    stat.color,
-                  )}
-                >
+              <div key={i} className="p-6 rounded-3xl bg-card/40 shadow-2xl border border-border/50 backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300">
+                <div className={cn("size-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", stat.bg, stat.color)}>
                   <stat.icon className="size-5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    {stat.label}
-                  </p>
-                  <p className="text-xl font-black tracking-tight">
-                    {stat.value}
-                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</p>
+                  <p className="text-xl font-black tracking-tight">{stat.value}</p>
                 </div>
               </div>
             ))}
@@ -428,107 +403,37 @@ export default function ProductsClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-up delay-200">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <Card
-                key={product.id}
-                className="group bg-card border border-border/40 shadow-lg hover:shadow-md hover:border-primary/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
-              >
-                <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex flex-wrap gap-2">
-                      <div
-                        className={cn(
-                          "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5",
-                          product.type === "service"
-                            ? "bg-blue-500/5 text-blue-500 border border-blue-500/10"
-                            : "bg-purple-500/5 text-purple-500 border border-purple-500/10",
-                        )}
-                      >
-                        {product.type === "service" ? (
-                          <Zap className="w-3 h-3" />
-                        ) : (
-                          <Package className="w-3 h-3" />
-                        )}
-                        {product.type === "service"
-                          ? t("service")
-                          : t("catalog")}
-                      </div>
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        onClick={() => openEdit(product)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        onClick={() => handleDelete(product.id, product.name)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <CardTitle className="text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors duration-300">
-                    {product.name}
-                  </CardTitle>
-                  {product.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-1 mt-2 font-medium">
-                      {product.description}
-                    </p>
-                  )}
-                </CardHeader>
-
-                <CardContent className="p-6 pt-5 space-y-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-xs pb-3 border-b border-border/10">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Percent className="w-3.5 h-3.5" />
-                        <span className="font-bold uppercase tracking-widest text-[10px]">
-                          {t("tax")}
-                        </span>
-                      </div>
-                      <span className="font-bold text-foreground">
-                        {product.taxRate}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">
-                      {t("unitPriceHt")}
-                    </span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-black text-foreground tracking-tighter">
-                        {product.price.toLocaleString()}
-                      </span>
-                      <span className="text-xs font-bold text-primary uppercase">
-                        {currency}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-2xl">
-              <Package className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="text-lg">{t("noCatalogItem")}</p>
-              <Button
-                variant="link"
-                onClick={() => setIsDialogOpen(true)}
-                className="mt-2 text-primary gap-1"
-              >
-                <Plus className="w-4 h-4" /> {t("addFirstItem")}
-              </Button>
-            </div>
-          )}
+        <div className="animate-fade-in-up delay-200">
+          <DataTable
+            data={filteredProducts}
+            columns={columns}
+            rowKey={(row) => row.id}
+            emptyMessage={t("noCatalogItem")}
+            emptyIcon={<Package className="w-12 h-12 opacity-20" />}
+            onDeleteSelected={handleBulkDelete}
+            renderActions={(row) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="w-4 h-4" />
+                    <span className="sr-only">Actions</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 bg-card border-border/50">
+                  <DropdownMenuItem onClick={() => openEdit(row)} className="gap-2 cursor-pointer font-medium">
+                    <Edit className="w-3.5 h-3.5" /> {t("edit")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(row.id, row.name)} className="gap-2 cursor-pointer font-medium text-destructive focus:text-destructive">
+                    <Trash2 className="w-3.5 h-3.5" /> {t("delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            selectedLabel={t("linesSelected") || "ligne(s) sélectionnée(s)"}
+            rowsPerPageLabel={t("rowsPerPage") || "Lignes par page"}
+            pageLabel={t("page") || "Page"}
+            ofLabel={t("of") || "sur"}
+          />
         </div>
       </div>
     </div>

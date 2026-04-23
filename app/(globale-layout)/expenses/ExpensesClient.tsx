@@ -2,12 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { useLanguage } from "@/src/context/LanguageContext";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -22,9 +16,9 @@ import {
   DollarSign,
   Building,
   TrendingDown,
-  PieChart,
   History,
-  Package,
+  MoreHorizontal,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Dialog,
@@ -35,12 +29,19 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/src/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
 import { Label } from "@/src/components/ui/label";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { useIPCAction } from "@/hooks/useIPCAction";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { formatPrice } from "@/lib/currency";
+import { DataTable, DataTableColumn } from "@/src/components/ui/data-table";
 
 interface Expense {
   id: string;
@@ -70,13 +71,12 @@ export default function ExpensesClient({
 }: ExpensesClientProps) {
   const { t } = useLanguage();
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [companies] =
-    useState<{ id: string; name: string }[]>(initialCompanies);
+  const [companies] = useState<{ id: string; name: string }[]>(initialCompanies);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { currency } = useInvoice();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { performAction, loading: actionLoading } = useIPCAction();
+  const { performAction } = useIPCAction();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -91,10 +91,7 @@ export default function ExpensesClient({
 
   const fetchExpenses = useCallback(async () => {
     try {
-      const result = await (window as any).electronAPI.getData(
-        "expenses",
-        userId,
-      );
+      const result = await (window as any).electronAPI.getData("expenses", userId);
       if (result.success) {
         setExpenses(result.data.expenses);
       }
@@ -104,38 +101,27 @@ export default function ExpensesClient({
   }, [userId]);
 
   const handleSave = async (e: React.FormEvent) => {
-    try {
-      e.preventDefault();
-      const method = editingId ? "update" : "create";
-
-      const payload = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        date: new Date(formData.date).toISOString(),
-        companyId: formData.companyId === "none" ? null : formData.companyId,
-      };
-
-      console.log(payload);
-
-      const params = editingId ? [editingId, payload] : [payload];
-      const res = await performAction("expenses", method, ...params);
-
-      if (res.success) {
-        toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
-        setIsDialogOpen(false);
-        resetForm();
-        fetchExpenses();
-      }
-    } catch (e) {
-      throw new Error("voici l erreur", e);
+    e.preventDefault();
+    const method = editingId ? "update" : "create";
+    const payload = {
+      ...formData,
+      amount: parseFloat(formData.amount),
+      date: new Date(formData.date).toISOString(),
+      companyId: formData.companyId === "none" ? null : formData.companyId,
+    };
+    const params = editingId ? [editingId, payload] : [payload];
+    const res = await performAction("expenses", method, ...params);
+    if (res.success) {
+      toast.success(editingId ? t("expenseUpdated") : t("expenseSaved"));
+      setIsDialogOpen(false);
+      resetForm();
+      fetchExpenses();
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(t("expenseDeleteWarning").replace("{title}", title))) return;
-
     const res = await performAction("expenses", "delete", id);
-
     if (res.success) {
       toast.success(t("expenseDeleted"));
       fetchExpenses();
@@ -174,28 +160,15 @@ export default function ExpensesClient({
   const [isExporting, setIsExporting] = useState(false);
   const handleExport = async (format = "excel") => {
     setIsExporting(true);
-    const toastId = toast.loading(t("processing"), { id: "expense-export" });
+    toast.loading(t("processing"), { id: "expense-export" });
     try {
       const userStr = localStorage.getItem("user");
       const userId = userStr ? JSON.parse(userStr).id : null;
-      const activeCompanyId = userStr
-        ? JSON.parse(userStr).activeCompanyId
-        : undefined;
-      // @ts-ignore
-      const res = await window.electronAPI.getData(
-        "export",
-        userId,
-        "expenses",
-        activeCompanyId,
-        format,
-      );
+      const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
+      const res = await (window as any).electronAPI.getData("export", userId, "expenses", activeCompanyId, format);
       if (res.success && res.data) {
-        const mime =
-          format === "excel"
-            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            : "application/zip";
+        const mime = format === "excel" ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "application/zip";
         const ext = format === "excel" ? "xlsx" : "zip";
-
         const blob = new Blob([res.data], { type: mime });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -204,15 +177,21 @@ export default function ExpensesClient({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(t("exportSuccess") || "Export réussi !", {
-          id: "expense-export",
-        });
+        toast.success(t("exportSuccess") || "Export réussi !", { id: "expense-export" });
       }
     } catch (error) {
-      console.error("Export error", error);
       toast.error(t("authError"), { id: "expense-export" });
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleBulkDelete = async (ids: string[]) => {
+    if (!confirm(t("expenseDeleteWarning").replace("{title}", `${ids.length} dépenses`))) return;
+    const res = await performAction("expenses", "bulkDelete", ids);
+    if (res.success) {
+      toast.success(t("expenseDeleted"));
+      fetchExpenses();
     }
   };
 
@@ -223,6 +202,65 @@ export default function ExpensesClient({
   );
 
   const totalFiltered = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const columns: DataTableColumn<Expense>[] = [
+    {
+      key: "title",
+      header: t("expenseLabel"),
+      render: (row) => (
+        <span className="font-semibold text-foreground">{row.title}</span>
+      ),
+    },
+    {
+      key: "amount",
+      header: t("amount"),
+      render: (row) => (
+        <span className="font-bold font-mono text-rose-500">
+          {formatPrice(row.amount, row.currency || "XOF", "fr-FR")}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: t("dateLabel"),
+      render: (row) => (
+        <span className="text-muted-foreground whitespace-nowrap">
+          {new Date(row.date).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      key: "category",
+      header: t("categoryLabel"),
+      render: (row) => (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <Tag className="w-3 h-3" />
+          {t(row.category as any) || row.category}
+        </span>
+      ),
+    },
+    {
+      key: "company",
+      header: t("company"),
+      render: (row) => {
+        const c = companies.find((cp) => cp.id === row.companyId);
+        return <span className="text-muted-foreground text-xs">{c?.name || "—"}</span>;
+      },
+    },
+    {
+      key: "deductible",
+      header: t("isDeductible"),
+      render: (row) => (
+        row.isDeductible ? (
+          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+        ) : (
+          <span className="text-muted-foreground opacity-20">—</span>
+        )
+      ),
+      className: "text-center",
+      headerClassName: "text-center",
+    },
+  ];
 
   return (
     <div
@@ -289,12 +327,8 @@ export default function ExpensesClient({
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px] bg-card border border-border/50 text-foreground backdrop-blur-xl">
                 <DialogHeader>
-                  <DialogTitle>
-                    {editingId ? t("editExpense") : t("recordExpense")}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {t("expenseDetailsDesc")}
-                  </DialogDescription>
+                  <DialogTitle>{editingId ? t("editExpense") : t("recordExpense")}</DialogTitle>
+                  <DialogDescription>{t("expenseDetailsDesc")}</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-5 py-4">
                   <div className="space-y-2">
@@ -302,9 +336,7 @@ export default function ExpensesClient({
                     <Input
                       id="title"
                       value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       required
                       placeholder="Ex: Loyer bureau, Abonnement SaaS..."
                       className="bg-background shadow-inner"
@@ -321,9 +353,7 @@ export default function ExpensesClient({
                           step="0.01"
                           min="0"
                           value={formData.amount}
-                          onChange={(e) =>
-                            setFormData({ ...formData, amount: e.target.value })
-                          }
+                          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                           required
                           className="bg-background shadow-inner pl-9"
                         />
@@ -335,9 +365,7 @@ export default function ExpensesClient({
                         id="currency"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-inner"
                         value={formData.currency}
-                        onChange={(e) =>
-                          setFormData({ ...formData, currency: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                       >
                         <option value="XOF">{t("currency_unit")} (XOF)</option>
                         <option value="EUR">EUR (€)</option>
@@ -354,9 +382,7 @@ export default function ExpensesClient({
                           id="date"
                           type="date"
                           value={formData.date}
-                          onChange={(e) =>
-                            setFormData({ ...formData, date: e.target.value })
-                          }
+                          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                           required
                           className="bg-background shadow-inner pl-9"
                         />
@@ -368,27 +394,15 @@ export default function ExpensesClient({
                         id="category"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-inner"
                         value={formData.category}
-                        onChange={(e) =>
-                          setFormData({ ...formData, category: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       >
-                        <option value="cat_exploitation">
-                          {t("cat_exploitation")}
-                        </option>
-                        <option value="cat_financial">
-                          {t("cat_financial")}
-                        </option>
+                        <option value="cat_exploitation">{t("cat_exploitation")}</option>
+                        <option value="cat_financial">{t("cat_financial")}</option>
                         <option value="cat_tax">{t("cat_tax")}</option>
-                        <option value="cat_investment">
-                          {t("cat_investment")}
-                        </option>
+                        <option value="cat_investment">{t("cat_investment")}</option>
                         <option value="cat_admin">{t("cat_admin")}</option>
-                        <option value="cat_commercial">
-                          {t("cat_commercial")}
-                        </option>
-                        <option value="cat_operational">
-                          {t("cat_operational")}
-                        </option>
+                        <option value="cat_commercial">{t("cat_commercial")}</option>
+                        <option value="cat_operational">{t("cat_operational")}</option>
                         <option value="cat_other">{t("cat_other")}</option>
                       </select>
                     </div>
@@ -400,9 +414,7 @@ export default function ExpensesClient({
                       id="companyId"
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-inner"
                       value={formData.companyId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, companyId: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
                     >
                       <option value="none">{t("generalNonSpecific")}</option>
                       {companies.map((c: any) => (
@@ -413,18 +425,11 @@ export default function ExpensesClient({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description">
-                      {t("detailedDescription")}
-                    </Label>
+                    <Label htmlFor="description">{t("detailedDescription")}</Label>
                     <Input
                       id="description"
                       value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder={t("addDetailsExpense")}
                       className="bg-background shadow-inner"
                     />
@@ -434,33 +439,18 @@ export default function ExpensesClient({
                       type="checkbox"
                       id="isDeductible"
                       checked={formData.isDeductible}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          isDeductible: e.target.checked,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, isDeductible: e.target.checked })}
                       className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                     />
-                    <Label
-                      htmlFor="isDeductible"
-                      className="cursor-pointer font-bold"
-                    >
+                    <Label htmlFor="isDeductible" className="cursor-pointer font-bold">
                       {t("isDeductible")}
                     </Label>
                   </div>
                   <DialogFooter className="pt-4 border-t border-border/50">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                       {t("cancel")}
                     </Button>
-                    <Button
-                      type="submit"
-                      className="font-bold bg-amber-600 hover:bg-amber-700 text-white"
-                    >
+                    <Button type="submit" className="font-bold bg-amber-600 hover:bg-amber-700 text-white">
                       {editingId ? t("saveChanges") : t("createExpense")}
                     </Button>
                   </DialogFooter>
@@ -471,203 +461,79 @@ export default function ExpensesClient({
         </div>
 
         {!isComponent && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
-              {[
-                {
-                  label: t("totalExpenses"),
-                  value: formatPrice(
-                    expenses.reduce((acc, e) => acc + e.amount, 0),
-                    currency,
-                    "fr-FR",
-                  ),
-                  icon: TrendingDown,
-                  color: "text-rose-500",
-                  bg: "bg-rose-500/10",
-                },
-                {
-                  label: t("deductibles"),
-                  value: (expenses as any).filter((e: any) => e.isDeductible)
-                    .length,
-                  icon: Building,
-                  color: "text-emerald-500",
-                  bg: "bg-emerald-500/10",
-                },
-                {
-                  label: t("currentMonth"),
-                  value: expenses.filter(
-                    (e) =>
-                      new Date(e.date).getMonth() === new Date().getMonth(),
-                  ).length,
-                  icon: History,
-                  color: "text-blue-500",
-                  bg: "bg-blue-500/10",
-                },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-3xl bg-card/40 border border-border/50 shadow-2xl backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300"
-                >
-                  <div
-                    className={cn(
-                      "size-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
-                      stat.bg,
-                      stat.color,
-                    )}
-                  >
-                    <stat.icon className="size-5" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      {stat.label}
-                    </p>
-                    <p className="text-xl font-black tracking-tight">
-                      {stat.value}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in-up delay-100">
+            {[
+              { label: t("totalExpenses"), value: formatPrice(expenses.reduce((acc, e) => acc + e.amount, 0), currency, "fr-FR"), icon: TrendingDown, color: "text-rose-500", bg: "bg-rose-500/10" },
+              { label: t("deductibles"), value: expenses.filter((e) => e.isDeductible).length, icon: Building, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { label: t("currentMonth"), value: expenses.filter((e) => new Date(e.date).getMonth() === new Date().getMonth()).length, icon: History, color: "text-blue-500", bg: "bg-blue-500/10" },
+            ].map((stat, i) => (
+              <div key={i} className="p-6 rounded-3xl bg-card/40 border border-border/50 shadow-2xl backdrop-blur-xl flex flex-col gap-3 group hover:border-primary/30 transition-all duration-300">
+                <div className={cn("size-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", stat.bg, stat.color)}>
+                  <stat.icon className="size-5" />
                 </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up delay-200">
-              <div className="relative w-full md:max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder={t("searchExpense")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 bg-card border-border/50 shadow-inner rounded-xl"
-                />
-              </div>
-              <div className="px-6 py-3 rounded-2xl bg-linear-to-r from-rose-500/10 to-amber-500/10 border border-rose-500/20 flex items-center gap-4 shrink-0 shadow-lg backdrop-blur-xl">
-                <div className="size-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
-                  <TrendingDown className="size-4 text-rose-500" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest leading-none mb-1">
-                    {t("total")}
-                  </span>
-                  <span className="text-2xl font-black text-rose-500 font-mono tracking-tight leading-none">
-                    {totalFiltered.toLocaleString()}{" "}
-                    <span className="text-xs opacity-70 uppercase">
-                      {currency}
-                    </span>
-                  </span>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</p>
+                  <p className="text-xl font-black tracking-tight">{stat.value}</p>
                 </div>
               </div>
-            </div>
-          </>
+            ))}
+          </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-up delay-200">
-          {filteredExpenses.length > 0 ? (
-            filteredExpenses.map((expense) => {
-              const c = companies.find((cp) => cp.id === expense.companyId);
-              return (
-                <Card
-                  key={expense.id}
-                  className="group bg-card border border-border/40 shadow-lg hover:shadow-md hover:border-amber-500/20 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col h-full"
-                >
-                  <CardHeader className="p-6 pb-4 border-b border-border/10 bg-muted/5">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex flex-wrap gap-2">
-                        <div className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-amber-500/5 text-amber-600 border border-amber-500/10 flex items-center gap-1.5">
-                          <Tag className="w-3 h-3" />
-                          {t(expense.category as any) || expense.category}
-                        </div>
-                        {(expense as any).isDeductible && (
-                          <div className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
-                            {t("deductible")}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                          onClick={() => openEdit(expense)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          onClick={() =>
-                            handleDelete(expense.id, expense.title)
-                          }
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <CardTitle className="text-lg font-bold text-foreground leading-snug group-hover:text-amber-600 transition-colors duration-300">
-                      {expense.title}
-                    </CardTitle>
-                    {(expense as any).description && (
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-2 font-medium">
-                        {(expense as any).description}
-                      </p>
-                    )}
-                  </CardHeader>
-                  <CardContent className="p-6 pt-5 space-y-4 flex-1 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-xs pb-3 border-b border-border/10">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <CalendarIcon className="w-3.5 h-3.5" />
-                          <span className="font-bold uppercase tracking-widest text-[10px]">
-                            {t("dateLabel")}
-                          </span>
-                        </div>
-                        <span className="font-bold text-foreground">
-                          {new Date(expense.date).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {c && (
-                        <div className="flex items-center justify-between text-xs pb-3 border-b border-border/10">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Building className="w-3.5 h-3.5" />
-                            <span className="font-bold uppercase tracking-widest text-[10px]">
-                              {t("company")}
-                            </span>
-                          </div>
-                          <span className="font-bold text-foreground truncate max-w-[150px]">
-                            {c.name}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-2">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">
-                        {t("amount")}
-                      </span>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-foreground tracking-tighter">
-                          {expense.amount.toLocaleString()}
-                        </span>
-                        <span className="text-xs font-bold text-muted-foreground uppercase">
-                          {expense.currency}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          ) : (
-            <div className="col-span-full py-24 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-3xl bg-card/20">
-              <Wallet className="w-16 h-16 mx-auto mb-4 opacity-20" />
-              <p className="text-lg font-medium">{t("noExpenseFound")}</p>
-              <Button
-                onClick={() => setIsDialogOpen(true)}
-                className="mt-4 gap-2 font-bold bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                <Plus className="w-4 h-4" /> {t("addExpense")}
-              </Button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up delay-200">
+          <div className="relative w-full md:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={t("searchExpense")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-card border-border/50 shadow-inner rounded-xl"
+            />
+          </div>
+          <div className="px-6 py-3 rounded-2xl bg-linear-to-r from-rose-500/10 to-amber-500/10 border border-rose-500/20 flex items-center gap-4 shrink-0 shadow-lg backdrop-blur-xl">
+            <div className="size-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+              <TrendingDown className="size-4 text-rose-500" />
             </div>
-          )}
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest leading-none mb-1">{t("total")}</span>
+              <span className="text-2xl font-black text-rose-500 font-mono tracking-tight leading-none">
+                {totalFiltered.toLocaleString()} <span className="text-xs opacity-70 uppercase">{currency}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="animate-fade-in-up delay-200">
+          <DataTable
+            data={filteredExpenses}
+            columns={columns}
+            rowKey={(row) => row.id}
+            emptyMessage={t("noExpenseFound")}
+            emptyIcon={<Wallet className="w-12 h-12 opacity-20" />}
+            onDeleteSelected={handleBulkDelete}
+            renderActions={(row) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="w-4 h-4" />
+                    <span className="sr-only">Actions</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 bg-card border-border/50">
+                  <DropdownMenuItem onClick={() => openEdit(row)} className="gap-2 cursor-pointer font-medium">
+                    <Edit className="w-3.5 h-3.5" /> {t("edit")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(row.id, row.title)} className="gap-2 cursor-pointer font-medium text-destructive focus:text-destructive">
+                    <Trash2 className="w-3.5 h-3.5" /> {t("delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            selectedLabel={t("linesSelected") || "ligne(s) sélectionnée(s)"}
+            rowsPerPageLabel={t("rowsPerPage") || "Lignes par page"}
+            pageLabel={t("page") || "Page"}
+            ofLabel={t("of") || "sur"}
+          />
         </div>
       </div>
     </div>

@@ -97,6 +97,11 @@ export default function InvoiceClient({
   const [frequency, setFrequency] = useState(
     initialData?.recurrenceFreq || "monthly",
   );
+  const [recurrenceStartDate, setRecurrenceStartDate] = useState(
+    initialData?.isRecurring && initialData?.nextIssueDate
+      ? new Date(initialData.nextIssueDate).toISOString().split("T")[0]
+      : "",
+  );
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [autoReminders, setAutoReminders] = useState(
     initialData?.autoReminders || false,
@@ -264,10 +269,13 @@ export default function InvoiceClient({
       autoReminders,
       reminderTone,
       // Set nextIssueDate based on either scheduling or recurrence
-      nextIssueDate: isScheduled && !isRecurring
+      nextIssueDate:
+        isScheduled && !isRecurring
           ? new Date(scheduledDate).toISOString()
-          : (isRecurring && !isScheduled)
-            ? calculateNextIssueDate(new Date(), frequency).toISOString()
+          : isRecurring && !isScheduled
+            ? recurrenceStartDate
+              ? new Date(recurrenceStartDate).toISOString()
+              : calculateNextIssueDate(new Date(), frequency).toISOString()
             : null,
       clientId: clientId || null,
     };
@@ -550,16 +558,33 @@ export default function InvoiceClient({
                 </span>
               </label>
               {isRecurring && isPaidPlan && (
-                <div className="pl-6 animate-in slide-in-from-left-2 duration-300">
-                  <select
-                    value={frequency}
-                    onChange={(e) => setFrequency(e.target.value)}
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                  >
-                    <option value="weekly">{t("weekly")}</option>
-                    <option value="monthly">{t("monthly")}</option>
-                    <option value="yearly">{t("yearly")}</option>
-                  </select>
+                <div className="pl-6 space-y-3 animate-in slide-in-from-left-2 duration-300">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                      {t("recurrence")}
+                    </Label>
+                    <select
+                      value={frequency}
+                      onChange={(e) => setFrequency(e.target.value)}
+                      className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                    >
+                      <option value="weekly">{t("weekly")}</option>
+                      <option value="monthly">{t("monthly")}</option>
+                      <option value="yearly">{t("yearly")}</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                      {t("recurrenceStartDate")}
+                    </Label>
+                    <input
+                      type="date"
+                      value={recurrenceStartDate}
+                      onChange={(e) => setRecurrenceStartDate(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                    />
+                  </div>
                 </div>
               )}
             </div>

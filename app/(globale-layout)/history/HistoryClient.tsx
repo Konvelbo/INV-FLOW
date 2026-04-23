@@ -14,27 +14,26 @@ import {
   User,
   Mail,
   Send,
-  CalendarClock,
-  Clock,
   CheckCheck,
+  MoreHorizontal,
+  FileText,
 } from "lucide-react";
 import { useInvoice } from "@/src/context/InvoiceContext";
 import { formatPrice } from "@/lib/currency";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { Button } from "@/src/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/src/context/NotificationContext";
 import { useIPCAction } from "@/hooks/useIPCAction";
 import { useSubscription } from "@/src/context/SubscriptionContext";
-import { format } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
 import { invoiceTemplate } from "@/lib/invoice-pdf";
+import { DataTable, DataTableColumn } from "@/src/components/ui/data-table";
 
 interface HistoryClientProps {
   initialInvoices: any[];
@@ -43,49 +42,38 @@ interface HistoryClientProps {
 export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
   const [invoices, setInvoices] = useState<any[]>(initialInvoices);
 
-  // Send Email Statec
+  // Send Email State
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [selectedInvoiceForEmail, setSelectedInvoiceForEmail] =
-    useState<any>(null);
+  const [selectedInvoiceForEmail, setSelectedInvoiceForEmail] = useState<any>(null);
   const [targetEmail, setTargetEmail] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
   const [isFetchingClients, setIsFetchingClients] = useState(false);
 
-  // Scheduling State (used in email modal only)
+  // Scheduling State
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledDate, setScheduledDate] = useState("");
 
   const { subscription } = useSubscription();
-  const isPaid =
-    subscription?.plan === "monthly" || subscription?.plan === "yearly";
+  const isPaid = subscription?.plan === "monthly" || subscription?.plan === "yearly";
 
   useEffect(() => {
     setInvoices(initialInvoices);
   }, [initialInvoices]);
 
-  // Fetch clients for the email modal
   useEffect(() => {
     if (isEmailModalOpen) {
       const fetchClients = async () => {
         setIsFetchingClients(true);
         try {
-          // @ts-ignore
-          if (window.electronAPI) {
+          if ((window as any).electronAPI) {
             const userStr = localStorage.getItem("user");
             if (!userStr) return;
             const user = JSON.parse(userStr);
             const userId = user.id;
             const companyId = user.activeCompanyId || undefined;
-            // @ts-ignore
-            const res = await window.electronAPI.getData(
-              "clients",
-              userId,
-              companyId,
-            );
-            if (res.success) {
-              setClients(res.data);
-            }
+            const res = await (window as any).electronAPI.getData("clients", userId, companyId);
+            if (res.success) setClients(res.data);
           }
         } catch (error) {
           console.error("Failed to fetch clients", error);
@@ -104,41 +92,30 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
   const { currency, clearInvoiceData } = useInvoice();
   const { addNotification } = useNotifications();
   const { t, language } = useLanguage();
-  const { performAction, loading: actionLoading } = useIPCAction();
+  const { performAction } = useIPCAction();
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, ref: string) => {
     if (!confirm(t("deleteStructureWarning"))) return;
-
     const res = await performAction("invoices", "delete", id);
-
     if (res.success) {
       setInvoices(invoices.filter((inv) => inv.id !== id));
-
       addNotification({
         user: "Système",
         action: "a supprimé",
-        target: `la facture ${id}`,
+        target: `la facture ${ref}`,
         type: "invoice",
       });
     }
   };
 
-  const handleToggleScale = async (id: string, currentStatus: boolean) => {
-    const res = await performAction("invoices", "update", id, {
-      isScaled: !currentStatus,
-    });
-
+  const handleToggleScale = async (id: string, currentStatus: boolean, ref: string) => {
+    const res = await performAction("invoices", "update", id, { isScaled: !currentStatus });
     if (res.success) {
-      setInvoices(
-        invoices.map((inv) =>
-          inv.id === id ? { ...inv, isScaled: !currentStatus } : inv,
-        ),
-      );
-
+      setInvoices(invoices.map((inv) => inv.id === id ? { ...inv, isScaled: !currentStatus } : inv));
       addNotification({
         user: "Système",
         action: "a mis à jour le statut de",
-        target: `la facture ${id}`,
+        target: `la facture ${ref}`,
         type: "invoice",
       });
     }
@@ -147,17 +124,14 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
   const handleSendEmail = async () => {
     if (!targetEmail || !selectedInvoiceForEmail) return;
     setIsSendingEmail(true);
-
     const invoiceId = selectedInvoiceForEmail.id;
 
     try {
       if (isScheduled && scheduledDate) {
-        // If scheduling is selected, patch the invoice to set nextIssueDate and mark pending
         const res = await performAction("invoices", "patch", invoiceId, {
           nextIssueDate: new Date(scheduledDate),
           status: "pending",
         });
-
         if (res.success) {
           toast.success(t("scheduleSuccess") || "Envoi planifié avec succès !");
           addNotification({
@@ -167,56 +141,19 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
             type: "invoice",
             silent: true,
           });
-          // Update local state to reflect scheduling
-          setInvoices(
-            invoices.map((inv) =>
-              inv.id === selectedInvoiceForEmail.id
-                ? { ...inv, nextIssueDate: scheduledDate, status: "pending" }
-                : inv,
-            ),
-          );
+          setInvoices(invoices.map((inv) => inv.id === selectedInvoiceForEmail.id ? { ...inv, nextIssueDate: scheduledDate, status: "pending" } : inv));
           setIsEmailModalOpen(false);
           setTargetEmail("");
-        } else {
-          toast.error(
-            res.error ||
-              (t as any)("scheduleFail") ||
-              "Échec de la planification.",
-          );
         }
       } else {
-        // Immediate send - We generate the PDF in the renderer to avoid backend crashes
-        // First, we need the full invoice data (including items)
         const fullInvRes = await performAction("invoices", "get", invoiceId);
-        
-        if (!fullInvRes.success || !fullInvRes.data) {
-          toast.error(t("unexpectedError") || "Erreur lors de la récupération des données.");
-          return;
-        }
-
+        if (!fullInvRes.success || !fullInvRes.data) return;
         const fullInvoice = fullInvRes.data;
-        
-        // Prepare data for template
-        const templateData = {
-          ...fullInvoice,
-          items: fullInvoice.items || [],
-          currencyCode: currency,
-          language: language,
-        };
-
+        const templateData = { ...fullInvoice, items: fullInvoice.items || [], currencyCode: currency, language };
         const html = invoiceTemplate(templateData);
         // @ts-ignore
         const pdfBuffer = await window.electronAPI.generatePDF(html);
-
-        const res = await performAction(
-          "invoices",
-          "send",
-          invoiceId,
-          targetEmail,
-          currency,
-          pdfBuffer,
-        );
-
+        const res = await performAction("invoices", "send", invoiceId, targetEmail, currency, pdfBuffer);
         if (res.success) {
           toast.success(t("emailSentSuccess") || "E-mail envoyé avec succès !");
           addNotification({
@@ -228,52 +165,116 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
           });
           setIsEmailModalOpen(false);
           setTargetEmail("");
-
-          // Update local state if needed (e.g. status)
-          setInvoices(
-            invoices.map((inv) =>
-              inv.id === selectedInvoiceForEmail.id
-                ? { ...inv, status: "pending" }
-                : inv,
-            ),
-          );
-        } else {
-          toast.error(
-            res.error ||
-              (t as any)("emailSendFail") ||
-              "Échec de l'envoi de l'e-mail.",
-          );
+          setInvoices(invoices.map((inv) => inv.id === selectedInvoiceForEmail.id ? { ...inv, status: "pending" } : inv));
         }
       }
     } catch (error) {
-      console.error("Send email/schedule error:", error);
       toast.error(t("unexpectedError") || "Une erreur est survenue.");
     } finally {
       setIsSendingEmail(false);
     }
   };
 
-  const filteredInvoices = invoices.filter((invoice) => {
-    const matchesSearch =
-      (invoice.reference || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (invoice.clientName || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+  const handleBulkDelete = async (ids: string[]) => {
+    if (!confirm(t("deleteStructureWarning"))) return;
+    const res = await performAction("invoices", "bulkDelete", ids);
+    if (res.success) {
+      setInvoices(invoices.filter((inv) => !ids.includes(inv.id)));
+      addNotification({
+        user: "Système",
+        action: "a supprimé",
+        target: `${ids.length} factures`,
+        type: "invoice",
+      });
+      toast.success(t("itemDeleted") || "Éléments supprimés avec succès");
+    }
+  };
 
+  const filteredInvoices = invoices.filter((invoice) => {
+    const marches = (invoice.reference || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
+                   (invoice.clientName || "").toLowerCase().includes(searchTerm.toLowerCase());
     const invoiceDate = new Date(invoice.createdAt);
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
-
     if (start) start.setHours(0, 0, 0, 0);
     if (end) end.setHours(23, 59, 59, 999);
-
-    const matchesStartDate = !start || invoiceDate >= start;
-    const matchesEndDate = !end || invoiceDate <= end;
-
-    return matchesSearch && matchesStartDate && matchesEndDate;
+    return marches && (!start || invoiceDate >= start) && (!end || invoiceDate <= end);
   });
+
+  const columns: DataTableColumn<any>[] = [
+    {
+      key: "reference",
+      header: t("reference") || "Référence",
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="font-mono font-bold text-foreground">
+            {row.invoiceNumber ? `#${row.invoiceNumber} - ` : ""}{row.reference}
+          </span>
+          <div className="flex gap-1.5 mt-1">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest px-1.5 py-0.5 bg-primary/10 rounded">
+              PROFORMA
+            </span>
+            {row.isRead && (
+              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest px-1.5 py-0.5 bg-emerald-500/10 rounded flex items-center gap-1">
+                <CheckCheck className="w-2 h-2" /> {t("read") || "Lu"}
+              </span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "client",
+      header: t("client"),
+      render: (row) => {
+        const clientText = row.client
+          ? `${row.client.firstName ? row.client.firstName + " " : ""}${row.client.name}${row.client.companyName ? ` (${row.client.companyName})` : ""}`
+          : row.clientName;
+        return <span className="text-sm font-medium text-foreground line-clamp-1 max-w-[180px]">{clientText}</span>;
+      },
+    },
+    {
+      key: "createdAt",
+      header: t("dateLabel"),
+      render: (row) => (
+        <span className="text-muted-foreground whitespace-nowrap">
+          {new Date(row.createdAt).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", { dateStyle: "medium" })}
+        </span>
+      ),
+    },
+    {
+      key: "totalHT",
+      header: t("total_stat"),
+      render: (row) => (
+        <span className="font-black font-mono text-primary">
+          {formatPrice(row.totalHT, currency, "fr-FR")}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: t("status") || "Statut",
+      render: (row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleScale(row.id, row.isScaled, row.reference);
+          }}
+          className={cn(
+            "h-7 px-2 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all",
+            row.isScaled 
+              ? "bg-primary/20 text-primary border-primary/30" 
+              : "bg-muted/30 text-muted-foreground border-border/50"
+          )}
+        >
+          <div className={cn("w-1.5 h-1.5 rounded-full mr-1.5", row.isScaled ? "bg-primary" : "bg-muted-foreground/30")} />
+          {row.isScaled ? t("scaled") : t("standard")}
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen min-w-full bg-background text-foreground p-6 md:p-10 lg:p-12 pt-20 relative overflow-hidden font-sans pb-20">
@@ -294,51 +295,33 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
             <h1 className="text-5xl font-bold tracking-tight bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent font-sans">
               {t("history")}
             </h1>
-            <p className="text-muted-foreground text-lg max-w-xl font-sans">
-              {t("historyDesc")}
-            </p>
+            <p className="text-muted-foreground text-lg max-w-xl font-sans">{t("historyDesc")}</p>
           </div>
           <div className="flex flex-wrap gap-4">
             <Button
               onClick={async () => {
                 const userStr = localStorage.getItem("user");
                 const userId = userStr ? JSON.parse(userStr).id : null;
-                const activeCompanyId = userStr
-                  ? JSON.parse(userStr).activeCompanyId
-                  : undefined;
-                const res = await window.electronAPI.getData(
-                  "export",
-                  userId,
-                  "invoices",
-                  activeCompanyId,
-                  "excel",
-                );
+                const activeCompanyId = userStr ? JSON.parse(userStr).activeCompanyId : undefined;
+                const res = await (window as any).electronAPI.getData("export", userId, "invoices", activeCompanyId, "excel");
                 if (res.success && res.data) {
-                  const blob = new Blob([res.data], {
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  });
+                  const blob = new Blob([res.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
                   a.download = `Export_Factures_${new Date().toISOString().split("T")[0]}.xlsx`;
                   a.click();
                   URL.revokeObjectURL(url);
-                  toast.success(
-                    (t as any)("exportSuccess") || "Export Excel réussi !",
-                  );
+                  toast.success(t("exportSuccess") || "Export Excel réussi !");
                 }
               }}
               variant="outline"
               className="px-6 py-4 text-[10px] font-black text-foreground bg-background/50 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all rounded-2xl uppercase tracking-[0.2em] h-auto flex items-center gap-2"
             >
-              <DollarSign className="w-4 h-4" />
-              {t("exportExcel") || "Exporter Excel"}
+              <DollarSign className="w-4 h-4" /> {t("exportExcel") || "Exporter Excel"}
             </Button>
             <Button
-              onClick={() => {
-                clearInvoiceData();
-                router.push("/invoice");
-              }}
+              onClick={() => { clearInvoiceData(); router.push("/invoice"); }}
               className="px-8 py-4 text-xs font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 uppercase tracking-[0.2em] h-auto"
             >
               {t("newInvoice")}
@@ -346,7 +329,7 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
           </div>
         </div>
 
-        <div className="bg-card p-8 rounded-lg border border-border/50 backdrop-blur-xl shadow-2xl space-y-6 md:space-y-0 md:flex md:items-center md:gap-6 animate-fade-in-up delay-75">
+        <div className="bg-card p-6 rounded-2xl border border-border/50 backdrop-blur-xl shadow-2xl space-y-6 md:space-y-0 md:flex md:items-center md:gap-6 animate-fade-in-up delay-75">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -356,349 +339,93 @@ export default function HistoryClient({ initialInvoices }: HistoryClientProps) {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50 font-sans"
             />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
           </div>
-
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-muted-foreground font-sans cursor-pointer"
-              />
-            </div>
-            <span className="text-muted-foreground/50 font-black text-[10px] uppercase">
-              {t("of")}
-            </span>
-            <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-muted-foreground font-sans cursor-pointer"
-              />
-            </div>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-background border border-border/50 rounded-xl py-3 pl-4 pr-4 text-sm font-sans" />
+            <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">{t("of")}</span>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-background border border-border/50 rounded-xl py-3 pl-4 pr-4 text-sm font-sans" />
           </div>
-
           {(searchTerm || startDate || endDate) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSearchTerm("");
-                setStartDate("");
-                setEndDate("");
-              }}
-              className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
-            >
+            <Button variant="ghost" onClick={() => { setSearchTerm(""); setStartDate(""); setEndDate(""); }} className="text-xs font-bold uppercase tracking-widest">
               {t("reset")}
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredInvoices.map((invoice) => (
-            <Card
-              key={invoice.id}
-              onClick={() => router.push(`/invoice?id=${invoice.id}`)}
-              className={cn(
-                "group relative p-1 rounded-lg bg-card border border-border/50 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:bg-card/80 shadow-2xl overflow-hidden cursor-pointer",
-                invoice.isScaled && "border-primary/40 shadow-primary/5",
-              )}
-            >
-              {invoice.isScaled && (
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-2xl rounded-full -mr-16 -mt-16" />
-              )}
-
-              <CardHeader className="pb-4 pt-6 px-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] px-2 py-0.5 bg-primary/10 rounded-full">
-                        PROFORMA
-                      </span>
-                      {invoice.isRead && (
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] px-2 py-0.5 bg-emerald-500/10 rounded-full flex items-center gap-1">
-                          <CheckCheck className="w-3 h-3" />
-                          {t("read") || "Lu"}
-                        </span>
-                      )}
-                    </div>
-                    <CardTitle className="text-xl font-bold font-mono text-foreground tracking-tighter">
-                      {invoice.invoiceNumber
-                        ? `#${invoice.invoiceNumber} - `
-                        : ""}
-                      {invoice.reference}
-                    </CardTitle>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-2">
-                      <Calendar className="w-3 h-3 text-primary" />
-                      {new Date(invoice.createdAt).toLocaleDateString(
-                        language === "fr" ? "fr-FR" : "en-US",
-                        {
-                          dateStyle: "medium",
-                        },
-                      )}
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleScale(invoice.id, invoice.isScaled);
-                    }}
-                    className={cn(
-                      "cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm border",
-                      invoice.isScaled
-                        ? "bg-primary/20 text-primary border-primary/30"
-                        : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted/50",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "w-2 h-2 rounded-full",
-                        invoice.isScaled
-                          ? "bg-primary animate-pulse"
-                          : "bg-muted-foreground/30",
-                      )}
-                    />
-                    {invoice.isScaled ? t("scaled") : t("standard")}
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-6 px-6 pb-6">
-                <div className="space-y-4 p-4 rounded-2xl bg-muted/20 border border-border/20">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                      <User className="w-4 h-4" />
-                      <span className="font-medium font-sans">
-                        {t("client")}
-                      </span>
-                    </div>
-                    <span className="font-bold text-foreground font-sans line-clamp-2 break-words text-right max-w-[200px]">
-                      {invoice.client
-                        ? `${invoice.client.firstName ? invoice.client.firstName + " " : ""}${invoice.client.name}${invoice.client.companyName ? ` - ${invoice.client.companyName}` : ""}`
-                        : invoice.clientName}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                      <Package className="w-4 h-4" />
-                      <span className="font-medium font-sans">
-                        {t("volume")}
-                      </span>
-                    </div>
-                    <span className="font-bold text-foreground font-mono">
-                      {invoice.totalMaterial || 0} {t("mat")}
-                    </span>
-                  </div>
-
-                  <div className="pt-2 border-t border-border/10 flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                      <DollarSign className="w-4 h-4 text-primary" />
-                      <span className="font-black text-[10px] uppercase tracking-widest">
-                        {t("total_stat")}
-                      </span>
-                    </div>
-                    <span className="text-xl font-black text-primary font-mono tracking-tighter">
-                    {formatPrice(invoice.totalHT, currency, "fr-FR")}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-12 rounded-xl bg-background/50 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all font-bold text-xs uppercase tracking-widest group/btn"
-                    onClick={() => router.push(`/invoice?id=${invoice.id}`)}
-                  >
-                    <Eye className="w-4 h-4 mr-2 transition-transform group-hover/btn:scale-110" />
-                    {t("details")}
+        <div className="animate-fade-in-up delay-150">
+          <DataTable
+            data={filteredInvoices}
+            columns={columns}
+            rowKey={(row) => row.id}
+            emptyMessage={t("noRecord")}
+            emptyIcon={<FileText className="w-12 h-12 opacity-20" />}
+            onDeleteSelected={handleBulkDelete}
+            renderActions={(row) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-12 w-12 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground border border-destructive/20 transition-all"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(invoice.id);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-12 w-12 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white border border-blue-500/20 transition-all cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setTargetEmail(invoice.client?.email || "");
-                      setSelectedInvoiceForEmail(invoice);
-                      // Initialize scheduling state from invoice data so the email modal shows the correct values
-                      setIsScheduled(!!invoice.nextIssueDate);
-                      setScheduledDate(
-                        invoice.nextIssueDate
-                          ? new Date(invoice.nextIssueDate)
-                              .toISOString()
-                              .slice(0, 16)
-                          : "",
-                      );
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-card border-border/50">
+                  <DropdownMenuItem onClick={() => router.push(`/invoice?id=${row.id}`)} className="gap-2 cursor-pointer font-medium">
+                    <Eye className="w-3.5 h-3.5" /> {t("details")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setTargetEmail(row.client?.email || "");
+                      setSelectedInvoiceForEmail(row);
+                      setIsScheduled(!!row.nextIssueDate);
+                      setScheduledDate(row.nextIssueDate ? new Date(row.nextIssueDate).toISOString().slice(0, 16) : "");
                       setIsEmailModalOpen(true);
                     }}
-                    title={t("sent")}
+                    className="gap-2 cursor-pointer font-medium"
                   >
-                    <Mail className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {filteredInvoices.length === 0 && (
-            <div className="col-span-full py-32 text-center bg-card rounded-lg border border-border/30 border-dashed backdrop-blur-xl animate-fade-in-up">
-              <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
-                <Package className="w-12 h-12 text-primary opacity-50" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground mb-3 font-sans">
-                {t("noRecord")}
-              </h3>
-              <p className="text-muted-foreground mb-10 max-w-sm mx-auto font-sans">
-                {t("emptyArchiveDesc")}
-              </p>
-              <Button
-                onClick={() => router.push("/invoice")}
-                className="px-10 py-5 text-sm font-black text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest h-auto"
-              >
-                {t("initializeFlux")}
-              </Button>
-            </div>
-          )}
+                    <Mail className="w-3.5 h-3.5" /> {t("sent") || "Envoyer"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(row.id, row.reference)} className="gap-2 cursor-pointer font-medium text-destructive focus:text-destructive">
+                    <Trash2 className="w-3.5 h-3.5" /> {t("delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            selectedLabel={t("linesSelected") || "ligne(s) sélectionnée(s)"}
+            rowsPerPageLabel={t("rowsPerPage") || "Lignes par page"}
+            pageLabel={t("page") || "Page"}
+            ofLabel={t("of") || "sur"}
+          />
         </div>
       </div>
 
       {isEmailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-card w-full max-w-md rounded-2xl border border-border/50 shadow-2xl p-6 animate-fade-in-up">
-            <h3 className="text-xl font-bold mb-2">
-              {(t as any)("sendInvoiceEmail") ||
-                "Envoyer la facture par e-mail"}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              {t("sendInvoiceEmailDesc") || "Envoyez"}{" "}
-              {selectedInvoiceForEmail?.reference}{" "}
-              {t("toClientSecurely") || "à votre client via un lien sécurisé."}
-            </p>
+            <h3 className="text-xl font-bold mb-2">{(t as any)("sendInvoiceEmail") || "Envoyer la facture"}</h3>
             <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 block">
-                  {t("clientEmailAddress") || "Adresse e-mail du client"}
-                </label>
-                <div className="flex flex-col gap-3">
-                  <select
-                    className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
-                    onChange={(e) => {
-                      const selectedEmail = e.target.value;
-                      if (selectedEmail) setTargetEmail(selectedEmail);
-                    }}
-                    value=""
-                  >
-                    <option value="" disabled>
-                      {isFetchingClients
-                        ? "Chargement des clients..."
-                        : "Choisir un client..."}
-                    </option>
-                    {clients.map(
-                      (client) =>
-                        client.email && (
-                          <option key={client.id} value={client.email}>
-                            {client.firstName ? client.firstName + " " : ""}
-                            {client.name}{" "}
-                            {client.companyName
-                              ? `(${client.companyName})`
-                              : ""}{" "}
-                            - {client.email}
-                          </option>
-                        ),
-                    )}
-                  </select>
-
-                  <div className="flex items-center gap-2">
-                    <div className="h-px bg-border/50 flex-1"></div>
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                      OU
-                    </span>
-                    <div className="h-px bg-border/50 flex-1"></div>
-                  </div>
-
-                  <input
-                    type="email"
-                    value={targetEmail}
-                    onChange={(e) => setTargetEmail(e.target.value)}
-                    className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
-                    placeholder="Saisir une adresse e-mail manuellement..."
-                  />
-                </div>
-              </div>
-
-              {/* Scheduling controls integrated into the email modal */}
+              <select
+                className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm"
+                onChange={(e) => setTargetEmail(e.target.value)}
+                value={targetEmail}
+              >
+                <option value="" disabled>{isFetchingClients ? "Chargement..." : "Choisir un client..."}</option>
+                {clients.map((c) => c.email && <option key={c.id} value={c.email}>{c.name} - {c.email}</option>)}
+              </select>
+              <input
+                type="email"
+                value={targetEmail}
+                onChange={(e) => setTargetEmail(e.target.value)}
+                className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 text-sm"
+                placeholder="Ou saisir manuellement..."
+              />
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isScheduled}
-                  onChange={(e) => {
-                    setIsScheduled(e.target.checked);
-                    if (!e.target.checked) setScheduledDate("");
-                  }}
-                  className="rounded text-primary focus:ring-primary w-4 h-4"
-                />
-                <span className="text-sm font-bold">
-                  {t("scheduleSend") || "Planifier l'envoi"}
-                </span>
+                <input type="checkbox" checked={isScheduled} onChange={(e) => setIsScheduled(e.target.checked)} className="rounded text-primary focus:ring-primary w-4 h-4" />
+                <span className="text-sm font-bold">{t("scheduleSend") || "Planifier"}</span>
               </label>
-
-              {isScheduled && (
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="datetime-local"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="w-full bg-background border border-border/50 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-primary transition-all text-foreground cursor-pointer"
-                  />
-                </div>
-              )}
-
+              {isScheduled && <input type="datetime-local" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="w-full bg-background border border-border/50 rounded-xl py-3 pl-4 pr-4 text-sm" />}
               <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1 rounded-xl"
-                  onClick={() => setIsEmailModalOpen(false)}
-                  disabled={isSendingEmail}
-                >
-                  {t("cancel")}
-                </Button>
-                <Button
-                  className="flex-1 rounded-xl gap-2"
-                  onClick={handleSendEmail}
-                  disabled={isSendingEmail || !targetEmail}
-                >
-                  {isSendingEmail ? (
-                    <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                  {t("send")}
+                <Button variant="outline" className="flex-1" onClick={() => setIsEmailModalOpen(false)}>Annuler</Button>
+                <Button className="flex-1 gap-2" onClick={handleSendEmail} disabled={isSendingEmail || !targetEmail}>
+                  {isSendingEmail ? <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" /> : <Send className="w-4 h-4" />} Envoyer
                 </Button>
               </div>
             </div>

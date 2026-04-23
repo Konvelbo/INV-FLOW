@@ -21,14 +21,21 @@ export async function GET(request: Request) {
         client = new MongoClient(process.env.DATABASE_URL);
         await client.connect();
         const db = client.db();
-        
-        await db.collection("Invoice").updateOne(
+        console.log(`Tracking connected to database: ${db.databaseName}`);
+
+        if (!id || !ObjectId.isValid(id)) {
+          console.warn(`Invalid or missing ID for tracking: ${id}`);
+          return;
+        }
+
+        const result = await db.collection("Invoice").updateOne(
           { _id: new ObjectId(id) },
           { $set: { isRead: true, readAt: new Date() } }
         );
-      } catch (dbError) {
+        console.log(`Tracking pixel for ${id} result:`, result.matchedCount > 0 ? "Success" : "Not Found");
+      } catch (dbError: any) {
         // Ignore errors if invoice is not found
-        console.error("Tracking database error:", dbError);
+        console.error("Tracking database error:", dbError.message);
       } finally {
         if (client) {
           await client.close();

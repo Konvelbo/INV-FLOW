@@ -1,63 +1,61 @@
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { PageLoadingWrapper } from "@/src/components/PageLoadingWrapper";
 
 export default function Loading() {
   return (
-    <div className="flex flex-col min-h-full bg-background/50 p-6 space-y-8 animate-in fade-in duration-500">
+    <PageLoadingWrapper>
       {/* Header Skeleton */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b pb-6 border-border/40">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <Skeleton className="size-12 rounded-2xl bg-primary/10" />
-            <div className="space-y-2">
-              <Skeleton className="h-7 w-64 rounded-lg bg-primary/5" />
-              <Skeleton className="h-3 w-40 rounded-full bg-primary/5" />
-            </div>
+            <Skeleton className="h-2 w-12 bg-rose-500/30 rounded-full" />
+            <Skeleton className="h-3 w-20 bg-rose-500/10 rounded-full" />
           </div>
+          <Skeleton className="h-16 w-64 md:w-96 rounded-[2rem] bg-foreground/5" />
+          <Skeleton className="h-5 w-full max-w-xl rounded-xl bg-muted/40" />
         </div>
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-11 w-36 rounded-full bg-primary/10" />
-          <Skeleton className="size-11 rounded-full bg-muted/50" />
-          <Skeleton className="size-11 rounded-full bg-muted/50" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Skeleton className="h-12 w-40 rounded-xl bg-card border border-border/50" />
+          <Skeleton className="h-12 w-48 rounded-xl bg-rose-600/20 shadow-lg shadow-rose-500/10" />
         </div>
       </div>
 
-      {/* Stats Cards Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="p-5 rounded-3xl border bg-card/40 backdrop-blur-sm shadow-sm space-y-4 border-border/50"
-          >
-            <div className="flex items-center gap-4">
-              <Skeleton className="size-12 rounded-2xl bg-muted/50" />
-              <div className="space-y-2 flex-1">
-                <Skeleton className="h-3 w-20 rounded-full bg-muted/30" />
-                <Skeleton className="h-6 w-12 rounded-lg bg-muted/40" />
-              </div>
+      {/* Stats Summary Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="p-6 rounded-3xl bg-card/40 border border-border/50 space-y-3">
+            <Skeleton className="size-10 rounded-2xl bg-muted/20" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-24 bg-muted/30 rounded-full" />
+              <Skeleton className="h-6 w-40 bg-muted/40 rounded-lg" />
             </div>
-            <Skeleton className="h-1.5 w-full rounded-full bg-muted/20" />
           </div>
         ))}
       </div>
 
-      {/* Main Content Area Skeleton */}
-      <div className="flex-1 rounded-3xl border bg-card/30 backdrop-blur-md shadow-xl border-border/40 overflow-hidden min-h-[500px]">
-        <div className="p-6 border-b border-border/20 flex justify-between items-center">
-          <Skeleton className="h-6 w-48 rounded-lg bg-muted/20" />
-          <div className="flex gap-2">
-            <Skeleton className="h-8 w-8 rounded-full bg-muted/20" />
-            <Skeleton className="h-8 w-8 rounded-full bg-muted/20" />
-          </div>
+      {/* Filters Skeleton */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <Skeleton className="h-12 w-full md:max-w-md rounded-xl bg-muted/10 border border-border/20" />
+        <Skeleton className="h-14 w-64 rounded-2xl bg-muted/5 border border-border/10" />
+      </div>
+
+      {/* Table Skeleton */}
+      <div className="rounded-3xl border border-border/40 bg-card/30 overflow-hidden min-h-[400px]">
+        <div className="p-6 border-b border-border/10 flex gap-4">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-6 flex-1 bg-muted/20 rounded-lg" />
+          ))}
         </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-7 gap-4">
-          {[...Array(35)].map((_, i) => (
-            <Skeleton
-              key={i}
-              className="aspect-square rounded-2xl bg-muted/10 border border-muted/5"
-            />
+        <div className="p-6 space-y-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="flex gap-4 items-center">
+              {[...Array(5)].map((_, j) => (
+                <Skeleton key={j} className="h-10 flex-1 bg-muted/5 rounded-xl" />
+              ))}
+            </div>
           ))}
         </div>
       </div>
-    </div>
+    </PageLoadingWrapper>
   );
 }

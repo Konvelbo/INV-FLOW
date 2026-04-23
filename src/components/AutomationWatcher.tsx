@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useNotifications } from "@/src/context/NotificationContext";
 import { useLanguage } from "@/src/context/LanguageContext";
-import { toast } from "react-hot-toast";
 
 /**
  * Global component that watches for automation events (invoice generation, scheduled sends)

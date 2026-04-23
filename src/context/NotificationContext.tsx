@@ -114,25 +114,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     registerAndSubscribe();
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage whenever notifications change
   useEffect(() => {
     if (isInitialized) {
-      const saved = localStorage.getItem("app_notifications");
-
-      try {
-        const parsed = JSON.parse(saved as string);
-        const findNotifTarget = parsed.find((n: Notification) => n.target);
-        const findNotifTime = parsed.find((n: Notification) => n.timestamp);
-        if (findNotifTarget && findNotifTime) {
-          return;
-        }
-        localStorage.setItem(
-          "app_notifications",
-          JSON.stringify(notifications),
-        );
-      } catch (e) {
-        // Silenced
-      }
+      localStorage.setItem("app_notifications", JSON.stringify(notifications));
     }
   }, [notifications, isInitialized]);
 

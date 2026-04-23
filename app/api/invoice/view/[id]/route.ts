@@ -19,16 +19,16 @@ export async function GET(
 
   let client;
   try {
-    if (id) {
-      try {
-        if (!process.env.DATABASE_URL) {
-          throw new Error("DATABASE_URL est manquant");
-        }
         client = new MongoClient(process.env.DATABASE_URL);
         await client.connect();
         const db = client.db();
+        console.log(`Connected to database: ${db.databaseName}`);
         
-        await db.collection("Invoice").updateOne(
+        if (!ObjectId.isValid(id)) {
+          throw new Error(`Invalid ObjectId format: ${id}`);
+        }
+        
+        const result = await db.collection("Invoice").updateOne(
           { _id: new ObjectId(id) },
           { 
             $set: { 
@@ -37,8 +37,9 @@ export async function GET(
             } 
           }
         );
+        console.log(`Invoice ${id} update result:`, result.matchedCount > 0 ? "Success" : "Not Found");
       } catch (e: any) {
-        console.error("Invoice view error:", e.message);
+        console.error("Invoice view database error:", e.message);
       } finally {
         if (client) {
           await client.close();
@@ -48,7 +49,7 @@ export async function GET(
     }
   } catch (error: any) {
     console.error("Tracking error:", error);
-    debugInfo = `Error: ${error.message || "Unknown error"}. ID: ${id}`;
+    // Removed undefined debugInfo reference
   }
 
   // Return a professional-looking "Thank You" page in HTML
